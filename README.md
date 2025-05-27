@@ -50,7 +50,7 @@ This software is protected under a proprietary license. Please refer to the LICE
 
 ## Copyright
 
-© 2025 [Your Name]. All rights reserved.
+© 2025 Mohamad Karbejha. All rights reserved.
 
 This project is protected by copyright law. Unauthorized use, copying, modification, or distribution of this software is strictly prohibited and may result in legal action.
 
