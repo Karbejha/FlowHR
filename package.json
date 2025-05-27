@@ -1,0 +1,17 @@
+{
+  "name": "hr-vs",
+  "version": "1.0.0",
+  "description": "HR Management System",
+  "scripts": {
+    "dev": "concurrently \"cd server && npm run dev\" \"cd client && npm run dev\"",
+    "install-deps": "concurrently \"cd server && npm install\" \"cd client && npm install\"",
+    "build": "concurrently \"cd server && npm run build\" \"cd client && npm run build\"",
+    "start": "concurrently \"cd server && npm start\" \"cd client && npm start\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^8.0.1"
+  }
+}
