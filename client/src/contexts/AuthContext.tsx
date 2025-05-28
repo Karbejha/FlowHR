@@ -2,7 +2,8 @@
 
 import { createContext, useContext, useReducer, useCallback, ReactNode } from 'react';
 import axios from 'axios';
-import { AuthState, LoginCredentials, RegisterData, User } from '../types/auth';
+import { AuthState, LoginCredentials, RegisterData, User, UpdateProfileData, ChangePasswordData } from '../types/auth';
+import { useRouter } from 'next/navigation';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
@@ -10,6 +11,8 @@ interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => void;
+  updateProfile: (data: UpdateProfileData) => Promise<{ user: User }>;
+  changePassword: (data: ChangePasswordData) => Promise<{ message: string }>;
 }
 
 // Create the context with an initial undefined value
@@ -26,6 +29,7 @@ type AuthAction =
   | { type: 'SET_LOADING' }
   | { type: 'LOGIN_SUCCESS'; payload: { user: User; token: string } }
   | { type: 'REGISTER_SUCCESS'; payload: { user: User; token: string } }
+  | { type: 'UPDATE_PROFILE'; payload: User }
   | { type: 'AUTH_ERROR' }
   | { type: 'LOGOUT' };
 
@@ -41,6 +45,12 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
         isLoading: false,
         user: action.payload.user,
         token: action.payload.token,
+      };
+    case 'UPDATE_PROFILE':
+      return {
+        ...state,
+        isLoading: false,
+        user: action.payload,
       };
     case 'AUTH_ERROR':
     case 'LOGOUT':
@@ -88,15 +98,46 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       throw error;
     }
   }, []);
-
+  const router = useRouter();
+  
   const logout = useCallback(() => {
     localStorage.removeItem('token');
     delete axios.defaults.headers.common['Authorization'];
     dispatch({ type: 'LOGOUT' });
-  }, []);
+    router.push('/');
+  }, [router]);const updateProfile = useCallback(async (data: UpdateProfileData): Promise<{ user: User }> => {
+    try {
+      dispatch({ type: 'SET_LOADING' });
+      const { data: responseData } = await axios.put<{ user: User }>(`${API_URL}/users/profile`, data, {
+        headers: { Authorization: `Bearer ${state.token}` }
+      });
+      dispatch({ type: 'UPDATE_PROFILE', payload: responseData.user });
+      return responseData;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || 'Failed to update profile');
+      }
+      throw error;
+    }
+  }, [state.token]);
+
+  const changePassword = useCallback(async (data: ChangePasswordData): Promise<{ message: string }> => {
+    try {
+      dispatch({ type: 'SET_LOADING' });
+      const { data: responseData } = await axios.put<{ message: string }>(`${API_URL}/users/change-password`, data, {
+        headers: { Authorization: `Bearer ${state.token}` }
+      });
+      return responseData;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || 'Failed to change password');
+      }
+      throw error;
+    }
+  }, [state.token]);
 
   return (
-    <AuthContext.Provider value={{ ...state, login, register, logout }}>
+    <AuthContext.Provider value={{ ...state, login, register, logout, updateProfile, changePassword }}>
       {children}
     </AuthContext.Provider>
   );

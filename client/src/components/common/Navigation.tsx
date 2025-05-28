@@ -5,9 +5,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { UserRole } from '@/types/auth';
 import { usePathname } from 'next/navigation';
 import { ThemeToggle } from './ThemeToggle';
+import UserDropdown from './UserDropdown';
 
 export default function Navigation() {
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const pathname = usePathname();
 
   if (!isAuthenticated) return null;
@@ -85,15 +86,9 @@ export default function Navigation() {
                 )}
               </div>
             </div>
-          </div>
-          <div className="flex items-center space-x-4">
+          </div>          <div className="flex items-center space-x-4">
             <ThemeToggle />
-            <button
-              onClick={logout}
-              className="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-            >
-              Logout
-            </button>
+            <UserDropdown />
           </div>
         </div>
       </div>

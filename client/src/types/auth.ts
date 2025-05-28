@@ -15,6 +15,7 @@ export interface User {
   managerId?: string;
   hireDate: Date;
   isActive: boolean;
+  avatar?: string;
 }
 
 export interface AuthState {
@@ -36,4 +37,18 @@ export interface RegisterData extends LoginCredentials {
   department: string;
   jobTitle: string;
   managerId?: string;
+}
+
+export interface UpdateProfileData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  jobTitle?: string;
+  department?: string;
+}
+
+export interface ChangePasswordData {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
 }

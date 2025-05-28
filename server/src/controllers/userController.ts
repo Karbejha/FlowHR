@@ -87,3 +87,60 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
     res.status(400).json({ error: 'Error creating user' });
   }
 };
+
+export const updateProfile = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user._id;
+    const { firstName, lastName, email } = req.body;
+
+    // Check if email is already taken by another user
+    const existingUser = await User.findOne({ email, _id: { $ne: userId } });
+    if (existingUser) {
+      res.status(400).json({ message: 'Email already in use' });
+      return;
+    }
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { firstName, lastName, email },
+      { new: true }
+    ).select('-password');
+
+    if (!user) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+
+    res.json({ user });
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating profile' });
+  }
+};
+
+export const changePassword = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user._id;
+    const { currentPassword, newPassword } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+
+    // Verify current password
+    const isMatch = await user.comparePassword(currentPassword);
+    if (!isMatch) {
+      res.status(400).json({ message: 'Current password is incorrect' });
+      return;
+    }
+
+    // Update password
+    user.password = newPassword;
+    await user.save();
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error changing password' });
+  }
+};
