@@ -1,0 +1,70 @@
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import { Toaster } from "react-hot-toast";
+import { AuthProvider } from "@/contexts/AuthContext";
+import Navigation from "@/components/common/Navigation";
+import { ReactNode } from "react";
+import { ThemeProvider } from 'next-themes';
+import ClientLayout from '@/components/common/ClientLayout';
+
+const inter = Inter({ subsets: ["latin"] });
+
+export const metadata: Metadata = {
+  title: "HR Management System",
+  description: "HR Management System for leave and attendance tracking",
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  // Prevent theme flash
+  useEffect(() => {
+    document.documentElement.classList.add('no-transitions');
+    window.requestAnimationFrame(() => {
+      document.documentElement.classList.remove('no-transitions');
+    });
+  }, []);
+
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.className} antialiased`}>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                function getTheme() {
+                  if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
+                    return localStorage.getItem('theme');
+                  }
+                  if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    return 'dark';
+                  }
+                  return 'light';
+                }
+                document.documentElement.classList.add(getTheme());
+              })()
+            `,
+          }}
+        />
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <AuthProvider>
+            <div className="min-h-screen bg-white dark:bg-gray-900">
+              <Navigation />
+              <main className="text-gray-900 dark:text-gray-100 p-4">{children}</main>
+              <Toaster 
+                position="top-right"
+                toastOptions={{
+                  className: '!bg-white dark:!bg-gray-800 !text-gray-900 dark:!text-white',
+                  style: { transition: 'all 0.2s ease-in-out' }
+                }}
+              />
+            </div>
+          </AuthProvider>
+        </ThemeProvider>
+      </body>
+    </html>
+  );
+}
