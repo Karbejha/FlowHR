@@ -1,6 +1,6 @@
 # HR Management System
 
-A comprehensive HR Management System built with Next.js, Node.js, and MongoDB, featuring leave management, attendance tracking, and employee management.
+A comprehensive FlowHR Management System built with Next.js, Node.js, and MongoDB, featuring leave management, attendance tracking, and employee management.
 
 ## ⚠️ Important Notice
 

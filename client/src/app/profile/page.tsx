@@ -1,5 +1,4 @@
 'use client';
-
 import { useAuth } from '@/contexts/AuthContext';
 import { UpdateProfileData, ChangePasswordData } from '@/types/auth';
 import { useState } from 'react';
@@ -15,7 +14,7 @@ export default function ProfilePage() {
     register: registerProfile,
     handleSubmit: handleProfileSubmit,
     formState: { errors: profileErrors },
-  } = useForm<UpdateProfileData>({
+  } = useForm({
     defaultValues: {
       firstName: user?.firstName || '',
       lastName: user?.lastName || '',
@@ -33,7 +32,9 @@ export default function ProfilePage() {
   } = useForm<ChangePasswordData>();
 
   const newPassword = watch('newPassword');
-  const { updateProfile, changePassword } = useAuth();  const onProfileSubmit = async (data: UpdateProfileData) => {
+  const { updateProfile, changePassword } = useAuth();
+
+  const onProfileSubmit = async (data: UpdateProfileData) => {
     try {
       const response = await updateProfile(data);
       if (response.user) {
@@ -64,176 +65,256 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="max-w-2xl mx-auto space-y-8">
-        <h1 className="text-3xl font-bold">Profile Settings</h1>
-        
-        {/* Profile Information */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold">Personal Information</h2>
-            <button
-              onClick={() => setIsEditMode(!isEditMode)}
-              className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90"
-            >
-              {isEditMode ? 'Cancel' : 'Edit Profile'}
-            </button>
-          </div>
-
-          {isEditMode ? (
-            <form onSubmit={handleProfileSubmit(onProfileSubmit)} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">First Name</label>
-                  <input
-                    {...registerProfile('firstName', { required: 'First name is required' })}
-                    className="w-full p-2 rounded border dark:bg-gray-700 dark:border-gray-600"
-                  />
-                  {profileErrors.firstName && (
-                    <span className="text-red-500 text-sm">{profileErrors.firstName.message}</span>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Last Name</label>
-                  <input
-                    {...registerProfile('lastName', { required: 'Last name is required' })}
-                    className="w-full p-2 rounded border dark:bg-gray-700 dark:border-gray-600"
-                  />
-                  {profileErrors.lastName && (
-                    <span className="text-red-500 text-sm">{profileErrors.lastName.message}</span>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Email</label>
-                  <input
-                    {...registerProfile('email', {
-                      required: 'Email is required',
-                      pattern: {
-                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                        message: 'Invalid email address',
-                      },
-                    })}
-                    className="w-full p-2 rounded border dark:bg-gray-700 dark:border-gray-600"
-                  />
-                  {profileErrors.email && (
-                    <span className="text-red-500 text-sm">{profileErrors.email.message}</span>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Department</label>
-                  <input
-                    {...registerProfile('department')}
-                    className="w-full p-2 rounded border dark:bg-gray-700 dark:border-gray-600"
-                    disabled
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Job Title</label>
-                  <input
-                    {...registerProfile('jobTitle')}
-                    className="w-full p-2 rounded border dark:bg-gray-700 dark:border-gray-600"
-                    disabled
-                  />
-                </div>
-              </div>
-              <div className="flex justify-end">
-                <button
-                  type="submit"
-                  className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90"
-                >
-                  Save Changes
-                </button>
-              </div>
-            </form>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">Name</label>
-                <p className="mt-1">{user?.firstName} {user?.lastName}</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">Email</label>
-                <p className="mt-1">{user?.email}</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">Department</label>
-                <p className="mt-1">{user?.department}</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">Job Title</label>
-                <p className="mt-1">{user?.jobTitle}</p>
-              </div>
-            </div>
-          )}
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            Profile Settings
+          </h1>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">
+            Manage your personal information and account settings
+          </p>
         </div>
 
-        {/* Change Password */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold">Change Password</h2>
-            <button
-              onClick={() => setIsChangingPassword(!isChangingPassword)}
-              className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90"
-            >
-              {isChangingPassword ? 'Cancel' : 'Change Password'}
-            </button>
+        <div className="space-y-8">
+          {/* Profile Information Card */}
+          <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  Personal Information
+                </h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  Update your personal details and contact information
+                </p>
+              </div>
+              <button
+                onClick={() => setIsEditMode(!isEditMode)}
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+              >
+                {isEditMode ? 'Cancel' : 'Edit Profile'}
+              </button>
+            </div>
+
+            <div className="p-6">
+              {isEditMode ? (
+                <form onSubmit={handleProfileSubmit(onProfileSubmit)} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        First Name
+                      </label>
+                      <input
+                        {...registerProfile('firstName', { required: 'First name is required' })}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                        placeholder="Enter your first name"
+                      />
+                      {profileErrors.firstName && (
+                        <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+                          {profileErrors.firstName.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Last Name
+                      </label>
+                      <input
+                        {...registerProfile('lastName', { required: 'Last name is required' })}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                        placeholder="Enter your last name"
+                      />
+                      {profileErrors.lastName && (
+                        <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+                          {profileErrors.lastName.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        {...registerProfile('email', { 
+                          required: 'Email is required',
+                          pattern: {
+                            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                            message: 'Invalid email address'
+                          }
+                        })}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                        placeholder="Enter your email"
+                      />
+                      {profileErrors.email && (
+                        <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+                          {profileErrors.email.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Department
+                      </label>
+                      <input
+                        {...registerProfile('department')}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                        placeholder="Enter your department"
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Job Title
+                      </label>
+                      <input
+                        {...registerProfile('jobTitle')}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                        placeholder="Enter your job title"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end pt-4">
+                    <button
+                      type="submit"
+                      className="inline-flex items-center px-6 py-3 text-sm font-medium text-white bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+                    >
+                      Save Changes
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <dl className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-1">
+                    <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Name</dt>
+                    <dd className="text-lg text-gray-900 dark:text-white">
+                      {user?.firstName} {user?.lastName}
+                    </dd>
+                  </div>
+
+                  <div className="space-y-1">
+                    <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Email</dt>
+                    <dd className="text-lg text-gray-900 dark:text-white">{user?.email}</dd>
+                  </div>
+
+                  <div className="space-y-1">
+                    <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Department</dt>
+                    <dd className="text-lg text-gray-900 dark:text-white">
+                      {user?.department || 'Not specified'}
+                    </dd>
+                  </div>
+
+                  <div className="space-y-1">
+                    <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Job Title</dt>
+                    <dd className="text-lg text-gray-900 dark:text-white">
+                      {user?.jobTitle || 'Not specified'}
+                    </dd>
+                  </div>
+                </dl>
+              )}
+            </div>
           </div>
 
-          {isChangingPassword && (
-            <form onSubmit={handlePasswordSubmit(onPasswordSubmit)} className="space-y-4">
+          {/* Change Password Card */}
+          <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
               <div>
-                <label className="block text-sm font-medium mb-1">Current Password</label>
-                <input
-                  type="password"
-                  {...registerPassword('currentPassword', { required: 'Current password is required' })}
-                  className="w-full p-2 rounded border dark:bg-gray-700 dark:border-gray-600"
-                />
-                {passwordErrors.currentPassword && (
-                  <span className="text-red-500 text-sm">{passwordErrors.currentPassword.message}</span>
-                )}
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  Change Password
+                </h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  Update your password to keep your account secure
+                </p>
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">New Password</label>
-                <input
-                  type="password"
-                  {...registerPassword('newPassword', {
-                    required: 'New password is required',
-                    minLength: {
-                      value: 8,
-                      message: 'Password must be at least 8 characters',
-                    },
-                  })}
-                  className="w-full p-2 rounded border dark:bg-gray-700 dark:border-gray-600"
-                />
-                {passwordErrors.newPassword && (
-                  <span className="text-red-500 text-sm">{passwordErrors.newPassword.message}</span>
-                )}
+              <button
+                onClick={() => setIsChangingPassword(!isChangingPassword)}
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 dark:bg-orange-500 dark:hover:bg-orange-600 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+              >
+                {isChangingPassword ? 'Cancel' : 'Change Password'}
+              </button>
+            </div>
+
+            {isChangingPassword && (
+              <div className="p-6">
+                <form onSubmit={handlePasswordSubmit(onPasswordSubmit)} className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Current Password
+                    </label>
+                    <input
+                      type="password"
+                      {...registerPassword('currentPassword', { required: 'Current password is required' })}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                      placeholder="Enter your current password"
+                    />
+                    {passwordErrors.currentPassword && (
+                      <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+                        {passwordErrors.currentPassword.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      New Password
+                    </label>
+                    <input
+                      type="password"
+                      {...registerPassword('newPassword', { 
+                        required: 'New password is required',
+                        minLength: {
+                          value: 8,
+                          message: 'Password must be at least 8 characters'
+                        }
+                      })}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                      placeholder="Enter your new password"
+                    />
+                    {passwordErrors.newPassword && (
+                      <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+                        {passwordErrors.newPassword.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Confirm New Password
+                    </label>
+                    <input
+                      type="password"
+                      {...registerPassword('confirmPassword', {
+                        required: 'Please confirm your password',
+                        validate: (value) =>
+                          value === newPassword || 'The passwords do not match',
+                      })}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                      placeholder="Confirm your new password"
+                    />
+                    {passwordErrors.confirmPassword && (
+                      <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+                        {passwordErrors.confirmPassword.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex justify-end pt-4">
+                    <button
+                      type="submit"
+                      className="inline-flex items-center px-6 py-3 text-sm font-medium text-white bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+                    >
+                      Update Password
+                    </button>
+                  </div>
+                </form>
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Confirm New Password</label>
-                <input
-                  type="password"
-                  {...registerPassword('confirmPassword', {
-                    required: 'Please confirm your password',
-                    validate: value =>
-                      value === newPassword || 'The passwords do not match',
-                  })}
-                  className="w-full p-2 rounded border dark:bg-gray-700 dark:border-gray-600"
-                />
-                {passwordErrors.confirmPassword && (
-                  <span className="text-red-500 text-sm">{passwordErrors.confirmPassword.message}</span>
-                )}
-              </div>
-              <div className="flex justify-end">
-                <button
-                  type="submit"
-                  className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90"
-                >
-                  Update Password
-                </button>
-              </div>
-            </form>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>
