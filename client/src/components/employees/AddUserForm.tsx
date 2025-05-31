@@ -1,7 +1,14 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserRole } from '@/types/auth';
+
+interface Manager {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+}
 
 interface AddUserFormProps {
   onSuccess: () => void;
@@ -9,7 +16,7 @@ interface AddUserFormProps {
 }
 
 const AddUserForm: React.FC<AddUserFormProps> = ({ onSuccess, onCancel }) => {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -20,16 +27,45 @@ const AddUserForm: React.FC<AddUserFormProps> = ({ onSuccess, onCancel }) => {
     jobTitle: '',
     managerId: '',
   });
+  const [managers, setManagers] = useState<Manager[]>([]);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  // Fetch available managers when component mounts or when user role changes
+  useEffect(() => {
+    const fetchManagers = async () => {
+      if (!token || user?.role !== UserRole.ADMIN) return;
+      
+      try {
+        const response = await fetch('/api/users/managers', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        
+        if (response.ok) {
+          const managersData = await response.json();
+          setManagers(managersData);
+        }
+      } catch (error) {
+        console.error('Error fetching managers:', error);
+      }
+    };
+
+    fetchManagers();
+  }, [token, user?.role]);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
     
+    if (!token) {
+      setError('Authentication required');
+      setIsLoading(false);
+      return;
+    }
+    
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch('/api/users/create', {
         method: 'POST',
         headers: {
@@ -277,23 +313,26 @@ const AddUserForm: React.FC<AddUserFormProps> = ({ onSuccess, onCancel }) => {
                     </svg>
                   </div>
                 </div>
-              </div>
-
-              {formData.role === UserRole.EMPLOYEE && user?.role === UserRole.ADMIN && (
+              </div>              {formData.role === UserRole.EMPLOYEE && user?.role === UserRole.ADMIN && (
                 <div className="space-y-2">
                   <label htmlFor="managerId" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                    Manager ID
+                    Manager
                   </label>
-                  <input
+                  <select
                     id="managerId"
-                    type="text"
                     name="managerId"
                     value={formData.managerId}
                     onChange={handleChange}
-                    className="block w-full px-4 py-3 text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200 placeholder-gray-400 dark:placeholder-gray-500"
-                    placeholder="Enter manager ID (optional)"
-                    aria-label="Manager ID"
-                  />
+                    className="block w-full px-4 py-3 text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200"
+                    aria-label="Manager"
+                  >
+                    <option value="">Select a manager (optional)</option>
+                    {managers.map((manager) => (
+                      <option key={manager._id} value={manager._id}>
+                        {manager.firstName} {manager.lastName} ({manager.email})
+                      </option>
+                    ))}
+                  </select>
                 </div>
               )}
             </div>

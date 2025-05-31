@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
@@ -15,14 +16,17 @@ interface LeaveBalanceData {
 export default function LeaveBalance() {
   const [balance, setBalance] = useState<LeaveBalanceData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    fetchLeaveBalance();
-  }, []);
-
-  const fetchLeaveBalance = async () => {
+  const { token } = useAuth();
+  const fetchLeaveBalance = useCallback(async () => {
+    if (!token) {
+      toast.error('Authentication required');
+      return;
+    }
+    
     try {
-      const { data } = await axios.get(`${API_URL}/leave/balance`);
+      const { data } = await axios.get(`${API_URL}/leave/balance`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setBalance(data);
     } catch (err) {
       console.error('Error fetching leave balance:', err);
@@ -30,7 +34,11 @@ export default function LeaveBalance() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [token]);
+
+  useEffect(() => {
+    fetchLeaveBalance();
+  }, [fetchLeaveBalance]);
 
   if (isLoading) {
     return <div>Loading balance...</div>;

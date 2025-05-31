@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import axios, { AxiosError } from 'axios';
 import { User, UserRole } from '@/types/auth';
@@ -12,41 +12,49 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 export default function EmployeeList() {
   const [employees, setEmployees] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [showAddForm, setShowAddForm] = useState(false);
-  const { user } = useAuth();
+  const [showAddForm, setShowAddForm] = useState(false);  const { user, token } = useAuth();
 
-  useEffect(() => {
-    fetchEmployees();
-  }, []);
-
-  const fetchEmployees = async () => {
+  const fetchEmployees = useCallback(async () => {
+    if (!token) {
+      toast.error('Authentication required');
+      return;
+    }
+    
     try {
       setIsLoading(true);
       const { data } = await axios.get<User[]>(`${API_URL}/users/employees`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        headers: { Authorization: `Bearer ${token}` }
       });
       setEmployees(data);
     } catch (error) {
       const err = error as AxiosError<{ error: string }>;
-
       toast.error(err.response?.data?.error || 'Error fetching employees');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [token]);
 
+  useEffect(() => {
+    if (token) {
+      fetchEmployees();
+    }
+  }, [token, fetchEmployees]);
   const updateEmployeeStatus = async (employeeId: string, isActive: boolean) => {
+    if (!token) {
+      toast.error('Authentication required');
+      return;
+    }
+    
     try {
       await axios.patch(
         `${API_URL}/users/${employeeId}/status`,
         { isActive },
-        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }}
+        { headers: { Authorization: `Bearer ${token}` }}
       );
       toast.success('Employee status updated successfully');
       fetchEmployees();
     } catch (error) {
       const err = error as AxiosError<{ error: string }>;
-
       toast.error(err.response?.data?.error || 'Error updating employee status');
     }
   };

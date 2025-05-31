@@ -50,6 +50,12 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
   try {
     const { email, password, firstName, lastName, role, department, jobTitle, managerId } = req.body;
 
+    // Validate required fields
+    if (!email || !password || !firstName || !lastName || !role) {
+      res.status(400).json({ error: 'Required fields: email, password, firstName, lastName, role' });
+      return;
+    }
+
     // Validate that managers can only create employees
     if (req.user.role === UserRole.MANAGER && role !== UserRole.EMPLOYEE) {
       res.status(403).json({ error: 'Managers can only create employee accounts' });
@@ -61,10 +67,20 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
     if (existingUser) {
       res.status(400).json({ error: 'Email already registered' });
       return;
+    }    // Validate managerId requirement for employees
+    let effectiveManagerId = null;
+    if (role === UserRole.EMPLOYEE) {
+      if (req.user.role === UserRole.MANAGER) {
+        // If manager is creating user, set managerId to themselves
+        effectiveManagerId = req.user._id;
+      } else if (managerId && managerId.trim() !== '') {
+        // Admin can specify managerId, but only if it's not empty
+        effectiveManagerId = managerId;
+      } else {
+        res.status(400).json({ error: 'Manager ID is required for employee accounts' });
+        return;
+      }
     }
-
-    // If manager is creating user, set managerId to themselves
-    const effectiveManagerId = req.user.role === UserRole.MANAGER ? req.user._id : managerId;
 
     // Create new user
     const user = new User({
@@ -78,13 +94,16 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
       managerId: effectiveManagerId
     });
 
-    await user.save();    // Remove password from response
+    await user.save();
+
+    // Remove password from response
     const userResponse = user.toObject();
     const { password: _, ...userWithoutPassword } = userResponse;
 
     res.status(201).json(userWithoutPassword);
   } catch (error) {
-    res.status(400).json({ error: 'Error creating user' });
+    console.error('Error creating user:', error);
+    res.status(500).json({ error: 'Error creating user' });
   }
 };
 
@@ -142,5 +161,34 @@ export const changePassword = async (req: Request, res: Response): Promise<void>
     res.json({ message: 'Password updated successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Error changing password' });
+  }
+};
+
+export const getManagers = async (req: Request, res: Response): Promise<void> => {
+  try {
+    // Only admins can see all managers, managers can only see themselves
+    let query = {};
+    
+    if (req.user.role === UserRole.ADMIN) {
+      query = { 
+        role: { $in: [UserRole.ADMIN, UserRole.MANAGER] },
+        isActive: true 
+      };
+    } else {
+      // Non-admins can only see themselves if they're a manager
+      query = { 
+        _id: req.user._id,
+        role: { $in: [UserRole.ADMIN, UserRole.MANAGER] },
+        isActive: true 
+      };
+    }
+
+    const managers = await User.find(query)
+      .select('firstName lastName email')
+      .sort({ firstName: 1, lastName: 1 });
+    
+    res.json(managers);
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching managers' });
   }
 };

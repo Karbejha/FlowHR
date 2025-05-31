@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { LeaveRequest, LeaveType } from '@/types/leave';
+import { useAuth } from '@/contexts/AuthContext';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
@@ -10,12 +11,19 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function LeaveRequestForm({ onSubmitSuccess }: { onSubmitSuccess?: () => void }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { token } = useAuth();
   const { register, handleSubmit, reset, formState: { errors } } = useForm<LeaveRequest>();
-
   const onSubmit = async (data: LeaveRequest) => {
+    if (!token) {
+      toast.error('Authentication required');
+      return;
+    }
+    
     try {
       setIsSubmitting(true);
-      await axios.post(`${API_URL}/leave/request`, data);
+      await axios.post(`${API_URL}/leave/request`, data, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       toast.success('Leave request submitted successfully');
       reset();
       onSubmitSuccess?.();

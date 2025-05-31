@@ -21,14 +21,19 @@ export default function AttendanceList({
 }: AttendanceListProps) {
   const [records, setRecords] = useState<Attendance[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { user } = useAuth();
-
+  const { user, token } = useAuth();
   const fetchAttendanceRecords = useCallback(async () => {
+    if (!token) {
+      toast.error('Authentication required');
+      return;
+    }
+    
     try {
       setIsLoading(true);
       const endpoint = user?.role === UserRole.EMPLOYEE ? 'my-records' : 'team';
       const { data } = await axios.get(`${API_URL}/attendance/${endpoint}`, {
-        params: { startDate, endDate }
+        params: { startDate, endDate },
+        headers: { Authorization: `Bearer ${token}` }
       });
       setRecords(data);
     } catch (err) {
@@ -37,15 +42,21 @@ export default function AttendanceList({
     } finally {
       setIsLoading(false);
     }
-  }, [startDate, endDate, user?.role]);
+  }, [startDate, endDate, user?.role, token]);
 
   useEffect(() => {
     fetchAttendanceRecords();
   }, [fetchAttendanceRecords]);
-
   const handleStatusUpdate = async (attendanceId: string, update: AttendanceStatusUpdate) => {
+    if (!token) {
+      toast.error('Authentication required');
+      return;
+    }
+    
     try {
-      await axios.patch(`${API_URL}/attendance/${attendanceId}`, update);
+      await axios.patch(`${API_URL}/attendance/${attendanceId}`, update, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       toast.success('Attendance status updated successfully');
       fetchAttendanceRecords();
     } catch (err) {

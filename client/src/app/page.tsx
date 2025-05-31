@@ -4,9 +4,26 @@ import LoginForm from '@/components/auth/LoginForm';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { UserRole } from '@/types/auth';
 import Link from 'next/link';
+import { useState, useRef, useEffect } from 'react';
 
 export default function Home() {
   const { isAuthenticated, user, logout } = useAuth();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   if (!isAuthenticated) {
     return (
@@ -16,10 +33,9 @@ export default function Home() {
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-200 dark:bg-blue-900 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-xl opacity-30 animate-pulse"></div>
           <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-200 dark:bg-purple-900 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-xl opacity-30 animate-pulse delay-1000"></div>
         </div>
-        
-        {/* Theme toggle for login page */}
-        <div className="absolute top-6 right-6 z-10">
-          <div className="p-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full shadow-lg border border-gray-200/50 dark:border-gray-700/50">
+          {/* Theme toggle for login page */}
+        <div className="absolute top-8 right-8 z-50">
+          <div className="p-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full shadow-lg border border-gray-200/50 dark:border-gray-700/50 hover:bg-white/90 dark:hover:bg-gray-800/90 transition-colors duration-200">
             <ThemeToggle />
           </div>
         </div>
@@ -182,10 +198,9 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-all duration-500">
-      {/* Header with enhanced styling */}
-      <header className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg shadow-lg dark:shadow-2xl border-b border-gray-200/50 dark:border-gray-700/50 sticky top-0 z-50">
-        <div className="px-4 py-6 mx-auto max-w-7xl sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-all duration-500">      {/* Header with enhanced styling */}
+      <header className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg shadow-lg dark:shadow-2xl border-b border-gray-200/50 dark:border-gray-700/50 sticky top-0 z-40 overflow-visible">
+        <div className="px-4 py-6 mx-auto max-w-7xl sm:px-6 lg:px-8 overflow-visible">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg">
@@ -201,28 +216,74 @@ export default function Home() {
                   Welcome back, let&lsquo;s get things done
                 </p>
               </div>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <div className="hidden sm:flex items-center space-x-3 px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-full">
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm font-semibold">
-                    {user?.firstName?.[0]}{user?.lastName?.[0]}
-                  </span>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {user?.firstName} {user?.lastName}
-                  </p>
-                  <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full">
-                    {user?.role}
-                  </span>
-                </div>
+            </div>            <div className="flex items-center space-x-4">
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="hidden sm:flex items-center space-x-3 px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm font-semibold">
+                      {user?.firstName?.[0]}{user?.lastName?.[0]}
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {user?.firstName} {user?.lastName}
+                    </p>
+                    <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full">
+                      {user?.role}
+                    </span>
+                  </div>
+                  <svg 
+                    className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>                {/* Dropdown Menu */}
+                {isDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-[99999] overflow-hidden">
+                    <div className="py-1">                      <Link
+                        href="/profile"
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                        onClick={() => setIsDropdownOpen(false)}
+                      >
+                        <svg className="w-4 h-4 mr-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        My Profile
+                      </Link>
+                      <Link
+                        href="/settings"
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                        onClick={() => setIsDropdownOpen(false)}
+                      >
+                        <svg className="w-4 h-4 mr-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Settings
+                      </Link>
+                      <hr className="my-1 border-gray-200 dark:border-gray-600" />                      <button
+                        onClick={() => {
+                          setIsDropdownOpen(false);
+                          logout();
+                        }}
+                        className="flex items-center w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200"
+                      >
+                        <svg className="w-4 h-4 mr-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        Logout
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
-              
-              <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-full">
-                <ThemeToggle />
-              </div>
+
               
               <button
                 onClick={logout}

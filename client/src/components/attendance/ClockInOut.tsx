@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { Attendance } from '@/types/attendance';
+import { useAuth } from '@/contexts/AuthContext';
 import toast from 'react-hot-toast';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -11,39 +12,51 @@ export default function ClockInOut() {
   const [todayAttendance, setTodayAttendance] = useState<Attendance | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const { token } = useAuth();
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
 
-    return () => clearInterval(timer);
-  }, []);
+    return () => clearInterval(timer);  }, []);
 
-  useEffect(() => {
-    fetchTodayAttendance();
-  }, []);
-
-  const fetchTodayAttendance = async () => {
+  const fetchTodayAttendance = useCallback(async () => {
+    if (!token) {
+      toast.error('Authentication required');
+      return;
+    }
+    
     try {
       const today = new Date().toISOString().split('T')[0];
       const { data } = await axios.get(`${API_URL}/attendance/my-records`, {
         params: {
           startDate: today,
           endDate: today
-        }
+        },
+        headers: { Authorization: `Bearer ${token}` }
       });
       setTodayAttendance(data[0] || null);
     } catch (err) {
       console.error('Error fetching attendance:', err);
       toast.error('Failed to fetch attendance');
     }
-  };
+  }, [token]);
 
+  useEffect(() => {
+    fetchTodayAttendance();
+  }, [fetchTodayAttendance]);
   const handleClockIn = async () => {
+    if (!token) {
+      toast.error('Authentication required');
+      return;
+    }
+    
     try {
       setIsLoading(true);
-      await axios.post(`${API_URL}/attendance/clock-in`);
+      await axios.post(`${API_URL}/attendance/clock-in`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       toast.success('Clocked in successfully');
       fetchTodayAttendance();
     } catch (err) {
@@ -53,11 +66,17 @@ export default function ClockInOut() {
       setIsLoading(false);
     }
   };
-
   const handleClockOut = async () => {
+    if (!token) {
+      toast.error('Authentication required');
+      return;
+    }
+    
     try {
       setIsLoading(true);
-      await axios.post(`${API_URL}/attendance/clock-out`);
+      await axios.post(`${API_URL}/attendance/clock-out`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       toast.success('Clocked out successfully');
       fetchTodayAttendance();
     } catch (err) {

@@ -11,13 +11,19 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 export default function LeaveList() {
   const [leaves, setLeaves] = useState<Leave[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { user } = useAuth();
-
+  const { user, token } = useAuth();
   const fetchLeaves = useCallback(async () => {
+    if (!token) {
+      toast.error('Authentication required');
+      return;
+    }
+    
     try {
       setIsLoading(true);
       const endpoint = user?.role === UserRole.EMPLOYEE ? 'my-requests' : 'pending';
-      const { data } = await axios.get(`${API_URL}/leave/${endpoint}`);
+      const { data } = await axios.get(`${API_URL}/leave/${endpoint}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setLeaves(data);
     } catch (err) {
       console.error('Error fetching leaves:', err);
@@ -25,15 +31,21 @@ export default function LeaveList() {
     } finally {
       setIsLoading(false);
     }
-  }, [user?.role]);
+  }, [user?.role, token]);
 
   useEffect(() => {
     fetchLeaves();
   }, [fetchLeaves]);
-
   const handleStatusUpdate = async (leaveId: string, update: LeaveStatusUpdate) => {
+    if (!token) {
+      toast.error('Authentication required');
+      return;
+    }
+    
     try {
-      await axios.post(`${API_URL}/leave/${leaveId}/status`, update);
+      await axios.post(`${API_URL}/leave/${leaveId}/status`, update, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       toast.success('Leave request updated successfully');
       fetchLeaves();
     } catch (err) {
@@ -41,10 +53,16 @@ export default function LeaveList() {
       toast.error('Failed to update leave request');
     }
   };
-
   const handleCancel = async (leaveId: string) => {
+    if (!token) {
+      toast.error('Authentication required');
+      return;
+    }
+    
     try {
-      await axios.post(`${API_URL}/leave/${leaveId}/cancel`);
+      await axios.post(`${API_URL}/leave/${leaveId}/cancel`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       toast.success('Leave request cancelled successfully');
       fetchLeaves();
     } catch (err) {
