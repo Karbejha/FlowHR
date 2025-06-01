@@ -19,7 +19,6 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const { register, handleSubmit, formState: { errors } } = useForm<LoginCredentials & { rememberMe: boolean }>();  const onSubmit = async (data: LoginCredentials & { rememberMe: boolean }) => {
     try {
-      console.log('[LoginForm] Starting login with:', { email: data.email, rememberMe: data.rememberMe });
       setIsLoading(true);
       
       // Pass the complete data including rememberMe to the login function
@@ -29,13 +28,10 @@ export default function LoginForm() {
         rememberMe: data.rememberMe
       });
       
-      console.log('[LoginForm] Login successful');
       toast.success('Logged in successfully');
     } catch (error: unknown) {
-      console.error('[LoginForm] Login error:', error);
       const apiError = error as ApiError;
       const errorMessage = apiError?.response?.data?.error || 'Invalid credentials';
-      console.error('[LoginForm] Error message:', errorMessage);
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);

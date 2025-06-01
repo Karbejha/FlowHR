@@ -69,8 +69,7 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
 };
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [state, dispatch] = useReducer(authReducer, initialState);
-  // Function to store auth data with expiration
+  const [state, dispatch] = useReducer(authReducer, initialState);  // Function to store auth data with expiration
   const storeAuthData = (token: string, user: User, rememberMe: boolean = false) => {
     const storage = rememberMe ? localStorage : sessionStorage;
     const expirationTime = rememberMe ? Date.now() + (24 * 60 * 60 * 1000) : null; // 24 hours for remember me
@@ -82,11 +81,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       rememberMe
     };
     
-    console.log(`[Auth] Storing auth data - Remember Me: ${rememberMe}, Storage: ${rememberMe ? 'localStorage' : 'sessionStorage'}`, {
-      expirationTime: expirationTime ? new Date(expirationTime).toLocaleString() : 'No expiration',
-      user: user.email
-    });
-      storage.setItem('authData', JSON.stringify(authData));
+    storage.setItem('authData', JSON.stringify(authData));
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
   };
 
@@ -100,52 +95,43 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!authData.rememberMe) return true; // Session storage doesn't expire
     if (!authData.expirationTime) return true; // No expiration set
     return Date.now() < authData.expirationTime;
-  };
-  // Initialize auth state from storage
+  };  // Initialize auth state from storage
   useEffect(() => {
     // Note: isLoading is already true from initialState, so no need to set it again
     const initializeAuth = () => {
-      console.log('[Auth] Initializing auth state from storage...');
-      
       // Check localStorage first (remember me)
       let storedData = localStorage.getItem('authData');
       let storage: Storage = localStorage;
-      let storageType = 'localStorage';
-        // If not found in localStorage, check sessionStorage
+      
+      // If not found in localStorage, check sessionStorage
       if (!storedData) {
         storedData = sessionStorage.getItem('authData');
         storage = sessionStorage;
-        storageType = 'sessionStorage';
-      }      // Check for legacy token storage
+      }
+      
+      // Check for legacy token storage
       if (!storedData) {
         const legacyToken = localStorage.getItem('token');
         if (legacyToken) {
-          console.log('[Auth] Found legacy token, cleaning up...');
           localStorage.removeItem('token');
           return;
         }
-        console.log('[Auth] No stored auth data found');
-      }if (storedData) {
+      }
+
+      if (storedData) {
         try {
           const authData = JSON.parse(storedData);
-          console.log(`[Auth] Found auth data in ${storageType}:`, {
-            user: authData.user?.email,
-            rememberMe: authData.rememberMe,
-            expirationTime: authData.expirationTime ? new Date(authData.expirationTime).toLocaleString() : 'No expiration'
-          });
           
           if (isAuthDataValid(authData)) {
-            console.log('[Auth] Auth data is valid, restoring session...');            dispatch({ 
+            dispatch({ 
               type: 'LOGIN_SUCCESS', 
               payload: { user: authData.user, token: authData.token } 
             });
             api.defaults.headers.common['Authorization'] = `Bearer ${authData.token}`;
           } else {
-            console.log('[Auth] Auth data expired, clearing...');
             storage.removeItem('authData');
-          }} catch (error) {
+          }        } catch {
           // Invalid stored data, clear it
-          console.error('Error parsing stored auth data:', error);
           clearAuthData();
         }
       }
@@ -155,35 +141,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     initializeAuth();
   }, []);  const login = useCallback(async (credentials: LoginCredentials) => {
     try {
-      console.log('[Auth] Starting login attempt:', { email: credentials.email });
       dispatch({ type: 'SET_LOADING' });
       
       const { data } = await api.post('/auth/login', credentials);
-      console.log('[Auth] Login response received:', { 
-        hasUser: !!data.user, 
-        hasToken: !!data.token,
-        userEmail: data.user?.email 
-      });
       
       dispatch({ type: 'LOGIN_SUCCESS', payload: data });
       
       // Store token with remember me preference
       storeAuthData(data.token, data.user, credentials.rememberMe || false);
-      console.log('[Auth] Login completed successfully');
     } catch (error) {
-      console.error('[Auth] Login error:', error);
       if (axios.isAxiosError(error)) {
-        console.error('[Auth] Axios error details:', {
-          status: error.response?.status,
-          statusText: error.response?.statusText,
-          data: error.response?.data,
-          url: error.config?.url
-        });
+        // Log minimal error info for debugging without exposing sensitive data
+        console.error('[Auth] Login failed:', error.response?.status);
       }
       dispatch({ type: 'AUTH_ERROR' });
       throw error;
     }
-  }, []);  const register = useCallback(async (userData: RegisterData) => {
+  }, []);const register = useCallback(async (userData: RegisterData) => {
     try {
       dispatch({ type: 'SET_LOADING' });
       const { data } = await api.post('/auth/register', userData);

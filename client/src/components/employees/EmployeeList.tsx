@@ -77,13 +77,11 @@ export default function EmployeeList() {
     }
     setSelectedEmployees(newSelected);
   };
-
   const handleBulkDelete = async () => {
     if (selectedEmployees.size === 0) {
       toast.error('Please select employees to delete');
       return;
     }
-    console.log('Modal opened for bulk delete');
     setDeleteConfirmation({
       isOpen: true,
       employeeId: '',
@@ -112,9 +110,7 @@ export default function EmployeeList() {
       toast.error(err.response?.data?.error || 'Error updating employee status');
     }
   }, [token, fetchEmployees]);
-
   const confirmDeleteEmployee = useCallback(async () => {
-    console.log('Modal confirmed');
     const { employeeId, isBulkDelete } = deleteConfirmation;
     
     if (!token) {

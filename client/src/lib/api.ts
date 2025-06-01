@@ -9,40 +9,22 @@ export const api = axios.create({
   },
 });
 
-// Request interceptor for debugging
+// Request interceptor
 api.interceptors.request.use(
   (config) => {
-    console.log('[API] Request:', {
-      method: config.method?.toUpperCase(),
-      url: config.url,
-      baseURL: config.baseURL,
-      data: config.data
-    });
     return config;
   },
   (error) => {
-    console.error('[API] Request error:', error);
     return Promise.reject(error);
   }
 );
 
-// Response interceptor for debugging
+// Response interceptor
 api.interceptors.response.use(
   (response) => {
-    console.log('[API] Response:', {
-      status: response.status,
-      url: response.config.url,
-      data: response.data
-    });
     return response;
   },
   (error) => {
-    console.error('[API] Response error:', {
-      status: error.response?.status,
-      url: error.config?.url,
-      data: error.response?.data,
-      message: error.message
-    });
     return Promise.reject(error);
   }
 );

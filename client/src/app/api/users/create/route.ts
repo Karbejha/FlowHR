@@ -4,19 +4,14 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('API_URL:', API_URL);
-    
     const token = request.headers.get('Authorization')?.split(' ')[1];
     if (!token) {
-      console.log('No token provided');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
-    console.log('Request body:', body);
     
     const backendUrl = `${API_URL}/users/create`;
-    console.log('Making request to:', backendUrl);
     
     const response = await fetch(backendUrl, {
       method: 'POST',
@@ -26,12 +21,9 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify(body),
     });
-
-    console.log('Backend response status:', response.status);
     
     if (!response.ok) {
       const errorText = await response.text();
-      console.log('Backend error response:', errorText);
       try {
         const errorData = JSON.parse(errorText);
         return NextResponse.json({ error: errorData.error }, { status: response.status });
@@ -41,10 +33,9 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await response.json();
-    console.log('Backend success response:', data);
     return NextResponse.json(data);
   } catch (err) {
-    console.error('Error creating user:', err);
+    console.error('Error creating user:', err instanceof Error ? err.message : 'Unknown error');
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
