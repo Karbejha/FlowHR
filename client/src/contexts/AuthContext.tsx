@@ -6,8 +6,6 @@ import api from '@/lib/api';
 import { AuthState, LoginCredentials, RegisterData, User, UpdateProfileData, ChangePasswordData } from '../types/auth';
 import { useRouter } from 'next/navigation';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-
 interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
