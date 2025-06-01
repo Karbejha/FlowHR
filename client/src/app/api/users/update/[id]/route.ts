@@ -2,15 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+interface RouteContext {
+  params: Promise<{ id: string }>;
+}
+
+export async function PUT(request: NextRequest, context: RouteContext) {
   try {
+    const { id } = await context.params;
     const token = request.headers.get('Authorization')?.split(' ')[1];
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
-    const backendUrl = `${API_URL}/users/update/${params.id}`;
+    const backendUrl = `${API_URL}/users/update/${id}`;
     
     const response = await fetch(backendUrl, {
       method: 'PUT',
@@ -42,14 +47,15 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, context: RouteContext) {
   try {
+    const { id } = await context.params;
     const token = request.headers.get('Authorization')?.split(' ')[1];
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const backendUrl = `${API_URL}/users/${params.id}`;
+    const backendUrl = `${API_URL}/users/${id}`;
     
     const response = await fetch(backendUrl, {
       method: 'DELETE',
