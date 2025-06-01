@@ -7,7 +7,9 @@ import {
   updateEmployeeStatus, 
   createUser,
   updateProfile,
-  changePassword
+  changePassword,
+  updateUser,
+  deleteUser
 } from '../controllers/userController';
 
 const router = express.Router();
@@ -16,6 +18,8 @@ router.get('/employees', authenticate, authorize(UserRole.ADMIN, UserRole.MANAGE
 router.get('/managers', authenticate, authorize(UserRole.ADMIN, UserRole.MANAGER), getManagers);
 router.patch('/:userId/status', authenticate, authorize(UserRole.ADMIN), updateEmployeeStatus);
 router.post('/create', authenticate, authorize(UserRole.ADMIN, UserRole.MANAGER), createUser);
+router.put('/update/:id', authenticate, authorize(UserRole.ADMIN), updateUser);
+router.delete('/:id', authenticate, authorize(UserRole.ADMIN), deleteUser);
 router.put('/profile', authenticate, updateProfile);
 router.put('/change-password', authenticate, changePassword);
 

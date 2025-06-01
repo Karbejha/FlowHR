@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import mongoose from 'mongoose';
 import { User, UserRole } from '../models/User';
 
 export const getEmployees = async (req: Request, res: Response): Promise<void> => {
@@ -51,8 +52,8 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
     const { email, password, firstName, lastName, role, department, jobTitle, managerId } = req.body;
 
     // Validate required fields
-    if (!email || !password || !firstName || !lastName || !role) {
-      res.status(400).json({ error: 'Required fields: email, password, firstName, lastName, role' });
+    if (!email || !password || !firstName || !lastName || !role || !department || !jobTitle) {
+      res.status(400).json({ error: 'Required fields: email, password, firstName, lastName, role, department, jobTitle' });
       return;
     }
 
@@ -190,5 +191,111 @@ export const getManagers = async (req: Request, res: Response): Promise<void> =>
     res.json(managers);
   } catch (error) {
     res.status(500).json({ error: 'Error fetching managers' });
+  }
+};
+
+export const updateUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { email, firstName, lastName, role, department, jobTitle, managerId } = req.body;
+
+    // Only admins can update other users
+    if (req.user.role !== UserRole.ADMIN) {
+      res.status(403).json({ error: 'Access denied' });
+      return;
+    }
+
+    const user = await User.findById(id);
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    // Prevent modifying admin accounts (except by other admins)
+    if (user.role === UserRole.ADMIN && req.user.role !== UserRole.ADMIN) {
+      res.status(403).json({ error: 'Cannot modify admin accounts' });
+      return;
+    }
+
+    // Check if email is already taken by another user
+    if (email && email !== user.email) {
+      const existingUser = await User.findOne({ email, _id: { $ne: id } });
+      if (existingUser) {
+        res.status(400).json({ error: 'Email already in use' });
+        return;
+      }
+    }
+
+    // Validate managerId if provided and role is employee
+    if (role === UserRole.EMPLOYEE && managerId) {
+      if (!managerId.match(/^[0-9a-fA-F]{24}$/)) {
+        res.status(400).json({ error: 'Invalid manager ID format' });
+        return;
+      }
+
+      const manager = await User.findById(managerId);
+      if (!manager || (manager.role !== UserRole.MANAGER && manager.role !== UserRole.ADMIN)) {
+        res.status(400).json({ error: 'Invalid manager selected' });
+        return;
+      }
+    }
+
+    // Update user
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      {
+        email: email || user.email,
+        firstName: firstName || user.firstName,
+        lastName: lastName || user.lastName,
+        role: role || user.role,
+        department: department || user.department,
+        jobTitle: jobTitle || user.jobTitle,
+        managerId: role === UserRole.EMPLOYEE ? managerId : undefined,
+      },
+      { new: true }
+    ).select('-password');
+
+    if (!updatedUser) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    res.json(updatedUser);
+  } catch (error) {
+    console.error('Error updating user:', error);
+    res.status(500).json({ error: 'Error updating user' });
+  }
+};
+
+export const deleteUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    // Only admins can delete users
+    if (req.user.role !== UserRole.ADMIN) {
+      res.status(403).json({ error: 'Access denied' });
+      return;
+    }
+
+    const user = await User.findById(id);
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }    // Prevent deleting admin accounts
+    if (user.role === UserRole.ADMIN) {
+      res.status(403).json({ error: 'Cannot delete admin accounts' });
+      return;
+    }    // Prevent self-deletion
+    if ((user._id as mongoose.Types.ObjectId).toString() === req.user._id.toString()) {
+      res.status(403).json({ error: 'Cannot delete your own account' });
+      return;
+    }
+
+    await User.findByIdAndDelete(id);
+
+    res.json({ message: 'User deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    res.status(500).json({ error: 'Error deleting user' });
   }
 };

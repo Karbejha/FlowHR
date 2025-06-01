@@ -5,6 +5,7 @@ import {
   submitLeaveRequest,
   getMyLeaveRequests,
   getPendingLeaveRequests,
+  getAllLeaveRequests,
   updateLeaveStatus,
   cancelLeaveRequest,
   getLeaveBalance
@@ -23,6 +24,13 @@ router.get('/my-requests', authenticate, asyncMiddleware(getMyLeaveRequests));
 router.post('/:leaveId/cancel', authenticate, asyncMiddleware(cancelLeaveRequest));
 
 // Manager/Admin routes
+router.get(
+  '/all',
+  authenticate,
+  authorize(UserRole.MANAGER, UserRole.ADMIN),
+  asyncMiddleware(getAllLeaveRequests)
+);
+
 router.get(
   '/pending',
   authenticate,

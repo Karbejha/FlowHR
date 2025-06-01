@@ -17,20 +17,25 @@ export default function LoginForm() {
   const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { register, handleSubmit, formState: { errors } } = useForm<LoginCredentials & { rememberMe: boolean }>();
-  const onSubmit = async (data: LoginCredentials & { rememberMe: boolean }) => {
+  const { register, handleSubmit, formState: { errors } } = useForm<LoginCredentials & { rememberMe: boolean }>();  const onSubmit = async (data: LoginCredentials & { rememberMe: boolean }) => {
     try {
+      console.log('[LoginForm] Starting login with:', { email: data.email, rememberMe: data.rememberMe });
       setIsLoading(true);
+      
       // Pass the complete data including rememberMe to the login function
       await login({
         email: data.email,
         password: data.password,
         rememberMe: data.rememberMe
       });
+      
+      console.log('[LoginForm] Login successful');
       toast.success('Logged in successfully');
     } catch (error: unknown) {
+      console.error('[LoginForm] Login error:', error);
       const apiError = error as ApiError;
       const errorMessage = apiError?.response?.data?.error || 'Invalid credentials';
+      console.error('[LoginForm] Error message:', errorMessage);
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -207,7 +212,7 @@ export default function LoginForm() {
                   className="ml-2 block text-sm text-gray-700 dark:text-gray-300 cursor-pointer
                            hover:text-gray-900 dark:hover:text-gray-100 transition-colors duration-200"
                 >
-                  Remember me for 24 hours
+                  Remember me
                 </label>
               </div>
               <a 

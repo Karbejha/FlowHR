@@ -43,3 +43,11 @@ export interface LeaveStatusUpdate {
   status: LeaveStatus;
   approvalNotes?: string;
 }
+
+export interface LeaveFilters {
+  employee: string;
+  leaveType: string;
+  status: string;
+  startDate: string;
+  endDate: string;
+}

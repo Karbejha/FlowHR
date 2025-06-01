@@ -14,6 +14,11 @@ export const register = async (req: Request, res: Response) => {
   try {
     const { email, password, firstName, lastName, role, department, jobTitle, managerId } = req.body;
 
+    // Validate required fields
+    if (!email || !password || !firstName || !lastName || !department || !jobTitle) {
+      return res.status(400).json({ error: 'Required fields: email, password, firstName, lastName, department, jobTitle' });
+    }
+
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -26,7 +31,7 @@ export const register = async (req: Request, res: Response) => {
       password,
       firstName,
       lastName,
-      role,
+      role: role || UserRole.EMPLOYEE,
       department,
       jobTitle,
       managerId
@@ -58,12 +63,14 @@ export const login = async (req: Request, res: Response) => {
 
     // Find user by email
     const user = await User.findOne({ email });
+    
     if (!user || !user.isActive) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     // Check password
     const isMatch = await user.comparePassword(password);
+    
     if (!isMatch) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -82,6 +89,7 @@ export const login = async (req: Request, res: Response) => {
 
     res.json({ user, token });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(400).json({ error: 'Error logging in' });
   }
 };

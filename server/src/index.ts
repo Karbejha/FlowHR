@@ -9,8 +9,19 @@ import userRoutes from './routes/users';
 
 const app = express();
 
+// CORS Configuration
+const corsOptions = {
+  origin: [
+    'http://localhost:3000', // Local development
+    'https://flow-hr-seven.vercel.app', // Production client
+    'https://flow-hr-seven.vercel.app/' // Production client with trailing slash
+  ],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Routes

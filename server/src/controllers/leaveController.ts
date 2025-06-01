@@ -191,3 +191,27 @@ export const getLeaveBalance = async (req: Request, res: Response): Promise<void
     res.status(500).json({ error: 'Error fetching leave balance' });
   }
 };
+
+export const getAllLeaveRequests = async (req: Request, res: Response): Promise<void> => {
+  try {
+    let query: { employee?: any } = {};
+    
+    // If manager, only show their team's requests
+    if (req.user.role === UserRole.MANAGER) {
+      const teamMembers = await getTeamMembers(req.user._id);
+      query.employee = { 
+        $in: teamMembers.map(member => member._id) 
+      };
+    }
+    // Admins can see all requests (no additional filtering)
+    
+    const leaves = await Leave.find(query)
+      .sort({ createdAt: -1 })
+      .populate('employee', 'firstName lastName department')
+      .populate('approvedBy', 'firstName lastName');
+    
+    res.json(leaves);
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching leave requests' });
+  }
+};

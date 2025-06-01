@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useReducer, useCallback, ReactNode, useEffect } from 'react';
 import axios from 'axios';
+import api from '@/lib/api';
 import { AuthState, LoginCredentials, RegisterData, User, UpdateProfileData, ChangePasswordData } from '../types/auth';
 import { useRouter } from 'next/navigation';
 
@@ -22,11 +23,12 @@ const initialState: AuthState = {
   user: null,
   token: null,
   isAuthenticated: false,
-  isLoading: false,
+  isLoading: true, // Start with loading true to prevent login page flash
 };
 
 type AuthAction =
   | { type: 'SET_LOADING' }
+  | { type: 'SET_LOADING_FALSE' }
   | { type: 'LOGIN_SUCCESS'; payload: { user: User; token: string } }
   | { type: 'REGISTER_SUCCESS'; payload: { user: User; token: string } }
   | { type: 'UPDATE_PROFILE'; payload: User }
@@ -37,6 +39,8 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
   switch (action.type) {
     case 'SET_LOADING':
       return { ...state, isLoading: true };
+    case 'SET_LOADING_FALSE':
+      return { ...state, isLoading: false };
     case 'LOGIN_SUCCESS':
     case 'REGISTER_SUCCESS':
       return {
@@ -84,26 +88,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       expirationTime: expirationTime ? new Date(expirationTime).toLocaleString() : 'No expiration',
       user: user.email
     });
-    
-    storage.setItem('authData', JSON.stringify(authData));
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      storage.setItem('authData', JSON.stringify(authData));
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
   };
 
   // Function to clear auth data from both storages
-  const clearAuthData = () => {
-    localStorage.removeItem('authData');
+  const clearAuthData = () => {    localStorage.removeItem('authData');
     sessionStorage.removeItem('authData');
     localStorage.removeItem('token'); // Legacy cleanup
-    delete axios.defaults.headers.common['Authorization'];
+    delete api.defaults.headers.common['Authorization'];
   };  // Function to check if stored auth data is valid
   const isAuthDataValid = (authData: { rememberMe?: boolean; expirationTime?: number | null }) => {
     if (!authData.rememberMe) return true; // Session storage doesn't expire
     if (!authData.expirationTime) return true; // No expiration set
     return Date.now() < authData.expirationTime;
   };
-
   // Initialize auth state from storage
-  useEffect(() => {    const initializeAuth = () => {
+  useEffect(() => {
+    // Note: isLoading is already true from initialState, so no need to set it again
+    const initializeAuth = () => {
       console.log('[Auth] Initializing auth state from storage...');
       
       // Check localStorage first (remember me)
@@ -134,12 +137,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           });
           
           if (isAuthDataValid(authData)) {
-            console.log('[Auth] Auth data is valid, restoring session...');
-            dispatch({ 
+            console.log('[Auth] Auth data is valid, restoring session...');            dispatch({ 
               type: 'LOGIN_SUCCESS', 
               payload: { user: authData.user, token: authData.token } 
             });
-            axios.defaults.headers.common['Authorization'] = `Bearer ${authData.token}`;
+            api.defaults.headers.common['Authorization'] = `Bearer ${authData.token}`;
           } else {
             console.log('[Auth] Auth data expired, clearing...');
             storage.removeItem('authData');
@@ -149,28 +151,44 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           clearAuthData();
         }
       }
+      dispatch({ type: 'SET_LOADING_FALSE' });
     };
 
     initializeAuth();
-  }, []);
-
-  const login = useCallback(async (credentials: LoginCredentials) => {
+  }, []);  const login = useCallback(async (credentials: LoginCredentials) => {
     try {
+      console.log('[Auth] Starting login attempt:', { email: credentials.email });
       dispatch({ type: 'SET_LOADING' });
-      const { data } = await axios.post(`${API_URL}/auth/login`, credentials);
+      
+      const { data } = await api.post('/auth/login', credentials);
+      console.log('[Auth] Login response received:', { 
+        hasUser: !!data.user, 
+        hasToken: !!data.token,
+        userEmail: data.user?.email 
+      });
+      
       dispatch({ type: 'LOGIN_SUCCESS', payload: data });
       
       // Store token with remember me preference
       storeAuthData(data.token, data.user, credentials.rememberMe || false);
+      console.log('[Auth] Login completed successfully');
     } catch (error) {
+      console.error('[Auth] Login error:', error);
+      if (axios.isAxiosError(error)) {
+        console.error('[Auth] Axios error details:', {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data,
+          url: error.config?.url
+        });
+      }
       dispatch({ type: 'AUTH_ERROR' });
       throw error;
     }
-  }, []);
-  const register = useCallback(async (userData: RegisterData) => {
+  }, []);  const register = useCallback(async (userData: RegisterData) => {
     try {
       dispatch({ type: 'SET_LOADING' });
-      const { data } = await axios.post(`${API_URL}/auth/register`, userData);
+      const { data } = await api.post('/auth/register', userData);
       dispatch({ type: 'REGISTER_SUCCESS', payload: data });
       
       // Store token without remember me for registration
@@ -186,10 +204,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     clearAuthData();
     dispatch({ type: 'LOGOUT' });
     router.push('/');
-  }, [router]);const updateProfile = useCallback(async (data: UpdateProfileData): Promise<{ user: User }> => {
+  }, [router]);  const updateProfile = useCallback(async (data: UpdateProfileData): Promise<{ user: User }> => {
     try {
       dispatch({ type: 'SET_LOADING' });
-      const { data: responseData } = await axios.put<{ user: User }>(`${API_URL}/users/profile`, data, {
+      const { data: responseData } = await api.put<{ user: User }>('/users/profile', data, {
         headers: { Authorization: `Bearer ${state.token}` }
       });
       dispatch({ type: 'UPDATE_PROFILE', payload: responseData.user });
@@ -205,7 +223,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const changePassword = useCallback(async (data: ChangePasswordData): Promise<{ message: string }> => {
     try {
       dispatch({ type: 'SET_LOADING' });
-      const { data: responseData } = await axios.put<{ message: string }>(`${API_URL}/users/change-password`, data, {
+      const { data: responseData } = await api.put<{ message: string }>('/users/change-password', data, {
         headers: { Authorization: `Bearer ${state.token}` }
       });
       return responseData;
