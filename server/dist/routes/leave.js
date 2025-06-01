@@ -16,6 +16,7 @@ router.post('/request', auth_1.authenticate, asyncMiddleware(leaveController_1.s
 router.get('/my-requests', auth_1.authenticate, asyncMiddleware(leaveController_1.getMyLeaveRequests));
 router.post('/:leaveId/cancel', auth_1.authenticate, asyncMiddleware(leaveController_1.cancelLeaveRequest));
 // Manager/Admin routes
+router.get('/all', auth_1.authenticate, (0, auth_1.authorize)(User_1.UserRole.MANAGER, User_1.UserRole.ADMIN), asyncMiddleware(leaveController_1.getAllLeaveRequests));
 router.get('/pending', auth_1.authenticate, (0, auth_1.authorize)(User_1.UserRole.MANAGER, User_1.UserRole.ADMIN), asyncMiddleware(leaveController_1.getPendingLeaveRequests));
 router.post('/:leaveId/status', auth_1.authenticate, (0, auth_1.authorize)(User_1.UserRole.MANAGER, User_1.UserRole.ADMIN), asyncMiddleware(leaveController_1.updateLeaveStatus));
 exports.default = router;

@@ -10,6 +10,10 @@ const config_1 = require("../config/config");
 const register = async (req, res) => {
     try {
         const { email, password, firstName, lastName, role, department, jobTitle, managerId } = req.body;
+        // Validate required fields
+        if (!email || !password || !firstName || !lastName || !department || !jobTitle) {
+            return res.status(400).json({ error: 'Required fields: email, password, firstName, lastName, department, jobTitle' });
+        }
         // Check if user already exists
         const existingUser = await User_1.User.findOne({ email });
         if (existingUser) {
@@ -21,7 +25,7 @@ const register = async (req, res) => {
             password,
             firstName,
             lastName,
-            role,
+            role: role || User_1.UserRole.EMPLOYEE,
             department,
             jobTitle,
             managerId
@@ -62,6 +66,7 @@ const login = async (req, res) => {
         res.json({ user, token });
     }
     catch (error) {
+        console.error('Login error:', error);
         res.status(400).json({ error: 'Error logging in' });
     }
 };

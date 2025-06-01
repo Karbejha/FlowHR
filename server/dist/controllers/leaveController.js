@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getLeaveBalance = exports.cancelLeaveRequest = exports.updateLeaveStatus = exports.getPendingLeaveRequests = exports.getMyLeaveRequests = exports.submitLeaveRequest = void 0;
+exports.getAllLeaveRequests = exports.getLeaveBalance = exports.cancelLeaveRequest = exports.updateLeaveStatus = exports.getPendingLeaveRequests = exports.getMyLeaveRequests = exports.submitLeaveRequest = void 0;
 const Leave_1 = require("../models/Leave");
 const User_1 = require("../models/User");
 const userUtils_1 = require("../utils/userUtils");
@@ -173,3 +173,25 @@ const getLeaveBalance = async (req, res) => {
     }
 };
 exports.getLeaveBalance = getLeaveBalance;
+const getAllLeaveRequests = async (req, res) => {
+    try {
+        let query = {};
+        // If manager, only show their team's requests
+        if (req.user.role === User_1.UserRole.MANAGER) {
+            const teamMembers = await (0, userUtils_1.getTeamMembers)(req.user._id);
+            query.employee = {
+                $in: teamMembers.map(member => member._id)
+            };
+        }
+        // Admins can see all requests (no additional filtering)
+        const leaves = await Leave_1.Leave.find(query)
+            .sort({ createdAt: -1 })
+            .populate('employee', 'firstName lastName department')
+            .populate('approvedBy', 'firstName lastName');
+        res.json(leaves);
+    }
+    catch (error) {
+        res.status(500).json({ error: 'Error fetching leave requests' });
+    }
+};
+exports.getAllLeaveRequests = getAllLeaveRequests;

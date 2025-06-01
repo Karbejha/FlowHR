@@ -12,8 +12,18 @@ const leave_1 = __importDefault(require("./routes/leave"));
 const attendance_1 = __importDefault(require("./routes/attendance"));
 const users_1 = __importDefault(require("./routes/users"));
 const app = (0, express_1.default)();
+// CORS Configuration
+const corsOptions = {
+    origin: [
+        'http://localhost:3000', // Local development
+        'https://flow-hr-seven.vercel.app', // Production client
+        'https://flow-hr-seven.vercel.app/' // Production client with trailing slash
+    ],
+    credentials: true,
+    optionsSuccessStatus: 200
+};
 // Middleware
-app.use((0, cors_1.default)());
+app.use((0, cors_1.default)(corsOptions));
 app.use(express_1.default.json());
 // Routes
 app.use('/api/auth', auth_1.default);
