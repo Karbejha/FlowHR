@@ -2,6 +2,8 @@
 
 A comprehensive FlowHR Management System built with Next.js, Node.js, and MongoDB, featuring leave management, attendance tracking, and employee management.
 
+🚀 **Live Demo:** [https://flow-hr-seven.vercel.app/](https://flow-hr-seven.vercel.app/)
+
 ## ⚠️ Important Notice
 
 This project is proprietary software and is not open for public use, modification, or distribution. All rights are reserved.
