@@ -8,11 +8,10 @@
     // "tsBuildInfoFile": "./.tsbuildinfo",              /* Specify the path to .tsbuildinfo incremental compilation file. */
     // "disableSourceOfProjectReferenceRedirect": true,  /* Disable preferring source files instead of declaration files when referencing composite projects. */
     // "disableSolutionSearching": true,                 /* Opt a project out of multi-project reference checking when editing. */
-    // "disableReferencedProjectLoad": true,             /* Reduce the number of projects loaded automatically by TypeScript. */
-
-    /* Language and Environment */
+    // "disableReferencedProjectLoad": true,             /* Reduce the number of projects loaded automatically by TypeScript. */    /* Language and Environment */
     "target": "es2018",                                  /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
     "lib": ["es2018", "esnext.asynciterable"],                                        /* Specify a set of bundled library declaration files that describe the target runtime environment. */
+    "types": ["node"],                                   /* Include type definitions for Node.js */
     // "jsx": "preserve",                                /* Specify what JSX code is generated. */
     // "libReplacement": true,                           /* Enable lib replacement. */
     // "experimentalDecorators": true,                   /* Enable experimental support for legacy experimental decorators. */
@@ -34,8 +33,7 @@
     "baseUrl": "./src",
     // "paths": {},                                      /* Specify a set of entries that re-map imports to additional lookup locations. */
     "paths": {
-      "*": ["*"]
-    },
+      "*": ["*"]    },
     // "rootDirs": [],                                   /* Allow multiple folders to be treated as one when resolving modules. */
     // "typeRoots": [],                                  /* Specify multiple folders that act like './node_modules/@types'. */
     // "types": [],                                      /* Specify type package names to be included without being referenced in a source file. */
