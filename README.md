@@ -47,7 +47,45 @@ This software is protected under a proprietary license. Please refer to the LICE
 ```
 ├── client/          # Frontend Next.js application
 ├── server/          # Backend Node.js API
+├── setup/           # Database setup scripts
 └── LICENSE          # Proprietary license
+```
+
+## Quick Start
+
+### Prerequisites
+- Node.js 18+
+- MongoDB Atlas account or local MongoDB
+- Git
+
+### Environment Setup
+1. Copy environment template:
+   ```bash
+   cp server/.env.example server/.env
+   ```
+
+2. Configure your environment variables in `server/.env`:
+   - `MONGODB_URI`: Your MongoDB connection string
+   - `JWT_SECRET`: Your JWT secret key
+   - Database setup passwords (for initial user creation)
+
+### Installation & Setup
+```bash
+# Install dependencies
+npm install
+
+# Setup initial admin users (set passwords via environment variables)
+cd setup
+ADMIN_PASSWORD=your-password MANAGER_PASSWORD=your-password EMPLOYEE_PASSWORD=your-password node create-admin.js
+
+# Start development servers
+npm run dev
+```
+
+### Security
+Run the security check before deployment:
+```bash
+./security-check.sh
 ```
 
 ## Copyright
