@@ -17,6 +17,154 @@ interface EditUserFormProps {
   onCancel: () => void;
 }
 
+// Password Change Modal Component
+const PasswordChangeModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (password: string, confirmPassword: string) => Promise<void>;
+  employeeName: string;
+  isLoading: boolean;
+}> = ({ isOpen, onClose, onSubmit, employeeName, isLoading }) => {
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
+    
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    try {
+      await onSubmit(password, confirmPassword);
+      setPassword('');
+      setConfirmPassword('');
+      setError('');
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to change password');
+    }
+  };
+
+  const handleClose = () => {
+    setPassword('');
+    setConfirmPassword('');
+    setError('');
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full border border-gray-200 dark:border-gray-700">
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-700 dark:to-blue-800 px-6 py-4 rounded-t-xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-bold text-white">Change Password</h3>
+            </div>            <button
+              onClick={handleClose}
+              disabled={isLoading}
+              className="text-white/80 hover:text-white transition-colors duration-200 disabled:opacity-50"
+              title="Close modal"
+              aria-label="Close password change modal"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div className="p-6">
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
+            Set a new password for <span className="font-semibold text-gray-900 dark:text-gray-100">{employeeName}</span>
+          </p>
+
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg">
+              <p className="text-red-700 dark:text-red-300 text-sm">{error}</p>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="newPassword" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                New Password *
+              </label>
+              <input
+                id="newPassword"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+                className="block w-full px-4 py-3 text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200"
+                placeholder="Enter new password"
+                disabled={isLoading}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                Confirm Password *
+              </label>
+              <input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                minLength={6}
+                className="block w-full px-4 py-3 text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200"
+                placeholder="Confirm new password"
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="flex space-x-3 pt-4">
+              <button
+                type="button"
+                onClick={handleClose}
+                disabled={isLoading}
+                className="flex-1 px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="flex-1 px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 dark:from-blue-500 dark:to-blue-600 dark:hover:from-blue-600 dark:hover:to-blue-700 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+              >
+                {isLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    <span>Changing...</span>
+                  </>
+                ) : (
+                  <span>Change Password</span>
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const EditUserForm: React.FC<EditUserFormProps> = ({ employee, onSuccess, onCancel }) => {
   const { user, token } = useAuth();
   const [formData, setFormData] = useState({
@@ -31,6 +179,8 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ employee, onSuccess, onCanc
   const [managers, setManagers] = useState<Manager[]>([]);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [isPasswordLoading, setIsPasswordLoading] = useState(false);
 
   // Fetch available managers when component mounts
   useEffect(() => {
@@ -103,6 +253,33 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ employee, onSuccess, onCanc
 
   const getRoleDisplayName = (role: string) => {
     return role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
+  };
+  const handlePasswordChange = async (newPassword: string) => {
+    setIsPasswordLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch(`/api/users/change-password/${employee._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ password: newPassword }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to change password');
+      }
+      
+      setShowPasswordModal(false);
+      onSuccess();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to change password');
+    } finally {
+      setIsPasswordLoading(false);
+    }
   };
 
   return (
@@ -342,7 +519,31 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ employee, onSuccess, onCanc
             </button>
           </div>
         </form>
+
+        {/* Password Change Button (Visible to managers and admins) */}
+        {(user?.role === UserRole.MANAGER || user?.role === UserRole.ADMIN) && (
+          <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <button
+              onClick={() => setShowPasswordModal(true)}
+              className="w-full px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 dark:from-blue-500 dark:to-blue-600 dark:hover:from-blue-600 dark:hover:to-blue-700 rounded-lg transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 flex items-center justify-center space-x-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+              <span>Change Password</span>
+            </button>
+          </div>
+        )}
       </div>
+
+      {/* Password Change Modal */}
+      <PasswordChangeModal
+        isOpen={showPasswordModal}
+        onClose={() => setShowPasswordModal(false)}
+        onSubmit={handlePasswordChange}
+        employeeName={`${employee.firstName} ${employee.lastName}`}
+        isLoading={isPasswordLoading}
+      />
     </div>
   );
 };

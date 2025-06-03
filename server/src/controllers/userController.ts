@@ -299,3 +299,57 @@ export const deleteUser = async (req: Request, res: Response): Promise<void> => 
     res.status(500).json({ error: 'Error deleting user' });
   }
 };
+
+export const adminChangePassword = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { password: newPassword } = req.body;
+
+    // Only admins and managers can change other users' passwords
+    if (req.user.role !== UserRole.ADMIN && req.user.role !== UserRole.MANAGER) {
+      res.status(403).json({ error: 'Access denied' });
+      return;
+    }
+
+    // Validate new password
+    if (!newPassword || newPassword.length < 6) {
+      res.status(400).json({ error: 'Password must be at least 6 characters long' });
+      return;
+    }
+
+    const user = await User.findById(id);
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    // Prevent changing admin passwords unless you're an admin
+    if (user.role === UserRole.ADMIN && req.user.role !== UserRole.ADMIN) {
+      res.status(403).json({ error: 'Cannot change admin passwords' });
+      return;
+    }
+
+    // If manager, ensure they can only change passwords of their team members
+    if (req.user.role === UserRole.MANAGER) {
+      if (user.role === UserRole.ADMIN || user.role === UserRole.MANAGER) {
+        res.status(403).json({ error: 'Managers cannot change admin or manager passwords' });
+        return;
+      }
+      
+      // Check if the user is under this manager's supervision
+      if (user.managerId?.toString() !== req.user._id.toString()) {
+        res.status(403).json({ error: 'You can only change passwords of your team members' });
+        return;
+      }
+    }
+
+    // Update password (will be hashed by the pre-save middleware)
+    user.password = newPassword;
+    await user.save();
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error('Error changing password:', error);
+    res.status(500).json({ error: 'Error changing password' });
+  }
+};

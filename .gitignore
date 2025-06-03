@@ -40,4 +40,17 @@ pids
 # Build outputs
 dist/
 build/
+.next/
 *.tsbuildinfo
+
+# Test files and debugging scripts
+test-*.js
+test-*.sh
+simple-test.js
+*-test.js
+*.test.js
+debug-*.js
+
+# Documentation files (keep only main README)
+IMPLEMENTATION_COMPLETE.md
+ENHANCEMENT_COMPLETE.md

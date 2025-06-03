@@ -16,34 +16,34 @@ export default function AttendancePage() {
             Attendance Management
           </h1>
           
-          <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 lg:gap-8">
-            {/* Main Attendance Records Section */}
-            <div className={`${user?.role === UserRole.EMPLOYEE ? 'xl:col-span-3' : 'xl:col-span-4'}`}>
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md dark:shadow-lg p-6 border border-gray-200 dark:border-gray-700 transition-all duration-200 h-fit">
+          {user?.role === UserRole.EMPLOYEE ? (
+            <div className="space-y-8">
+              {/* Clock In/Out Section for Employees */}
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+                <ClockInOut />
+              </div>
+              
+              {/* Attendance Records Section */}
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                    Attendance Records
+                    My Attendance Records
                   </h2>
                 </div>
-                
-                <div className="overflow-hidden">
-                  <AttendanceList />
-                </div>
+                <AttendanceList />
               </div>
             </div>
-            
-            {/* Clock In/Out Sidebar - Only for Employees */}
-            {user?.role === UserRole.EMPLOYEE && (
-              <div className="xl:col-span-1">
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md dark:shadow-lg p-6 border border-gray-200 dark:border-gray-700 transition-all duration-200 sticky top-4">
-                  <h2 className="text-xl font-semibold mb-6 text-gray-900 dark:text-gray-100">
-                    Clock In/Out
-                  </h2>
-                  <ClockInOut />
-                </div>
+          ) : (
+            /* Full width for Managers/Admins */
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                  All Attendance Records
+                </h2>
               </div>
-            )}
-          </div>
+              <AttendanceList />
+            </div>
+          )}
         </div>
       </div>
     </AuthGuard>

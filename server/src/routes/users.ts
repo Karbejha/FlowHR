@@ -8,6 +8,7 @@ import {
   createUser,
   updateProfile,
   changePassword,
+  adminChangePassword,
   updateUser,
   deleteUser
 } from '../controllers/userController';
@@ -22,5 +23,6 @@ router.put('/update/:id', authenticate, authorize(UserRole.ADMIN), updateUser);
 router.delete('/:id', authenticate, authorize(UserRole.ADMIN), deleteUser);
 router.put('/profile', authenticate, updateProfile);
 router.put('/change-password', authenticate, changePassword);
+router.put('/admin-change-password/:id', authenticate, authorize(UserRole.ADMIN, UserRole.MANAGER), adminChangePassword);
 
 export default router;

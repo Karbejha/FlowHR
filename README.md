@@ -1,6 +1,6 @@
 # HR Management System
 
-A comprehensive FlowHR Management System built with Next.js, Node.js, and MongoDB, featuring leave management, attendance tracking, and employee management.
+A comprehensive HR Management System built with Next.js, Node.js, and MongoDB, featuring modern UI/UX, leave management, attendance tracking, and employee management with complete dark/light mode support.
 
 🚀 **Live Demo:** [https://flow-hr-seven.vercel.app/](https://flow-hr-seven.vercel.app/)
 
@@ -18,13 +18,27 @@ This project is proprietary software and is not open for public use, modificatio
 
 This software is protected under a proprietary license. Please refer to the LICENSE file for complete terms.
 
-## Features
+## ✨ Features
 
-- 👥 Employee Management
-- 📅 Leave Management
-- ⏰ Attendance Tracking
-- 🔐 Role-Based Access Control
-- 📱 Responsive Design
+### Core Functionality
+- 👥 **Employee Management** - Complete CRUD operations with role-based access
+- 📅 **Leave Management** - Request, approve, and track leave with detailed statistics
+- ⏰ **Attendance Tracking** - Real-time clock-in/out with work timers and analytics
+- 🔐 **Role-Based Access Control** - Admin, Manager, and Employee permissions
+- 📱 **Responsive Design** - Mobile-first approach with modern UI
+
+### UI/UX Enhancements
+- 🌙 **Dark/Light Mode** - Complete theme support across all components
+- 🎨 **Modern Design** - Professional gradient backgrounds and animations
+- 📊 **Statistics Dashboard** - Visual charts and progress indicators
+- 🔄 **Real-time Updates** - Live timers and automatic data refresh
+- ✨ **Interactive Elements** - Hover effects, transitions, and loading states
+
+### Security Features
+- 🔒 **JWT Authentication** - Secure token-based authentication
+- 👤 **Password Management** - Admin/Manager password change functionality
+- 🛡️ **Input Validation** - Comprehensive client and server-side validation
+- 🔐 **Team Isolation** - Managers can only manage their team members
 
 ## Tech Stack
 
@@ -71,10 +85,10 @@ This software is protected under a proprietary license. Please refer to the LICE
 
 ### Installation & Setup
 ```bash
-# Install dependencies
-npm install
+# Install dependencies for both client and server
+npm run install-deps
 
-# Setup initial admin users (set passwords via environment variables)
+# Setup initial admin users (optional - set passwords via environment variables)
 cd setup
 ADMIN_PASSWORD=your-password MANAGER_PASSWORD=your-password EMPLOYEE_PASSWORD=your-password node create-admin.js
 
@@ -82,10 +96,17 @@ ADMIN_PASSWORD=your-password MANAGER_PASSWORD=your-password EMPLOYEE_PASSWORD=yo
 npm run dev
 ```
 
-### Security
-Run the security check before deployment:
+The application will be available at:
+- **Frontend:** http://localhost:3000
+- **Backend API:** http://localhost:5000
+
+### Production Deployment
 ```bash
-./security-check.sh
+# Build for production
+npm run build
+
+# Start production servers
+npm start
 ```
 
 ## Copyright
