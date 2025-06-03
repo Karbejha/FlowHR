@@ -59,6 +59,7 @@ export default function SettingsPage() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('general');
   const [isLoading, setIsLoading] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   
   // Settings state
   const [notifications, setNotifications] = useState<NotificationSettings>({
@@ -533,11 +534,61 @@ export default function SettingsPage() {
             <p className="text-gray-600 dark:text-gray-400">
               Customize your HR system experience and manage your preferences
             </p>
-          </div>
+          </div>          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Mobile Tab Selector */}
+            <div className="lg:hidden">
+              <div className="relative">
+                <button
+                  onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+                  className="w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 text-left focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <div className="flex items-center">
+                    {(() => {
+                      const currentTab = tabs.find(tab => tab.id === activeTab);
+                      if (currentTab) {
+                        const Icon = currentTab.icon;
+                        return <Icon className="w-5 h-5 mr-3 text-blue-600 dark:text-blue-400" />;
+                      }
+                      return null;
+                    })()}
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {tabs.find(tab => tab.id === activeTab)?.name}
+                    </span>
+                  </div>
+                  <svg className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${isMobileSidebarOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                
+                {isMobileSidebarOpen && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 z-10 overflow-hidden">
+                    {tabs.map((tab) => {
+                      const Icon = tab.icon;
+                      return (
+                        <button
+                          key={tab.id}
+                          onClick={() => {
+                            setActiveTab(tab.id);
+                            setIsMobileSidebarOpen(false);
+                          }}
+                          className={`w-full flex items-center px-4 py-3 text-sm font-medium transition-colors duration-200 ${
+                            activeTab === tab.id
+                              ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                          }`}
+                        >
+                          <Icon className="w-5 h-5 mr-3" />
+                          {tab.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
 
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* Sidebar */}
-            <div className="lg:w-64 flex-shrink-0">
+            {/* Desktop Sidebar */}
+            <div className="hidden lg:block lg:w-64 flex-shrink-0">
               <nav className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
                 <ul className="space-y-2">
                   {tabs.map((tab) => {

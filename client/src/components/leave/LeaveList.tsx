@@ -439,8 +439,100 @@ export default function LeaveList() {
             </div>
           )}
         </div>
-        
-        <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+          {/* Mobile Card View */}
+        <div className="block md:hidden space-y-4">
+          {filteredLeaves.map((leave) => (
+            <div key={leave._id} className="bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 p-4 shadow-sm">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1">
+                  {user?.role !== UserRole.EMPLOYEE && (
+                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
+                      {leave.employee.firstName} {leave.employee.lastName}
+                    </div>
+                  )}
+                  <div className="text-lg font-semibold text-gray-900 dark:text-gray-100 capitalize">
+                    {leave.leaveType} Leave
+                  </div>
+                </div>
+                <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadgeColor(leave.status)}`}>
+                  {leave.status}
+                </span>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
+                <div>
+                  <span className="text-gray-500 dark:text-gray-400">Duration:</span>
+                  <div className="font-medium text-gray-900 dark:text-gray-100">{leave.totalDays} days</div>
+                </div>
+                <div>
+                  <span className="text-gray-500 dark:text-gray-400">Dates:</span>
+                  <div className="font-medium text-gray-900 dark:text-gray-100 text-xs">
+                    {new Date(leave.startDate).toLocaleDateString()} - {new Date(leave.endDate).toLocaleDateString()}
+                  </div>
+                </div>
+              </div>
+
+              {leave.reason && (
+                <div className="mb-4">
+                  <span className="text-gray-500 dark:text-gray-400 text-sm">Reason:</span>
+                  <div className="text-sm text-gray-900 dark:text-gray-100 mt-1 line-clamp-2">
+                    {leave.reason}
+                  </div>
+                </div>
+              )}
+
+              {/* Mobile Actions */}
+              <div className="flex flex-wrap gap-2 pt-3 border-t border-gray-200 dark:border-gray-600">
+                {(user?.role === UserRole.MANAGER || user?.role === UserRole.ADMIN) && 
+                 leave.status === LeaveStatus.PENDING && (
+                  <>
+                    <button
+                      onClick={() => handleStatusUpdate(leave._id, { status: LeaveStatus.APPROVED })}
+                      className="flex-1 min-w-0 px-3 py-2 text-sm font-medium text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 rounded-md hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors duration-150"
+                    >
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => handleStatusUpdate(leave._id, { status: LeaveStatus.REJECTED })}
+                      className="flex-1 min-w-0 px-3 py-2 text-sm font-medium text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-md hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors duration-150"
+                    >
+                      Reject
+                    </button>
+                  </>
+                )}
+                {user?.role === UserRole.EMPLOYEE && 
+                 leave.status === LeaveStatus.PENDING && (
+                  <button
+                    onClick={() => handleCancel(leave._id)}
+                    className="flex-1 px-3 py-2 text-sm font-medium text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-md hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors duration-150"
+                  >
+                    Cancel Request
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+          
+          {filteredLeaves.length === 0 && (
+            <div className="text-center py-12">
+              <svg className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {activeFilter === 'pending' && 'No pending leave requests found'}
+                {activeFilter === 'older' && 'No historical leave requests found'}
+                {activeFilter === 'all' && 'No leave requests found'}
+              </p>              {activeFilter !== 'all' && leaves.length > 0 && (
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                  Try switching to &quot;All&quot; to see other requests
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Desktop Table View */}
+        <div className="hidden md:block overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>

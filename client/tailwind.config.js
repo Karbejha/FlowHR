@@ -11,7 +11,14 @@ module.exports = {
       screens: {
         '2xl': '1400px',
       },
-    },    extend: {
+    },
+    extend: {
+      spacing: {
+        'safe': 'env(safe-area-inset-bottom)',
+        'safe-top': 'env(safe-area-inset-top)',
+        'safe-left': 'env(safe-area-inset-left)',
+        'safe-right': 'env(safe-area-inset-right)',
+      },
       colors: {
         border: 'hsl(var(--border))',
         background: 'hsl(var(--background))',
@@ -31,6 +38,11 @@ module.exports = {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
         },
+      },
+      screens: {
+        'xs': '375px',
+        'mobile': { 'max': '767px' },
+        'tablet': { 'min': '768px', 'max': '1023px' },
       },
     },
   },

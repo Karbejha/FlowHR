@@ -260,7 +260,126 @@ export default function EmployeeList() {
         />
       )}
 
-      <div className="overflow-x-auto rounded-lg shadow">
+      {/* Mobile Card View */}
+      <div className="block md:hidden space-y-4">
+        {employees.map((employee) => (
+          <div key={employee._id} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-4">
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center space-x-3">
+                {user?.role === UserRole.ADMIN && (
+                  <input
+                    type="checkbox"
+                    checked={selectedEmployees.has(employee._id)}
+                    onChange={(e) => handleSelectEmployee(employee._id, e.target.checked)}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    aria-label={`Select ${employee.firstName} ${employee.lastName}`}
+                  />
+                )}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    {employee.firstName} {employee.lastName}
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{employee.email}</p>
+                </div>
+              </div>
+              {user?.role === UserRole.ADMIN && (
+                <Menu as="div" className="relative inline-block text-left">
+                  <Menu.Button className="p-2 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-gray-300">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                    </svg>
+                  </Menu.Button>
+                  
+                  <Transition
+                    as={Fragment}
+                    enter="transition ease-out duration-100"
+                    enterFrom="transform opacity-0 scale-95"
+                    enterTo="transform opacity-100 scale-100"
+                    leave="transition ease-in duration-75"
+                    leaveFrom="transform opacity-100 scale-100"
+                    leaveTo="transform opacity-0 scale-95"
+                  >
+                    <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800 border border-gray-200 dark:border-gray-700 z-50">
+                      <Menu.Item>
+                        {() => (
+                          <button
+                            onClick={onEditEmployee(employee)}
+                            className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                          >
+                            <svg className="w-4 h-4 mr-3 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            Edit Employee
+                          </button>
+                        )}
+                      </Menu.Item>
+                      <Menu.Item>
+                        {() => (
+                          <button
+                            onClick={onUpdateEmployeeStatus(employee._id, !employee.isActive)}
+                            className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                          >
+                            <svg className={`w-4 h-4 mr-3 ${employee.isActive ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              {employee.isActive ? (
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728" />
+                              ) : (
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              )}
+                            </svg>
+                            {employee.isActive ? 'Deactivate' : 'Activate'}
+                          </button>
+                        )}
+                      </Menu.Item>
+                      <div className="border-t border-gray-100 dark:border-gray-600 my-1"></div>
+                      <Menu.Item>
+                        {() => (
+                          <button
+                            onClick={onDeleteEmployee(employee)}
+                            className="flex items-center w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                          >
+                            <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            Delete Employee
+                          </button>
+                        )}
+                      </Menu.Item>
+                    </Menu.Items>
+                  </Transition>
+                </Menu>
+              )}
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-gray-500 dark:text-gray-400">Department</p>
+                <p className="font-medium text-gray-900 dark:text-white">{employee.department}</p>
+              </div>
+              <div>
+                <p className="text-gray-500 dark:text-gray-400">Role</p>
+                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full 
+                  ${employee.role === UserRole.ADMIN ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' :
+                    employee.role === UserRole.MANAGER ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                    'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'}`}>
+                  {employee.role}
+                </span>
+              </div>
+              <div className="col-span-2">
+                <p className="text-gray-500 dark:text-gray-400">Status</p>
+                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full 
+                  ${employee.isActive ? 
+                    'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 
+                    'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'}`}>
+                  {employee.isActive ? 'Active' : 'Inactive'}
+                </span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden md:block overflow-x-auto rounded-lg shadow">
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead className="bg-gray-50 dark:bg-gray-800">
             <tr>

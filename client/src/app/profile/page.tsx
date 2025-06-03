@@ -63,26 +63,23 @@ export default function ProfilePage() {
       toast.error(errorMessage);
     }
   };
-
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-4 sm:py-8 px-4 sm:px-6 lg:px-8 pb-safe-left pr-safe-right">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
             Profile Settings
           </h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
+          <p className="mt-2 text-sm sm:text-base text-gray-600 dark:text-gray-400">
             Manage your personal information and account settings
           </p>
-        </div>
-
-        <div className="space-y-8">
+        </div>        <div className="space-y-6 sm:space-y-8">
           {/* Profile Information Card */}
           <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+            <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
                   Personal Information
                 </h2>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -91,13 +88,13 @@ export default function ProfilePage() {
               </div>
               <button
                 onClick={() => setIsEditMode(!isEditMode)}
-                className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+                className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 w-full sm:w-auto"
               >
                 {isEditMode ? 'Cancel' : 'Edit Profile'}
               </button>
             </div>
 
-            <div className="p-6">
+            <div className="p-4 sm:p-6">
               {isEditMode ? (
                 <form onSubmit={handleProfileSubmit(onProfileSubmit)} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -177,12 +174,17 @@ export default function ProfilePage() {
                         placeholder="Enter your job title"
                       />
                     </div>
-                  </div>
-
-                  <div className="flex justify-end pt-4">
+                  </div>                  <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
+                    <button
+                      type="button"
+                      onClick={() => setIsEditMode(false)}
+                      className="inline-flex items-center justify-center px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+                    >
+                      Cancel
+                    </button>
                     <button
                       type="submit"
-                      className="inline-flex items-center px-6 py-3 text-sm font-medium text-white bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+                      className="inline-flex items-center justify-center px-6 py-3 text-sm font-medium text-white bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
                     >
                       Save Changes
                     </button>
@@ -218,13 +220,11 @@ export default function ProfilePage() {
                 </dl>
               )}
             </div>
-          </div>
-
-          {/* Change Password Card */}
+          </div>          {/* Change Password Card */}
           <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+            <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
                   Change Password
                 </h2>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -233,14 +233,14 @@ export default function ProfilePage() {
               </div>
               <button
                 onClick={() => setIsChangingPassword(!isChangingPassword)}
-                className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 dark:bg-orange-500 dark:hover:bg-orange-600 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+                className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 dark:bg-orange-500 dark:hover:bg-orange-600 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 w-full sm:w-auto"
               >
                 {isChangingPassword ? 'Cancel' : 'Change Password'}
               </button>
             </div>
 
             {isChangingPassword && (
-              <div className="p-6">
+              <div className="p-4 sm:p-6">
                 <form onSubmit={handlePasswordSubmit(onPasswordSubmit)} className="space-y-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -301,12 +301,17 @@ export default function ProfilePage() {
                         {passwordErrors.confirmPassword.message}
                       </p>
                     )}
-                  </div>
-
-                  <div className="flex justify-end pt-4">
+                  </div>                  <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
+                    <button
+                      type="button"
+                      onClick={() => setIsChangingPassword(false)}
+                      className="inline-flex items-center justify-center px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+                    >
+                      Cancel
+                    </button>
                     <button
                       type="submit"
-                      className="inline-flex items-center px-6 py-3 text-sm font-medium text-white bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+                      className="inline-flex items-center justify-center px-6 py-3 text-sm font-medium text-white bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
                     >
                       Update Password
                     </button>
