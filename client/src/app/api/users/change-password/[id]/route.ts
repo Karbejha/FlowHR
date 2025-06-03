@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const { password } = await request.json();
     
     if (!password) {
@@ -24,7 +25,7 @@ export async function PUT(
       );
     }    // Forward the request to the backend
     const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-    const response = await fetch(`${backendUrl}/users/admin-change-password/${params.id}`, {
+    const response = await fetch(`${backendUrl}/users/admin-change-password/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
