@@ -3,6 +3,7 @@ import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { User, UserRole } from '@/types/auth';
+import FileUpload from '@/components/common/FileUpload';
 
 interface Manager {
   _id: string;
@@ -176,11 +177,11 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ employee, onSuccess, onCanc
     jobTitle: employee.jobTitle || '',
     managerId: employee.managerId || '',
   });
-  const [managers, setManagers] = useState<Manager[]>([]);
-  const [error, setError] = useState('');
+  const [managers, setManagers] = useState<Manager[]>([]);  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [isPasswordLoading, setIsPasswordLoading] = useState(false);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
 
   // Fetch available managers when component mounts
   useEffect(() => {
@@ -205,7 +206,6 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ employee, onSuccess, onCanc
 
     fetchManagers();
   }, [token, user?.role]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!token) {
@@ -229,6 +229,25 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ employee, onSuccess, onCanc
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to update user');
+      }
+
+      // Upload avatar if provided
+      if (avatarFile) {
+        try {
+          const avatarFormData = new FormData();
+          avatarFormData.append('avatar', avatarFile);
+          
+          await fetch(`/api/users/${employee._id}/avatar`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+            body: avatarFormData,
+          });
+        } catch (avatarError) {
+          console.error('Avatar upload failed:', avatarError);
+          // Don't fail the entire operation if avatar upload fails
+        }
       }
       
       onSuccess();
@@ -308,8 +327,7 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ employee, onSuccess, onCanc
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Personal Information Section */}
+        <form onSubmit={handleSubmit} className="space-y-8">          {/* Personal Information Section */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2 mb-4">
               <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
@@ -318,6 +336,20 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ employee, onSuccess, onCanc
                 </svg>
               </div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Personal Information</h3>
+            </div>            {/* Avatar Upload Section */}
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                Profile Picture
+              </label>
+              <FileUpload
+                currentImage={employee.avatar}
+                onFileSelect={setAvatarFile}
+                size="lg"
+                label="Upload Avatar"
+              />
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                Upload a new profile picture (optional). Max size: 5MB. Supported formats: JPG, PNG, GIF.
+              </p>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

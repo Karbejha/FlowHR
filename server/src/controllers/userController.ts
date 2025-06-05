@@ -1,6 +1,9 @@
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
+import path from 'path';
+import fs from 'fs';
 import { User, UserRole } from '../models/User';
+import { uploadToS3, deleteFromS3, getS3KeyFromUrl } from '../utils/s3Service';
 
 export const getEmployees = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -345,11 +348,149 @@ export const adminChangePassword = async (req: Request, res: Response): Promise<
 
     // Update password (will be hashed by the pre-save middleware)
     user.password = newPassword;
-    await user.save();
-
-    res.json({ message: 'Password updated successfully' });
+    await user.save();    res.json({ message: 'Password updated successfully' });
   } catch (error) {
     console.error('Error changing password:', error);
     res.status(500).json({ error: 'Error changing password' });
   }
+};
+
+export const uploadAvatar = async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!req.file) {
+      res.status(400).json({ error: 'No file uploaded' });
+      return;
+    }
+
+    // Get target user ID from URL params or use current user
+    const targetUserId = req.params.id || req.user._id;
+    const user = await User.findById(targetUserId);
+    
+    if (!user) {
+      // Clean up temporary file
+      if (fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    // If uploading for another user, check permissions
+    if (targetUserId.toString() !== req.user._id.toString()) {
+      if (req.user.role === UserRole.EMPLOYEE) {
+        // Clean up temporary file
+        if (fs.existsSync(req.file.path)) {
+          fs.unlinkSync(req.file.path);
+        }
+        res.status(403).json({ error: 'Employees cannot upload avatars for other users' });
+        return;
+      }
+      
+      if (req.user.role === UserRole.MANAGER) {
+        // Managers can only upload avatars for their team members
+        if (user.managerId?.toString() !== req.user._id.toString() && user.role !== UserRole.EMPLOYEE) {
+          // Clean up temporary file
+          if (fs.existsSync(req.file.path)) {
+            fs.unlinkSync(req.file.path);
+          }
+          res.status(403).json({ error: 'You can only upload avatars for your team members' });
+          return;
+        }
+      }
+    }
+
+    try {
+      // Delete old avatar from S3 if it exists
+      if (user.avatar) {
+        try {
+          const oldS3Key = getS3KeyFromUrl(user.avatar);
+          await deleteFromS3(oldS3Key);
+        } catch (deleteError) {
+          console.warn('Failed to delete old avatar from S3:', deleteError);
+          // Continue with upload even if deletion fails
+        }
+      }
+
+      // Upload new avatar to S3
+      const s3Key = `avatars/${req.file.filename}`;
+      const contentType = req.file.mimetype || 'image/jpeg';
+      
+      const s3Result = await uploadToS3(req.file.path, s3Key, contentType);
+
+      // Update user with new avatar S3 URL
+      user.avatar = s3Result.Location;
+      await user.save();
+
+      res.json({ 
+        message: 'Avatar uploaded successfully',
+        avatar: s3Result.Location
+      });
+    } catch (s3Error) {
+      console.error('S3 upload error:', s3Error);
+      
+      // Clean up temporary file
+      if (fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+      
+      res.status(500).json({ error: 'Failed to upload avatar to cloud storage' });
+    }
+  } catch (error) {
+    console.error('Error uploading avatar:', error);
+    
+    // Clean up temporary file
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+    
+    res.status(500).json({ error: 'Error uploading avatar' });
+  }
+};
+
+export const deleteAvatar = async (req: Request, res: Response): Promise<void> => {
+  try {
+    // Get target user ID from URL params or use current user
+    const targetUserId = req.params.id || req.user._id;
+    const user = await User.findById(targetUserId);
+    
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    // If deleting for another user, check permissions
+    if (targetUserId.toString() !== req.user._id.toString()) {
+      if (req.user.role === UserRole.EMPLOYEE) {
+        res.status(403).json({ error: 'Employees cannot delete avatars for other users' });
+        return;
+      }
+      
+      if (req.user.role === UserRole.MANAGER) {
+        // Managers can only delete avatars for their team members
+        if (user.managerId?.toString() !== req.user._id.toString() && user.role !== UserRole.EMPLOYEE) {
+          res.status(403).json({ error: 'You can only delete avatars for your team members' });
+          return;
+        }
+      }
+    }
+
+    // Delete avatar from S3 if it exists
+    if (user.avatar) {
+      try {
+        const s3Key = getS3KeyFromUrl(user.avatar);
+        await deleteFromS3(s3Key);
+      } catch (deleteError) {
+        console.warn('Failed to delete avatar from S3:', deleteError);
+        // Continue with database update even if S3 deletion fails
+      }
+    }
+
+    // Remove avatar from user
+    user.avatar = undefined;
+    await user.save();
+
+    res.json({ message: 'Avatar deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting avatar:', error);
+    res.status(500).json({ error: 'Error deleting avatar' });  }
 };

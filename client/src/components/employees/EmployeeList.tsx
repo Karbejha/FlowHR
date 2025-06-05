@@ -6,6 +6,7 @@ import { User, UserRole } from '@/types/auth';
 import toast from 'react-hot-toast';
 import AddUserForm from './AddUserForm';
 import EditUserForm from './EditUserForm';
+import AvatarUpload from '@/components/common/AvatarUpload';
 import { Menu, Transition } from '@headlessui/react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -274,10 +275,14 @@ export default function EmployeeList() {
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     aria-label={`Select ${employee.firstName} ${employee.lastName}`}
                   />
-                )}
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    {employee.firstName} {employee.lastName}
+                )}                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center space-x-3">
+                    <AvatarUpload 
+                      currentAvatar={employee.avatar}
+                      size="sm"
+                      editable={false}
+                    />
+                    <span>{employee.firstName} {employee.lastName}</span>
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">{employee.email}</p>
                 </div>
@@ -417,9 +422,15 @@ export default function EmployeeList() {
                       aria-label={`Select ${employee.firstName} ${employee.lastName}`}
                     />
                   </td>
-                )}
-                <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-100">
-                  {employee.firstName} {employee.lastName}
+                )}                <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-100">
+                  <div className="flex items-center space-x-3">
+                    <AvatarUpload 
+                      currentAvatar={employee.avatar}
+                      size="sm"
+                      editable={false}
+                    />
+                    <span>{employee.firstName} {employee.lastName}</span>
+                  </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-100">{employee.email}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-100">{employee.department}</td>

@@ -18,6 +18,7 @@ interface IUser extends mongoose.Document {
   managerId?: mongoose.Types.ObjectId;
   hireDate: Date;
   isActive: boolean;
+  avatar?: string;
   leaveBalance: {
     annual: number;
     sick: number;
@@ -69,10 +70,13 @@ const userSchema = new mongoose.Schema({
   hireDate: {
     type: Date,
     default: Date.now,
-  },
-  isActive: {
+  },  isActive: {
     type: Boolean,
     default: true,
+  },
+  avatar: {
+    type: String,
+    required: false,
   },
   leaveBalance: {
     annual: {

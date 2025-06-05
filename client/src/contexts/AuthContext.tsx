@@ -12,6 +12,7 @@ interface AuthContextType extends AuthState {
   logout: () => void;
   updateProfile: (data: UpdateProfileData) => Promise<{ user: User }>;
   changePassword: (data: ChangePasswordData) => Promise<{ message: string }>;
+  updateUserAvatar: (avatar: string | undefined) => void;
 }
 
 // Create the context with an initial undefined value
@@ -191,7 +192,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       throw error;
     }
   }, [state.token]);
-
   const changePassword = useCallback(async (data: ChangePasswordData): Promise<{ message: string }> => {
     try {
       dispatch({ type: 'SET_LOADING' });
@@ -207,8 +207,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [state.token]);
 
+  const updateUserAvatar = useCallback((avatar: string | undefined) => {
+    if (state.user) {
+      const updatedUser = { ...state.user, avatar };
+      dispatch({ type: 'UPDATE_PROFILE', payload: updatedUser });
+      
+      // Update stored auth data
+      const sessionData = sessionStorage.getItem('authData');
+      const localData = localStorage.getItem('authData');
+      
+      if (sessionData) {
+        const parsedData = JSON.parse(sessionData);
+        parsedData.user.avatar = avatar;
+        sessionStorage.setItem('authData', JSON.stringify(parsedData));
+      }
+      
+      if (localData) {
+        const parsedData = JSON.parse(localData);
+        parsedData.user.avatar = avatar;
+        localStorage.setItem('authData', JSON.stringify(parsedData));
+      }
+    }
+  }, [state.user]);
+
   return (
-    <AuthContext.Provider value={{ ...state, login, register, logout, updateProfile, changePassword }}>
+    <AuthContext.Provider value={{ ...state, login, register, logout, updateProfile, changePassword, updateUserAvatar }}>
       {children}
     </AuthContext.Provider>
   );

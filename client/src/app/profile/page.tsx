@@ -4,6 +4,7 @@ import { UpdateProfileData, ChangePasswordData } from '@/types/auth';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
+import AvatarUpload from '@/components/common/AvatarUpload';
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -92,12 +93,22 @@ export default function ProfilePage() {
               >
                 {isEditMode ? 'Cancel' : 'Edit Profile'}
               </button>
-            </div>
-
-            <div className="p-4 sm:p-6">
+            </div>            <div className="p-4 sm:p-6">
               {isEditMode ? (
                 <form onSubmit={handleProfileSubmit(onProfileSubmit)} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Avatar Upload Section */}
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:space-x-6 space-y-4 sm:space-y-0">
+                    <div className="flex-shrink-0">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                        Profile Picture
+                      </label>
+                      <AvatarUpload 
+                        currentAvatar={user?.avatar}
+                        size="lg"
+                        editable={true}
+                      />
+                    </div>
+                      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         First Name
@@ -170,11 +181,13 @@ export default function ProfilePage() {
                       </label>
                       <input
                         {...registerProfile('jobTitle')}
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
-                        placeholder="Enter your job title"
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"                        placeholder="Enter your job title"
                       />
                     </div>
-                  </div>                  <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
+                  </div>
+                </div>
+
+                  <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
                     <button
                       type="button"
                       onClick={() => setIsEditMode(false)}
@@ -189,35 +202,46 @@ export default function ProfilePage() {
                       Save Changes
                     </button>
                   </div>
-                </form>
-              ) : (
-                <dl className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-1">
-                    <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Name</dt>
-                    <dd className="text-lg text-gray-900 dark:text-white">
-                      {user?.firstName} {user?.lastName}
-                    </dd>
+                </form>              ) : (
+                <div className="flex flex-col sm:flex-row sm:items-start sm:space-x-6 space-y-4 sm:space-y-0">
+                  <div className="flex-shrink-0">
+                    <AvatarUpload 
+                      currentAvatar={user?.avatar}
+                      size="lg"
+                      editable={false}
+                    />
                   </div>
+                  
+                  <div className="flex-1">
+                    <dl className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Name</dt>
+                        <dd className="text-lg text-gray-900 dark:text-white">
+                          {user?.firstName} {user?.lastName}
+                        </dd>
+                      </div>
 
-                  <div className="space-y-1">
-                    <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Email</dt>
-                    <dd className="text-lg text-gray-900 dark:text-white">{user?.email}</dd>
-                  </div>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Email</dt>
+                        <dd className="text-lg text-gray-900 dark:text-white">{user?.email}</dd>
+                      </div>
 
-                  <div className="space-y-1">
-                    <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Department</dt>
-                    <dd className="text-lg text-gray-900 dark:text-white">
-                      {user?.department || 'Not specified'}
-                    </dd>
-                  </div>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Department</dt>
+                        <dd className="text-lg text-gray-900 dark:text-white">
+                          {user?.department || 'Not specified'}
+                        </dd>
+                      </div>
 
-                  <div className="space-y-1">
-                    <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Job Title</dt>
-                    <dd className="text-lg text-gray-900 dark:text-white">
-                      {user?.jobTitle || 'Not specified'}
-                    </dd>
+                      <div className="space-y-1">
+                        <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Job Title</dt>
+                        <dd className="text-lg text-gray-900 dark:text-white">
+                          {user?.jobTitle || 'Not specified'}
+                        </dd>
+                      </div>
+                    </dl>
                   </div>
-                </dl>
+                </div>
               )}
             </div>
           </div>          {/* Change Password Card */}

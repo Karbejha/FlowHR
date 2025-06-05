@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserRole } from '@/types/auth';
+import FileUpload from '@/components/common/FileUpload';
 
 interface Manager {
   _id: string;
@@ -16,8 +17,7 @@ interface AddUserFormProps {
 }
 
 const AddUserForm: React.FC<AddUserFormProps> = ({ onSuccess, onCancel }) => {
-  const { user, token } = useAuth();
-  const [formData, setFormData] = useState({
+  const { user, token } = useAuth();  const [formData, setFormData] = useState({
     email: '',
     password: '',
     firstName: '',
@@ -27,6 +27,7 @@ const AddUserForm: React.FC<AddUserFormProps> = ({ onSuccess, onCancel }) => {
     jobTitle: '',
     managerId: '',
   });
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [managers, setManagers] = useState<Manager[]>([]);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -53,8 +54,7 @@ const AddUserForm: React.FC<AddUserFormProps> = ({ onSuccess, onCancel }) => {
     };
 
     fetchManagers();
-  }, [token, user?.role]);
-  const handleSubmit = async (e: React.FormEvent) => {
+  }, [token, user?.role]);  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
@@ -78,6 +78,27 @@ const AddUserForm: React.FC<AddUserFormProps> = ({ onSuccess, onCancel }) => {
       if (!response.ok) {
         const data = await response.json();
         throw new Error(data.error || 'Failed to create user');
+      }
+
+      const createdUser = await response.json();
+      
+      // Upload avatar if provided
+      if (avatarFile && createdUser.user?._id) {
+        try {
+          const avatarFormData = new FormData();
+          avatarFormData.append('avatar', avatarFile);
+          
+          await fetch(`/api/users/${createdUser.user._id}/avatar`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+            body: avatarFormData,
+          });
+        } catch (avatarError) {
+          console.error('Avatar upload failed:', avatarError);
+          // Don't fail the entire operation if avatar upload fails
+        }
       }
       
       onSuccess();
@@ -134,8 +155,7 @@ const AddUserForm: React.FC<AddUserFormProps> = ({ onSuccess, onCancel }) => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Personal Information Section */}
+        <form onSubmit={handleSubmit} className="space-y-6">          {/* Personal Information Section */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2 mb-4">
               <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
@@ -144,6 +164,19 @@ const AddUserForm: React.FC<AddUserFormProps> = ({ onSuccess, onCancel }) => {
                 </svg>
               </div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Personal Information</h3>
+            </div>            {/* Avatar Upload Section */}
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                Profile Picture
+              </label>
+              <FileUpload
+                onFileSelect={setAvatarFile}
+                size="lg"
+                label="Upload Avatar"
+              />
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                Upload a profile picture (optional). Max size: 5MB. Supported formats: JPG, PNG, GIF.
+              </p>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

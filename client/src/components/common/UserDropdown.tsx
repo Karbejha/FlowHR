@@ -6,16 +6,19 @@ import { Fragment } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
 import Image from 'next/image';
+import { getImageUrl } from '@/utils/imageUtils';
 
 export default function UserDropdown() {
   const { user, logout } = useAuth();
+  const avatarSrc = getImageUrl(user?.avatar);
+  
   return (
     <Menu as="div" className="relative ml-3 z-[99999]">
       <Menu.Button className="flex items-center rounded-full p-1 text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200">
-        {user?.avatar ? (
+        {avatarSrc ? (
           <div className="relative h-8 w-8">
             <Image
-              src={user.avatar}
+              src={avatarSrc}
               alt="User avatar"
               className="rounded-full"
               fill

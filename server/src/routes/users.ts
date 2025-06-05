@@ -1,16 +1,18 @@
 import express from 'express';
 import { authenticate, authorize } from '../middleware/auth';
+import { avatarUpload } from '../middleware/upload';
 import { UserRole } from '../models/User';
 import { 
   getEmployees, 
   getManagers,
   updateEmployeeStatus, 
   createUser,
-  updateProfile,
-  changePassword,
+  updateProfile,  changePassword,
   adminChangePassword,
   updateUser,
-  deleteUser
+  deleteUser,
+  uploadAvatar,
+  deleteAvatar
 } from '../controllers/userController';
 
 const router = express.Router();
@@ -24,5 +26,9 @@ router.delete('/:id', authenticate, authorize(UserRole.ADMIN), deleteUser);
 router.put('/profile', authenticate, updateProfile);
 router.put('/change-password', authenticate, changePassword);
 router.put('/admin-change-password/:id', authenticate, authorize(UserRole.ADMIN, UserRole.MANAGER), adminChangePassword);
+router.post('/upload-avatar', authenticate, avatarUpload.single('avatar'), uploadAvatar);
+router.delete('/avatar', authenticate, deleteAvatar);
+router.post('/:id/avatar', authenticate, avatarUpload.single('avatar'), uploadAvatar);
+router.delete('/:id/avatar', authenticate, deleteAvatar);
 
 export default router;

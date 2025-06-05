@@ -40,9 +40,12 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
       <Navigation />
       <main className="text-gray-900 dark:text-gray-100 pb-safe">
         {children}
-      </main>
-      <Toaster 
-        position="top-right"
+      </main>      <Toaster 
+        position="top-center"
+        containerClassName=""
+        containerStyle={{
+          zIndex: 99999,
+        }}
         toastOptions={{
           className: '!bg-white dark:!bg-gray-800 !text-gray-900 dark:!text-white !shadow-lg',
           style: { 
@@ -50,19 +53,22 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
             fontSize: '14px',
             padding: '12px 16px',
             borderRadius: '8px',
-            maxWidth: '90vw'
+            maxWidth: '90vw',
+            zIndex: 99999,
           },
           duration: 3000,
           success: {
             style: {
               background: 'rgb(34, 197, 94)',
               color: 'white',
+              zIndex: 99999,
             },
           },
           error: {
             style: {
               background: 'rgb(239, 68, 68)',
               color: 'white',
+              zIndex: 99999,
             },
           },
         }}
