@@ -26,6 +26,13 @@ pids
 *.seed
 *.pid.lock
 
+# Test files and temporary uploads
+src/scripts/
+temp/
+test_*.jpg
+test_*.png
+*.test.*
+
 # OS generated files
 .DS_Store
 Thumbs.db

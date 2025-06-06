@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: hr-vs-server
+    env: node
+    region: ohio
+    buildCommand: cd server && npm install && npm run build
+    startCommand: cd server && npm start
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: NODE_ENV
+        value: production
