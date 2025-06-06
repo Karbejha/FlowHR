@@ -86,7 +86,21 @@ leaveSchema.methods.calculateTotalDays = function(): number {
 
 leaveSchema.methods.validateLeaveBalance = async function(): Promise<boolean> {
   const user = await User.findById(this.employee);
-  if (!user?.leaveBalance) return false;
+  if (!user) return false;
+
+  // Initialize leave balance if not set
+  if (!user.leaveBalance) {
+    user.leaveBalance = {
+      annual: 20,
+      sick: 10,
+      casual: 5,
+      unpaid: 5,
+      maternity: 0,
+      paternity: 0,
+      other: 0
+    };
+    await user.save();
+  }
 
   const balanceType = this.leaveType.toLowerCase() as keyof typeof user.leaveBalance;
   const currentBalance = user.leaveBalance[balanceType] || 0;

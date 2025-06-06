@@ -3,6 +3,7 @@ import { User } from './auth';
 export enum LeaveType {
   ANNUAL = 'annual',
   SICK = 'sick',
+  CASUAL = 'casual',
   UNPAID = 'unpaid',
   MATERNITY = 'maternity',
   PATERNITY = 'paternity',

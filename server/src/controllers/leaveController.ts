@@ -20,14 +20,12 @@ export const submitLeaveRequest = async (req: Request, res: Response): Promise<v
     });
 
     // Calculate total days
-    const totalDays = leave.calculateTotalDays();
-    
-    // Validate leave balance before saving
+    const totalDays = leave.calculateTotalDays();    // Validate leave balance before saving
     const hasBalance = await leave.validateLeaveBalance();
     if (!hasBalance) {
       res.status(400).json({ error: 'Insufficient leave balance' });
       return;
-    }    await leave.save();
+    }await leave.save();
     await leave.populate('employee', 'firstName lastName email department');
     
     // Send email notification to employee
@@ -145,14 +143,15 @@ export const updateLeaveStatus = async (req: Request, res: Response): Promise<vo
       }      // Initialize leave balance if not set
       if (!user.leaveBalance) {
         user.leaveBalance = {
-          annual: 0,
-          sick: 0,
-          casual: 0,
+          annual: 20,
+          sick: 10,
+          casual: 5,
           unpaid: 0,
           maternity: 0,
           paternity: 0,
           other: 0
         };
+        await user.save();
       }
 
       const balanceType = leave.leaveType.toLowerCase() as keyof typeof user.leaveBalance;
