@@ -11,7 +11,11 @@ export enum LeaveStatus {
 export enum LeaveType {
   ANNUAL = 'annual',
   SICK = 'sick',
-  CASUAL = 'casual'
+  CASUAL = 'casual',
+  UNPAID = 'unpaid',
+  MATERNITY = 'maternity',
+  PATERNITY = 'paternity',
+  OTHER = 'other'
 }
 
 interface ILeave extends Document {
@@ -85,7 +89,8 @@ leaveSchema.methods.validateLeaveBalance = async function(): Promise<boolean> {
   if (!user?.leaveBalance) return false;
 
   const balanceType = this.leaveType.toLowerCase() as keyof typeof user.leaveBalance;
-  return user.leaveBalance[balanceType] >= this.totalDays;
+  const currentBalance = user.leaveBalance[balanceType] || 0;
+  return currentBalance >= this.totalDays;
 };
 
 leaveSchema.pre('save', async function(next) {

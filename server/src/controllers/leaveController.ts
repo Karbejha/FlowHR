@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { Leave, LeaveStatus } from '../models/Leave';
 import { User, UserRole } from '../models/User';
 import { getTeamMembers } from '../utils/userUtils';
+import { sendLeaveRequestNotification, sendLeaveStatusUpdateNotification, sendAdminLeaveRequestNotification, formatDate } from '../utils/emailService';
 import { Document } from 'mongoose';
 
 export const submitLeaveRequest = async (req: Request, res: Response): Promise<void> => {
@@ -26,10 +27,44 @@ export const submitLeaveRequest = async (req: Request, res: Response): Promise<v
     if (!hasBalance) {
       res.status(400).json({ error: 'Insufficient leave balance' });
       return;
+    }    await leave.save();
+    await leave.populate('employee', 'firstName lastName email department');
+    
+    // Send email notification to employee
+    const employee = leave.employee as any;
+    try {
+      await sendLeaveRequestNotification(
+        employee.email,
+        `${employee.firstName} ${employee.lastName}`,
+        leave.leaveType,
+        formatDate(leave.startDate),
+        formatDate(leave.endDate),
+        totalDays,
+        leave.reason || 'No reason provided'
+      );
+    } catch (emailError) {
+      console.error('Error sending leave request email notification:', emailError);
+      // Don't fail the request if email fails
     }
 
-    await leave.save();
-    await leave.populate('employee', 'firstName lastName email');
+    // Send admin notification
+    const { config } = await import('../config/config');
+    try {
+      await sendAdminLeaveRequestNotification(
+        config.email.adminEmail,
+        `${employee.firstName} ${employee.lastName}`,
+        employee.email,
+        leave.leaveType,
+        formatDate(leave.startDate),
+        formatDate(leave.endDate),
+        totalDays,
+        leave.reason || 'No reason provided',
+        employee.department
+      );
+    } catch (emailError) {
+      console.error('Error sending admin leave request notification:', emailError);
+      // Don't fail the request if email fails
+    }
     
     res.status(201).json(leave);
   } catch (error) {
@@ -107,45 +142,64 @@ export const updateLeaveStatus = async (req: Request, res: Response): Promise<vo
       if (!user) {
         res.status(404).json({ error: 'Employee not found' });
         return;
-      }
-
-      // Initialize leave balance if not set
+      }      // Initialize leave balance if not set
       if (!user.leaveBalance) {
         user.leaveBalance = {
           annual: 0,
           sick: 0,
-          casual: 0
+          casual: 0,
+          unpaid: 0,
+          maternity: 0,
+          paternity: 0,
+          other: 0
         };
       }
 
       const balanceType = leave.leaveType.toLowerCase() as keyof typeof user.leaveBalance;
-      if (user.leaveBalance[balanceType] < leave.totalDays) {
+      const currentBalance = user.leaveBalance[balanceType] || 0;
+      if (currentBalance < leave.totalDays) {
         res.status(400).json({ error: 'Insufficient leave balance' });
         return;
       }
 
       // Deduct the leave balance
-      user.leaveBalance[balanceType] = user.leaveBalance[balanceType] - leave.totalDays;
+      user.leaveBalance[balanceType] = currentBalance - leave.totalDays;
       await user.save();
-    }
-
-    // Restore balance if previously approved leave is now rejected/cancelled
+    }    // Restore balance if previously approved leave is now rejected/cancelled
     if (leave.status === LeaveStatus.APPROVED && 
         (status === LeaveStatus.REJECTED || status === LeaveStatus.CANCELLED)) {
       const user = await User.findById((leave.employee as any)._id);
       if (user?.leaveBalance) {
         const balanceType = leave.leaveType.toLowerCase() as keyof typeof user.leaveBalance;
-        user.leaveBalance[balanceType] = user.leaveBalance[balanceType] + leave.totalDays;
+        const currentBalance = user.leaveBalance[balanceType] || 0;
+        user.leaveBalance[balanceType] = currentBalance + leave.totalDays;
         await user.save();
       }
-    }
-
-    leave.status = status;
+    }leave.status = status;
     leave.approvalNotes = approvalNotes;
     leave.approvedBy = req.user._id;
     leave.approvalDate = new Date();
 
     await leave.save();
+    
+    // Send email notification for status update
+    const employee = leave.employee as any;
+    try {
+      await sendLeaveStatusUpdateNotification(
+        employee.email,
+        `${employee.firstName} ${employee.lastName}`,
+        leave.leaveType,
+        formatDate(leave.startDate),
+        formatDate(leave.endDate),
+        leave.totalDays,
+        status,
+        `${req.user.firstName} ${req.user.lastName}`,
+        approvalNotes
+      );
+    } catch (emailError) {
+      console.error('Error sending leave status update email notification:', emailError);
+      // Don't fail the request if email fails
+    }
     
     res.json(leave);
   } catch (error) {

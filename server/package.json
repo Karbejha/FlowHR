@@ -1,17 +1,16 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "main": "dist/index.js",
-  "scripts": {
+  "main": "dist/index.js",  "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "test-email": "ts-node test-email.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
-  "dependencies": {
+  "description": "",  "dependencies": {
     "@aws-sdk/client-s3": "^3.825.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.18",
@@ -21,6 +20,7 @@
     "@types/multer": "^1.4.12",
     "@types/node": "^22.15.21",
     "@types/node-fetch": "^2.6.12",
+    "@types/nodemailer": "^6.4.15",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "date-fns": "^4.1.0",
@@ -31,6 +31,7 @@
     "mongoose": "^8.15.1",
     "multer": "^2.0.1",
     "node-fetch": "^3.3.2",
+    "nodemailer": "^6.9.14",
     "typescript": "^5.8.3"
   },
   "devDependencies": {

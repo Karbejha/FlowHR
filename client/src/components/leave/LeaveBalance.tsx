@@ -11,9 +11,10 @@ interface LeaveBalanceData {
   annual: number;
   sick: number;
   casual: number;
-  personal?: number;
+  unpaid?: number;
   maternity?: number;
   paternity?: number;
+  other?: number;
 }
 
 export default function LeaveBalance() {
@@ -126,18 +127,16 @@ export default function LeaveBalance() {
           <div className="text-sm font-medium text-purple-700 dark:text-purple-300 mb-1">Casual Leave</div>
           <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">{balance.casual}</div>
           <div className="text-xs text-purple-600 dark:text-purple-400 font-medium">days available</div>
-        </div>
-
-        {/* Personal Leave - Only show if available */}
-        {balance.personal !== undefined && (
+        </div>        {/* Unpaid Leave - Only show if available */}
+        {balance.unpaid !== undefined && (
           <div className="text-center p-6 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/30 border border-orange-200 dark:border-orange-700/50 rounded-xl transition-all duration-200 hover:shadow-md dark:hover:shadow-lg hover:scale-[1.02]">
             <div className="w-12 h-12 bg-orange-500 dark:bg-orange-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-lg">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </div>
-            <div className="text-sm font-medium text-orange-700 dark:text-orange-300 mb-1">Personal Leave</div>
-            <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">{balance.personal}</div>
+            <div className="text-sm font-medium text-orange-700 dark:text-orange-300 mb-1">Unpaid Leave</div>
+            <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">{balance.unpaid}</div>
             <div className="text-xs text-orange-600 dark:text-orange-400 font-medium">days available</div>
           </div>
         )}
@@ -154,9 +153,7 @@ export default function LeaveBalance() {
             <div className="text-3xl font-bold text-pink-600 dark:text-pink-400">{balance.maternity}</div>
             <div className="text-xs text-pink-600 dark:text-pink-400 font-medium">days available</div>
           </div>
-        )}
-
-        {/* Paternity Leave - Only show if available */}
+        )}        {/* Paternity Leave - Only show if available */}
         {balance.paternity !== undefined && (
           <div className="text-center p-6 bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/30 border border-indigo-200 dark:border-indigo-700/50 rounded-xl transition-all duration-200 hover:shadow-md dark:hover:shadow-lg hover:scale-[1.02]">
             <div className="w-12 h-12 bg-indigo-500 dark:bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-lg">
@@ -169,6 +166,20 @@ export default function LeaveBalance() {
             <div className="text-xs text-indigo-600 dark:text-indigo-400 font-medium">days available</div>
           </div>
         )}
+
+        {/* Other Leave - Only show if available */}
+        {balance.other !== undefined && (
+          <div className="text-center p-6 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900/20 dark:to-gray-800/30 border border-gray-200 dark:border-gray-700/50 rounded-xl transition-all duration-200 hover:shadow-md dark:hover:shadow-lg hover:scale-[1.02]">
+            <div className="w-12 h-12 bg-gray-500 dark:bg-gray-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-lg">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Other Leave</div>
+            <div className="text-3xl font-bold text-gray-600 dark:text-gray-400">{balance.other}</div>
+            <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">days available</div>
+          </div>
+        )}
       </div>
 
       {/* Summary Section */}
@@ -176,9 +187,8 @@ export default function LeaveBalance() {
         <div className="flex items-center justify-between">
           <div className="text-sm text-gray-600 dark:text-gray-400">
             Total Leave Days Available
-          </div>
-          <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            {(balance.annual + balance.sick + balance.casual + (balance.personal || 0) + (balance.maternity || 0) + (balance.paternity || 0))} days
+          </div>          <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            {(balance.annual + balance.sick + balance.casual + (balance.unpaid || 0) + (balance.maternity || 0) + (balance.paternity || 0) + (balance.other || 0))} days
           </div>
         </div>
       </div>

@@ -18,11 +18,14 @@ interface IUser extends mongoose.Document {
   managerId?: mongoose.Types.ObjectId;
   hireDate: Date;
   isActive: boolean;
-  avatar?: string;
-  leaveBalance: {
+  avatar?: string;  leaveBalance: {
     annual: number;
     sick: number;
     casual: number;
+    unpaid?: number;
+    maternity?: number;
+    paternity?: number;
+    other?: number;
   };
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
@@ -77,8 +80,7 @@ const userSchema = new mongoose.Schema({
   avatar: {
     type: String,
     required: false,
-  },
-  leaveBalance: {
+  },  leaveBalance: {
     annual: {
       type: Number,
       default: 20,
@@ -90,6 +92,22 @@ const userSchema = new mongoose.Schema({
     casual: {
       type: Number,
       default: 5,
+    },
+    unpaid: {
+      type: Number,
+      default: 0,
+    },
+    maternity: {
+      type: Number,
+      default: 0,
+    },
+    paternity: {
+      type: Number,
+      default: 0,
+    },
+    other: {
+      type: Number,
+      default: 0,
     }
   },
 }, {

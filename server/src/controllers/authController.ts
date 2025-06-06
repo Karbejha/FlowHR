@@ -49,10 +49,9 @@ export const register = async (req: Request, res: Response) => {
       payload,
       config.jwtSecret || 'fallback-secret',
       { expiresIn: '1d' }
-    );
-
-    res.status(201).json({ user, token });
+    );    res.status(201).json({ user, token });
   } catch (error) {
+    console.error('Registration error:', error);
     res.status(400).json({ error: 'Error creating user' });
   }
 };
