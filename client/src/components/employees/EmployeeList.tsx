@@ -167,13 +167,17 @@ export default function EmployeeList() {
       document.body.style.overflow = 'unset';
     };
   }, [deleteConfirmation.isOpen, cancelDeleteEmployee]);
-
   // Memoized handler for edit
   const onEditEmployee = (employee: User) => (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setEditingEmployee(employee);
     setShowEditForm(true);
+    
+    // Scroll to top on mobile for better UX
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
   };
 
   // Memoized handler for status update
@@ -304,11 +308,13 @@ export default function EmployeeList() {
                     leaveFrom="transform opacity-100 scale-100"
                     leaveTo="transform opacity-0 scale-95"
                   >
-                    <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800 border border-gray-200 dark:border-gray-700 z-50">
-                      <Menu.Item>
-                        {() => (
+                    <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800 border border-gray-200 dark:border-gray-700 z-50">                      <Menu.Item>
+                        {({ close }) => (
                           <button
-                            onClick={onEditEmployee(employee)}
+                            onClick={(e) => {
+                              onEditEmployee(employee)(e);
+                              close();
+                            }}
                             className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
                           >
                             <svg className="w-4 h-4 mr-3 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -472,11 +478,13 @@ export default function EmployeeList() {
                         leaveFrom="transform opacity-100 scale-100"
                         leaveTo="transform opacity-0 scale-95"
                       >
-                        <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800 border border-gray-200 dark:border-gray-700 z-50">
-                          <Menu.Item>
-                            {() => (
+                        <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800 border border-gray-200 dark:border-gray-700 z-50">                          <Menu.Item>
+                            {({ close }) => (
                               <button
-                                onClick={onEditEmployee(employee)}
+                                onClick={(e) => {
+                                  onEditEmployee(employee)(e);
+                                  close();
+                                }}
                                 className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 transition-colors duration-200"
                               >
                                 <svg className="w-4 h-4 mr-3 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -35,5 +35,6 @@
   },
   "devDependencies": {
     "ts-node-dev": "^2.0.0"
-  }
+  },
+  "$schema": "https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/package.json"
 }
