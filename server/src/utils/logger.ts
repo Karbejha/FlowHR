@@ -79,22 +79,40 @@ const transports: winston.transport[] = [
 // Add MongoDB transport if MongoDB is configured
 if (config.mongoUri) {
   try {
-    transports.push(
-      new winston.transports.MongoDB({
-        db: config.mongoUri,
-        collection: 'logs',
-        format: mongoFormat,
-        // Store logs for only 7 days or latest 10000 logs
-        capped: true,
-        cappedSize: 10000000, // 10MB cap
-        cappedMax: 10000, // Maximum 10000 documents
-        expireAfterSeconds: 7 * 24 * 60 * 60, // 7 days in seconds
-        level: 'debug', // Always log everything to MongoDB, regardless of environment
-        options: {
-          useUnifiedTopology: true,
-        },
-      })
-    );
+    console.log('Attempting to initialize MongoDB transport with URI:', config.mongoUri.replace(/\/\/[^:]+:[^@]+@/, '//***:***@'));
+    
+    const mongoTransport = new winston.transports.MongoDB({
+      db: config.mongoUri,
+      collection: 'logs',
+      format: mongoFormat,
+      // Store logs for only 7 days or latest 10000 logs
+      capped: true,
+      cappedSize: 10000000, // 10MB cap
+      cappedMax: 10000, // Maximum 10000 documents
+      expireAfterSeconds: 7 * 24 * 60 * 60, // 7 days in seconds
+      level: 'debug', // Always log everything to MongoDB, regardless of environment
+      options: {
+        useUnifiedTopology: true,
+        serverSelectionTimeoutMS: 5000, // 5 second timeout
+        connectTimeoutMS: 5000,
+        socketTimeoutMS: 5000,
+      },
+    } as any);
+
+    // Add error event handlers for the MongoDB transport
+    mongoTransport.on('error', (error) => {
+      console.error('MongoDB transport error:', error);
+    });
+
+    mongoTransport.on('open', () => {
+      console.log('MongoDB transport connection opened successfully');
+    });
+
+    mongoTransport.on('close', () => {
+      console.log('MongoDB transport connection closed');
+    });
+
+    transports.push(mongoTransport);
     console.log('MongoDB transport initialized for logging');
   } catch (error) {
     console.error('Failed to initialize MongoDB transport:', error);
@@ -339,3 +357,54 @@ process.on('SIGTERM', async () => {
 
 // Export the logger instance
 export default logger;
+
+// Test MongoDB logging connection
+export const testMongoDBLogging = async (): Promise<{ success: boolean; error?: string; details?: any }> => {
+  if (!config.mongoUri) {
+    return { success: false, error: 'MongoDB URI not configured' };
+  }
+
+  try {
+    // Test direct MongoDB connection
+    const { MongoClient } = require('mongodb');
+    const client = new MongoClient(config.mongoUri, {
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 5000,
+      socketTimeoutMS: 5000,
+    });
+
+    await client.connect();
+    const db = client.db();
+    
+    // Test writing to logs collection
+    const testDoc = {
+      timestamp: new Date(),
+      level: 'info',
+      message: 'MongoDB logging test from winston setup',
+      metadata: {
+        testType: 'direct_connection_test',
+        source: 'logger_initialization'
+      }
+    };
+    
+    const result = await db.collection('logs').insertOne(testDoc);
+    await client.close();
+
+    return {
+      success: true,
+      details: {
+        insertedId: result.insertedId,
+        mongoUri: config.mongoUri.replace(/\/\/[^:]+:[^@]+@/, '//***:***@'),
+        database: db.databaseName
+      }
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      details: {
+        mongoUri: config.mongoUri.replace(/\/\/[^:]+:[^@]+@/, '//***:***@')
+      }
+    };
+  }
+};
