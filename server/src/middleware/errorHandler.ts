@@ -5,7 +5,7 @@ import { logUserError, logSecurityEvent } from '../utils/logger';
 export const errorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
   const user = req.user;
   const userAgent = req.get('User-Agent');
-  const ip = req.ip || req.connection.remoteAddress;
+  const ip = (req as any).clientIp || req.ip || req.connection.remoteAddress;
 
   // Prepare error context
   const errorContext = {
@@ -22,7 +22,6 @@ export const errorHandler = (err: any, req: Request, res: Response, next: NextFu
       'referer': req.get('Referer')
     }
   };
-
   // Log error with user context if user is authenticated
   if (user) {
     logUserError(
@@ -31,7 +30,8 @@ export const errorHandler = (err: any, req: Request, res: Response, next: NextFu
       user.id,
       user.email,
       user.role,
-      errorContext
+      errorContext,
+      ip
     );
 
     // Log security events for suspicious activities
@@ -45,7 +45,8 @@ export const errorHandler = (err: any, req: Request, res: Response, next: NextFu
           ...errorContext,
           errorStatus: err.status,
           errorMessage: err.message
-        }
+        },
+        ip
       );
     }
   } else {
@@ -56,7 +57,8 @@ export const errorHandler = (err: any, req: Request, res: Response, next: NextFu
       undefined,
       undefined,
       undefined,
-      errorContext
+      errorContext,
+      ip
     );
 
     // Log potential security threats from anonymous users
@@ -70,7 +72,8 @@ export const errorHandler = (err: any, req: Request, res: Response, next: NextFu
           ...errorContext,
           errorStatus: err.status,
           errorMessage: err.message
-        }
+        },
+        ip
       );
     }
   }
@@ -91,8 +94,7 @@ export const userActionLogger = (action: string) => {
     
     res.send = function(data) {
       // Log successful actions
-      if (res.statusCode < 400 && req.user) {
-        import('../utils/logger').then(({ logUserAction }) => {
+      if (res.statusCode < 400 && req.user) {        import('../utils/logger').then(({ logUserAction }) => {
           logUserAction(
             `User action: ${action}`,
             req.user.id,
@@ -101,11 +103,11 @@ export const userActionLogger = (action: string) => {
             {
               method: req.method,
               url: req.originalUrl,
-              ip: req.ip,
               userAgent: req.get('User-Agent'),
               statusCode: res.statusCode,
               responseSize: data ? data.length : 0
-            }
+            },
+            (req as any).clientIp || req.ip
           );
         });
       }

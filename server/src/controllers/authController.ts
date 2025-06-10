@@ -36,9 +36,7 @@ export const register = async (req: Request, res: Response) => {
       department,
       jobTitle,
       managerId
-    });    await user.save();
-
-    // Log successful registration
+    });    await user.save();    // Log successful registration
     logUserAction(
       'User registered successfully',
       (user._id as Types.ObjectId).toString(),
@@ -49,9 +47,10 @@ export const register = async (req: Request, res: Response) => {
         lastName: user.lastName,
         department: user.department,
         jobTitle: user.jobTitle,
-        ip: req.ip,
+        ip: (req as any).clientIp || req.ip,
         userAgent: req.get('User-Agent')
-      }
+      },
+      (req as any).clientIp || req.ip
     );
 
     // Generate JWT token
@@ -82,18 +81,18 @@ export const login = async (req: Request, res: Response) => {
     const { email, password } = req.body;    // Find user by email
     const user = await User.findOne({ email });
     
-    if (!user || !user.isActive) {
-      // Log failed login attempt
+    if (!user || !user.isActive) {      // Log failed login attempt
       logSecurityEvent(
         'Failed login attempt - user not found or inactive',
         'medium',
         undefined,
         email,
         {
-          ip: req.ip,
+          ip: (req as any).clientIp || req.ip,
           userAgent: req.get('User-Agent'),
           timestamp: new Date().toISOString()
-        }
+        },
+        (req as any).clientIp || req.ip
       );
       return res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -101,33 +100,32 @@ export const login = async (req: Request, res: Response) => {
     // Check password
     const isMatch = await user.comparePassword(password);
     
-    if (!isMatch) {
-      // Log failed login attempt
+    if (!isMatch) {      // Log failed login attempt
       logSecurityEvent(
         'Failed login attempt - incorrect password',
         'medium',
         (user._id as Types.ObjectId).toString(),
         user.email,
         {
-          ip: req.ip,
+          ip: (req as any).clientIp || req.ip,
           userAgent: req.get('User-Agent'),
           timestamp: new Date().toISOString()
-        }
+        },
+        (req as any).clientIp || req.ip
       );
       return res.status(401).json({ error: 'Invalid credentials' });
-    }
-
-    // Log successful login
+    }    // Log successful login
     logUserAction(
       'User logged in successfully',
       (user._id as Types.ObjectId).toString(),
       user.email,
       user.role,
       {
-        ip: req.ip,
+        ip: (req as any).clientIp || req.ip,
         userAgent: req.get('User-Agent'),
         loginTime: new Date().toISOString()
-      }
+      },
+      (req as any).clientIp || req.ip
     );
 
     // Generate JWT token
@@ -142,8 +140,7 @@ export const login = async (req: Request, res: Response) => {
       { expiresIn: '1d' }
     );
 
-    res.json({ user, token });  } catch (error) {
-    // Enhanced error logging for login failures
+    res.json({ user, token });  } catch (error) {    // Enhanced error logging for login failures
     logUserError(
       'Login attempt failed with error',
       error as Error,
@@ -151,12 +148,13 @@ export const login = async (req: Request, res: Response) => {
       req.body.email,
       'unknown',
       {
-        ip: req.ip,
+        ip: (req as any).clientIp || req.ip,
         userAgent: req.get('User-Agent'),
         attemptedEmail: req.body.email,
         errorType: 'login_error',
         timestamp: new Date().toISOString()
-      }
+      },
+      (req as any).clientIp || req.ip
     );
     res.status(400).json({ error: 'Error logging in' });
   }
@@ -166,19 +164,19 @@ export const logout = async (req: Request, res: Response) => {
   try {
     const user = req.user;
     
-    if (user) {
-      // Log user logout
+    if (user) {      // Log user logout
       logUserAction(
         'User logged out successfully',
         user.id,
         user.email,
         user.role,
         {
-          ip: req.ip,
+          ip: (req as any).clientIp || req.ip,
           userAgent: req.get('User-Agent'),
           logoutTime: new Date().toISOString(),
           sessionDuration: 'calculated_if_available'
-        }
+        },
+        (req as any).clientIp || req.ip
       );
     }
 
@@ -197,33 +195,33 @@ export const getProfile = async (req: Request, res: Response) => {
   try {
     const user = req.user;
     
-    if (user) {
-      // Log profile access
+    if (user) {      // Log profile access
       logUserAction(
         'User accessed profile',
         user.id,
         user.email,
         user.role,
         {
-          ip: req.ip,
+          ip: (req as any).clientIp || req.ip,
           userAgent: req.get('User-Agent'),
           accessTime: new Date().toISOString()
-        }
+        },
+        (req as any).clientIp || req.ip
       );
     }
 
     res.json({ user });
-  } catch (error) {
-    logUserError(
+  } catch (error) {    logUserError(
       'Profile access error',
       error as Error,
       req.user?.id,
       req.user?.email,
       req.user?.role,
       {
-        ip: req.ip,
+        ip: (req as any).clientIp || req.ip,
         userAgent: req.get('User-Agent')
-      }
+      },
+      (req as any).clientIp || req.ip
     );
     res.status(400).json({ error: 'Error fetching profile' });
   }

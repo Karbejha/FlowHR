@@ -43,10 +43,9 @@ const consoleFormat = winston.format.combine(
 
 // Custom format for MongoDB storage (structured JSON) with GMT+3
 const mongoFormat = winston.format.combine(
-  winston.format.timestamp({ format: getGMT3Timestamp }),
   winston.format.errors({ stack: true }),
   winston.format.json(),
-  winston.format.metadata({ fillExcept: ['message', 'level', 'timestamp'] })
+  winston.format.metadata({ fillExcept: ['message', 'level'] })
 );
 
 // Define which transports the logger must use
@@ -87,8 +86,7 @@ const transports: winston.transport[] = [
 if (config.mongoUri) {
   try {
     console.log('Attempting to initialize MongoDB transport with URI:', config.mongoUri.replace(/\/\/[^:]+:[^@]+@/, '//***:***@'));
-    
-    const mongoTransport = new winston.transports.MongoDB({
+      const mongoTransport = new winston.transports.MongoDB({
       db: config.mongoUri,
       collection: 'logs',
       format: mongoFormat,
@@ -104,6 +102,8 @@ if (config.mongoUri) {
         connectTimeoutMS: 5000,
         socketTimeoutMS: 5000,
       },
+      // Override timestamp to use GMT+3
+      timestamp: () => getGMT3Timestamp()
     } as any);
 
     // Add error event handlers for the MongoDB transport
@@ -191,7 +191,6 @@ export const logUserAction = (
       id: userId || 'anonymous',
       email: userEmail || 'unknown',
       role: userRole || 'unknown',
-      timestamp: getGMT3Timestamp(),
       clientIp: clientIp || 'unknown'
     },
     environment: process.env.NODE_ENV || 'development'
@@ -202,7 +201,10 @@ export const logUserAction = (
   
   // Also log to console in production for immediate visibility
   if (process.env.NODE_ENV === 'production') {
-    console.log('USER_ACTION:', message, JSON.stringify(logData, null, 2));
+    console.log(`[${getGMT3Timestamp()}] USER_ACTION: ${message}`, {
+      user: `${userEmail} (${userId})`,
+      ip: clientIp
+    });
   }
 };
 
@@ -221,14 +223,14 @@ export const logUserError = (
       id: userId || 'anonymous',
       email: userEmail || 'unknown',
       role: userRole || 'unknown',
-      timestamp: getGMT3Timestamp(),
       clientIp: clientIp || 'unknown'
     },
     error: {
       message: error.message,
       stack: error.stack,
       name: error.name
-    }
+    },
+    environment: process.env.NODE_ENV || 'development'
   });
 };
 
@@ -245,13 +247,13 @@ export const logSecurityEvent = (
     security: {
       event,
       severity,
-      timestamp: getGMT3Timestamp(),
       clientIp: clientIp || 'unknown'
     },
     user: {
       id: userId || 'anonymous',
       email: userEmail || 'unknown'
-    }
+    },
+    environment: process.env.NODE_ENV || 'development'
   });
 };
 
