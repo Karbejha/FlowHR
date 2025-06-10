@@ -23,19 +23,27 @@ const logColors = {
 // Tell winston that you want to link the colors
 winston.addColors(logColors);
 
+// Custom timestamp function for GMT+3
+const getGMT3Timestamp = () => {
+  const now = new Date();
+  // Convert to GMT+3
+  const gmt3Time = new Date(now.getTime() + (3 * 60 * 60 * 1000));
+  return gmt3Time.toISOString().replace('T', ' ').substring(0, 23) + ' GMT+3';
+};
+
 // Custom format for console output
 const consoleFormat = winston.format.combine(
-  winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),
-  winston.format.colorize({ all: true }),  winston.format.printf((info) => {
+  winston.format.timestamp({ format: getGMT3Timestamp }),
+  winston.format.colorize({ all: true }),
+  winston.format.printf((info) => {
     const { timestamp, level, message, ...args } = info;
-    const ts = (timestamp as string).slice(0, 19).replace('T', ' ');
-    return `${ts} [${level}]: ${message} ${Object.keys(args).length ? JSON.stringify(args, null, 2) : ''}`;
+    return `${timestamp} [${level}]: ${message} ${Object.keys(args).length ? JSON.stringify(args, null, 2) : ''}`;
   }),
 );
 
-// Custom format for MongoDB storage (structured JSON)
+// Custom format for MongoDB storage (structured JSON) with GMT+3
 const mongoFormat = winston.format.combine(
-  winston.format.timestamp(),
+  winston.format.timestamp({ format: getGMT3Timestamp }),
   winston.format.errors({ stack: true }),
   winston.format.json(),
   winston.format.metadata({ fillExcept: ['message', 'level', 'timestamp'] })
@@ -47,13 +55,12 @@ const transports: winston.transport[] = [
   new winston.transports.Console({
     level: process.env.NODE_ENV === 'production' ? 'warn' : 'debug',
     format: consoleFormat,
-  }),
-    // File transport for errors - with proper error handling
+  }),    // File transport for errors - with proper error handling
   new winston.transports.File({
     filename: 'logs/error.log',
     level: 'error',
     format: winston.format.combine(
-      winston.format.timestamp(),
+      winston.format.timestamp({ format: getGMT3Timestamp }),
       winston.format.json()
     ),
     maxsize: 5242880, // 5MB
@@ -66,7 +73,7 @@ const transports: winston.transport[] = [
   new winston.transports.File({
     filename: 'logs/combined.log',
     format: winston.format.combine(
-      winston.format.timestamp(),
+      winston.format.timestamp({ format: getGMT3Timestamp }),
       winston.format.json()
     ),
     maxsize: 5242880, // 5MB
@@ -124,7 +131,7 @@ const logger = winston.createLogger({
   level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
   levels: logLevels,
   format: winston.format.combine(
-    winston.format.timestamp(),
+    winston.format.timestamp({ format: getGMT3Timestamp }),
     winston.format.errors({ stack: true }),
     winston.format.json()
   ),
@@ -175,7 +182,8 @@ export const logUserAction = (
   userId?: string, 
   userEmail?: string, 
   userRole?: string,
-  additionalMeta: any = {}
+  additionalMeta: any = {},
+  clientIp?: string
 ) => {
   const logData = {
     ...additionalMeta,
@@ -183,7 +191,8 @@ export const logUserAction = (
       id: userId || 'anonymous',
       email: userEmail || 'unknown',
       role: userRole || 'unknown',
-      timestamp: new Date().toISOString()
+      timestamp: getGMT3Timestamp(),
+      clientIp: clientIp || 'unknown'
     },
     environment: process.env.NODE_ENV || 'development'
   };
@@ -203,7 +212,8 @@ export const logUserError = (
   userId?: string, 
   userEmail?: string, 
   userRole?: string,
-  additionalMeta: any = {}
+  additionalMeta: any = {},
+  clientIp?: string
 ) => {
   logger.error(message, {
     ...additionalMeta,
@@ -211,7 +221,8 @@ export const logUserError = (
       id: userId || 'anonymous',
       email: userEmail || 'unknown',
       role: userRole || 'unknown',
-      timestamp: new Date().toISOString()
+      timestamp: getGMT3Timestamp(),
+      clientIp: clientIp || 'unknown'
     },
     error: {
       message: error.message,
@@ -226,14 +237,16 @@ export const logSecurityEvent = (
   severity: 'low' | 'medium' | 'high' | 'critical',
   userId?: string,
   userEmail?: string,
-  additionalMeta: any = {}
+  additionalMeta: any = {},
+  clientIp?: string
 ) => {
   logger.warn(`SECURITY: ${event}`, {
     ...additionalMeta,
     security: {
       event,
       severity,
-      timestamp: new Date().toISOString()
+      timestamp: getGMT3Timestamp(),
+      clientIp: clientIp || 'unknown'
     },
     user: {
       id: userId || 'anonymous',

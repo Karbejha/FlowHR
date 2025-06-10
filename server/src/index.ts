@@ -17,6 +17,9 @@ import { userActivityTracker } from './middleware/userActivityTracker';
 
 const app = express();
 
+// Trust proxy - Important for getting real client IPs behind reverse proxies
+app.set('trust proxy', true);
+
 // CORS Configuration
 const corsOptions = {
   origin: [
@@ -144,11 +147,9 @@ app.get('/health/detailed', async (req, res) => {
 app.get('/test-logging', async (req, res) => {
   try {
     console.log('🔍 Starting comprehensive logging diagnostic...');
-    
-    // Test 1: Basic winston logging
+      // Test 1: Basic winston logging
     logInfo('Test logging endpoint called', { 
       testType: 'manual_test',
-      timestamp: new Date().toISOString(),
       source: 'diagnostic_endpoint'
     });
 
@@ -208,12 +209,9 @@ app.get('/test-logging', async (req, res) => {
       name: transport.constructor.name,
       level: transport.level,
       silent: transport.silent
-    }));
-
-    const result = {
+    }));    const result = {
       success: true,
       message: 'Comprehensive logging tests completed',
-      timestamp: new Date().toISOString(),
       tests: {
         winstonBasicLogging: 'completed',
         userActionLogging: 'completed',
@@ -223,7 +221,8 @@ app.get('/test-logging', async (req, res) => {
         transportInfo: transportInfo
       },
       mongoUri: config.mongoUri ? config.mongoUri.replace(/\/\/[^:]+:[^@]+@/, '//***:***@') : 'not configured',
-      environment: process.env.NODE_ENV || 'development'
+      environment: process.env.NODE_ENV || 'development',
+      clientIp: (req as any).clientIp || req.ip || 'unknown'
     };
 
     console.log('✅ Diagnostic completed:', JSON.stringify(result, null, 2));
@@ -231,11 +230,10 @@ app.get('/test-logging', async (req, res) => {
     
   } catch (error) {
     console.error('❌ Diagnostic endpoint error:', error);
-    logError('Test logging endpoint error', { error: error instanceof Error ? error.message : error });
-    res.status(500).json({
+    logError('Test logging endpoint error', { error: error instanceof Error ? error.message : error });    res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
-      timestamp: new Date().toISOString()
+      clientIp: (req as any).clientIp || req.ip || 'unknown'
     });
   }
 });

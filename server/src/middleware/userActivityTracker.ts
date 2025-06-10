@@ -23,8 +23,7 @@ export const userActivityTracker = (req: Request, res: Response, next: NextFunct
     // Only log for authenticated users and successful operations
     if (req.user && res.statusCode < 400) {
       const action = getActionDescription(req.method, req.originalUrl);
-      
-      logUserAction(
+        logUserAction(
         `User activity: ${action}`,
         req.user.id,
         req.user.email,
@@ -33,14 +32,13 @@ export const userActivityTracker = (req: Request, res: Response, next: NextFunct
           method: req.method,
           url: req.originalUrl,
           statusCode: res.statusCode,
-          ip: req.ip,
           userAgent: req.get('User-Agent'),
-          timestamp: new Date().toISOString(),
           params: req.params,
           query: req.query,
           // Don't log sensitive data like passwords
           body: sanitizeBody(req.body)
-        }
+        },
+        (req as any).clientIp || req.ip
       );
     }
   };

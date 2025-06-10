@@ -50,16 +50,29 @@ morgan.token('request-id', (req: any) => {
   return req.requestId || '-';
 });
 
+// Custom token for real client IP
+morgan.token('real-ip', (req: any) => {
+  return req.clientIp || req.ip || req.connection?.remoteAddress || 'unknown';
+});
+
+// Custom token for GMT+3 timestamp
+morgan.token('date-gmt3', () => {
+  const now = new Date();
+  // Convert to GMT+3
+  const gmt3Time = new Date(now.getTime() + (3 * 60 * 60 * 1000));
+  return gmt3Time.toISOString().replace('T', ' ').substring(0, 19) + ' GMT+3';
+});
+
 // Define different formats for different environments
 
-// Production format - minimal but essential info
-const productionFormat = ':remote-addr :user-email [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" :response-time ms';
+// Production format - minimal but essential info with real IP and GMT+3 time
+const productionFormat = ':real-ip :user-email [:date-gmt3] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" :response-time ms';
 
-// Development format - more detailed with user info
-const developmentFormat = ':method :url :status :response-time ms - :res[content-length] - :user-email (:user-role) [:user-id]';
+// Development format - more detailed with user info and real IP
+const developmentFormat = ':method :url :status :response-time ms - :res[content-length] - :user-email (:user-role) [:user-id] - IP: :real-ip';
 
-// Combined format with custom fields
-const combinedFormat = ':remote-addr - :user-email (:user-role) [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" :response-time ms';
+// Combined format with custom fields and real IP
+const combinedFormat = ':real-ip - :user-email (:user-role) [:date-gmt3] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" :response-time ms';
 
 // Create morgan middleware based on environment
 const morganMiddleware = morgan(
@@ -88,7 +101,7 @@ const morganMiddleware = morgan(
 
 // Special morgan for error logging
 const morganErrorMiddleware = morgan(
-  ':remote-addr :request-email (:user-role) [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" :response-time ms',
+  ':real-ip :request-email (:user-role) [:date-gmt3] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" :response-time ms',
   {
     stream: {
       write: (message: string) => {
