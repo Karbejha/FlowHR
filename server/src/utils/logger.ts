@@ -78,19 +78,27 @@ const transports: winston.transport[] = [
 
 // Add MongoDB transport if MongoDB is configured
 if (config.mongoUri) {
-  transports.push(
-    new winston.transports.MongoDB({
-      db: config.mongoUri,
-      collection: 'logs',
-      format: mongoFormat,
-      // Store logs for only 7 days or latest 10000 logs
-      capped: true,
-      cappedSize: 10000000, // 10MB cap
-      cappedMax: 10000, // Maximum 10000 documents
-      expireAfterSeconds: 7 * 24 * 60 * 60, // 7 days in seconds
-      level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
-    })
-  );
+  try {
+    transports.push(
+      new winston.transports.MongoDB({
+        db: config.mongoUri,
+        collection: 'logs',
+        format: mongoFormat,
+        // Store logs for only 7 days or latest 10000 logs
+        capped: true,
+        cappedSize: 10000000, // 10MB cap
+        cappedMax: 10000, // Maximum 10000 documents
+        expireAfterSeconds: 7 * 24 * 60 * 60, // 7 days in seconds
+        level: 'debug', // Always log everything to MongoDB, regardless of environment
+        options: {
+          useUnifiedTopology: true,
+        },
+      })
+    );
+    console.log('MongoDB transport initialized for logging');
+  } catch (error) {
+    console.error('Failed to initialize MongoDB transport:', error);
+  }
 }
 
 // Create the logger
@@ -104,6 +112,14 @@ const logger = winston.createLogger({
   ),
   transports: transports,
   exitOnError: false,
+});
+
+// Log configuration details for debugging
+console.log('Logger Configuration:', {
+  environment: process.env.NODE_ENV,
+  mongoUri: config.mongoUri ? 'configured' : 'not configured',
+  transportsCount: transports.length,
+  logLevel: logger.level
 });
 
 // Handle uncaught exceptions and rejections safely
@@ -143,15 +159,24 @@ export const logUserAction = (
   userRole?: string,
   additionalMeta: any = {}
 ) => {
-  logger.info(message, {
+  const logData = {
     ...additionalMeta,
     user: {
       id: userId || 'anonymous',
       email: userEmail || 'unknown',
       role: userRole || 'unknown',
       timestamp: new Date().toISOString()
-    }
-  });
+    },
+    environment: process.env.NODE_ENV || 'development'
+  };
+  
+  // Always log user actions as 'info' level to ensure they appear in production
+  logger.info(message, logData);
+  
+  // Also log to console in production for immediate visibility
+  if (process.env.NODE_ENV === 'production') {
+    console.log('USER_ACTION:', message, JSON.stringify(logData, null, 2));
+  }
 };
 
 export const logUserError = (

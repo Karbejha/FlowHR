@@ -96,6 +96,11 @@ app.get('/health/detailed', async (req, res) => {
     database: {
       status: 'unknown',
       connected: false
+    },
+    logging: {
+      mongoUri: config.mongoUri ? 'configured' : 'not configured',
+      transportsActive: logger.transports.length,
+      level: logger.level
     }
   };
 
@@ -104,6 +109,13 @@ app.get('/health/detailed', async (req, res) => {
     if (mongoose.connection.readyState === 1) {
       health.database.status = 'connected';
       health.database.connected = true;
+      
+      // Test logging by creating a test log entry
+      logInfo('Health check with logging test', { 
+        testLog: true, 
+        timestamp: new Date().toISOString() 
+      });
+      
     } else {
       health.database.status = 'disconnected';
       health.status = 'degraded';
