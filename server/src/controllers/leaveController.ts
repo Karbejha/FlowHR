@@ -3,6 +3,11 @@ import { Leave, LeaveStatus } from '../models/Leave';
 import { User, UserRole } from '../models/User';
 import { getTeamMembers } from '../utils/userUtils';
 import { sendLeaveRequestNotification, sendLeaveStatusUpdateNotification, sendAdminLeaveRequestNotification, formatDate } from '../utils/emailService';
+import { 
+  createLeaveRequestNotification, 
+  createLeaveApprovalNotification, 
+  createLeaveRejectionNotification 
+} from './notificationController';
 import { Document } from 'mongoose';
 
 export const submitLeaveRequest = async (req: Request, res: Response): Promise<void> => {
@@ -43,9 +48,7 @@ export const submitLeaveRequest = async (req: Request, res: Response): Promise<v
     } catch (emailError) {
       console.error('Error sending leave request email notification:', emailError);
       // Don't fail the request if email fails
-    }
-
-    // Send admin notification
+    }    // Send admin notification
     const { config } = await import('../config/config');
     try {
       await sendAdminLeaveRequestNotification(
@@ -62,6 +65,29 @@ export const submitLeaveRequest = async (req: Request, res: Response): Promise<v
     } catch (emailError) {
       console.error('Error sending admin leave request notification:', emailError);
       // Don't fail the request if email fails
+    }
+
+    // Create in-app notification for managers/admins
+    try {
+      // Find managers and admins to notify
+      const managersAndAdmins = await User.find({
+        $or: [
+          { role: UserRole.ADMIN },
+          { role: UserRole.MANAGER }
+        ]
+      });      // Create notifications for each manager/admin
+      for (const manager of managersAndAdmins) {
+        await createLeaveRequestNotification(
+          (manager._id as any).toString(),
+          `${employee.firstName} ${employee.lastName}`,
+          leave.leaveType,
+          formatDate(leave.startDate),
+          formatDate(leave.endDate)
+        );
+      }
+    } catch (notificationError) {
+      console.error('Error creating leave request notifications:', notificationError);
+      // Don't fail the request if notification creation fails
     }
     
     res.status(201).json(leave);
@@ -180,8 +206,7 @@ export const updateLeaveStatus = async (req: Request, res: Response): Promise<vo
     leave.approvalDate = new Date();
 
     await leave.save();
-    
-    // Send email notification for status update
+      // Send email notification for status update
     const employee = leave.employee as any;
     try {
       await sendLeaveStatusUpdateNotification(
@@ -198,6 +223,29 @@ export const updateLeaveStatus = async (req: Request, res: Response): Promise<vo
     } catch (emailError) {
       console.error('Error sending leave status update email notification:', emailError);
       // Don't fail the request if email fails
+    }
+
+    // Create in-app notification for employee
+    try {
+      if (status === LeaveStatus.APPROVED) {
+        await createLeaveApprovalNotification(
+          employee._id.toString(),
+          leave.leaveType,
+          formatDate(leave.startDate),
+          formatDate(leave.endDate)
+        );
+      } else if (status === LeaveStatus.REJECTED) {
+        await createLeaveRejectionNotification(
+          employee._id.toString(),
+          leave.leaveType,
+          formatDate(leave.startDate),
+          formatDate(leave.endDate),
+          approvalNotes
+        );
+      }
+    } catch (notificationError) {
+      console.error('Error creating leave status notification:', notificationError);
+      // Don't fail the request if notification creation fails
     }
     
     res.json(leave);

@@ -7,6 +7,7 @@ import authRoutes from './routes/auth';
 import leaveRoutes from './routes/leave';
 import attendanceRoutes from './routes/attendance';
 import userRoutes from './routes/users';
+import notificationRoutes from './routes/notifications';
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/leave', leaveRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Connect to MongoDB
 mongoose.connect(config.mongoUri)

@@ -25,18 +25,12 @@ export const uploadToS3 = async (
   contentType: string = 'image/jpeg'
 ): Promise<{ Location: string; ETag: string; Key: string }> => {
   try {
-    console.log('📤 Starting S3 upload process...');
-    console.log('File path:', filePath);
-    console.log('S3 key:', key);
-    console.log('Content type:', contentType);
-    
     // Check if file exists before reading
     if (!fs.existsSync(filePath)) {
       throw new Error(`File not found: ${filePath}`);
     }
     
     const fileContent = fs.readFileSync(filePath);
-    console.log('📄 File read successfully, size:', fileContent.length, 'bytes');
       
     const params: PutObjectCommandInput = {
       Bucket: config.aws.bucket,
@@ -47,23 +41,15 @@ export const uploadToS3 = async (
       // Files will be accessible via bucket policy or CloudFront
     };
 
-    console.log('🔧 S3 upload params:', {
-      Bucket: params.Bucket,
-      Key: params.Key,
-      ContentType: params.ContentType,
-      BodySize: fileContent.length
-    });    const command = new PutObjectCommand(params);
+    const command = new PutObjectCommand(params);
     const result = await s3Client.send(command);
     
     // Construct the S3 URL manually since v3 doesn't return Location
     const location = `https://${config.aws.bucket}.s3.${config.aws.region}.amazonaws.com/${key}`;
     
-    console.log('✅ File uploaded successfully to S3:', location);
-    
     // Clean up local file after successful upload
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
-      console.log('🗑️ Local file cleaned up:', filePath);
     }
     
     return {
@@ -72,14 +58,7 @@ export const uploadToS3 = async (
       Key: key
     };
   } catch (error: any) {
-    console.error('❌ S3 upload failed:', error);
-    console.error('Error details:', {
-      message: error.message,
-      code: error.code,
-      statusCode: error.statusCode,
-      region: config.aws.region,
-      bucket: config.aws.bucket
-    });
+    console.error('S3 upload failed:', error.message);
     
     // Provide more specific error messages
     if (error.code === 'NoSuchBucket') {
@@ -110,9 +89,8 @@ export const deleteFromS3 = async (key: string): Promise<void> => {
 
     const command = new DeleteObjectCommand(params);
     await s3Client.send(command);
-    console.log('✅ File deleted successfully from S3:', key);
   } catch (error) {
-    console.error('❌ S3 deletion failed:', error);
+    console.error('S3 deletion failed:', error);
     throw new Error(`S3 deletion failed: ${error}`);
   }
 };

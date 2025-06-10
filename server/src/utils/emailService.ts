@@ -316,15 +316,14 @@ export const sendLeaveRequestNotification = async (
 
   try {
     const template = emailTemplates.leaveRequestSubmitted(employeeName, leaveType, startDate, endDate, totalDays, reason);
-    
-    await transporter.sendMail({
+      await transporter.sendMail({
       from: config.email.from,
       to: employeeEmail,
       subject: template.subject,
       html: template.html
     });
 
-    console.log(`Leave request notification sent to ${employeeEmail}`);
+    // Success - no need to log every email send in production
   } catch (error) {
     console.error('Error sending leave request notification:', error);
   }
@@ -356,16 +355,14 @@ export const sendLeaveStatusUpdateNotification = async (
     } else {
       // Don't send email for other status changes
       return;
-    }
-
-    await transporter.sendMail({
+    }    await transporter.sendMail({
       from: config.email.from,
       to: employeeEmail,
       subject: template.subject,
       html: template.html
     });
 
-    console.log(`Leave status update notification (${status}) sent to ${employeeEmail}`);
+    // Success - no need to log every email send in production
   } catch (error) {
     console.error('Error sending leave status update notification:', error);
   }
@@ -389,15 +386,14 @@ export const sendLeaveRequestAdminNotification = async (
 
   try {
     const template = emailTemplates.leaveRequestAdminNotification(employeeName, employeeEmail, leaveType, startDate, endDate, totalDays, reason, employeeDepartment);
-    
-    await transporter.sendMail({
+      await transporter.sendMail({
       from: config.email.from,
       to: adminEmail,
       subject: template.subject,
       html: template.html
     });
 
-    console.log(`Leave request admin notification sent to ${adminEmail}`);
+    // Success - no need to log every email send in production
   } catch (error) {
     console.error('Error sending leave request admin notification:', error);
   }
@@ -431,15 +427,14 @@ export const sendAdminLeaveRequestNotification = async (
       reason,
       employeeDepartment
     );
-    
-    await transporter.sendMail({
+      await transporter.sendMail({
       from: config.email.from,
       to: adminEmail,
       subject: template.subject,
       html: template.html
     });
 
-    console.log(`Admin leave request notification sent to ${adminEmail} for ${employeeName}'s request`);
+    // Success - no need to log every email send in production
   } catch (error) {
     console.error('Error sending admin leave request notification:', error);
   }

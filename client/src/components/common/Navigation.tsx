@@ -6,6 +6,7 @@ import { UserRole } from '@/types/auth';
 import { usePathname } from 'next/navigation';
 import { ThemeToggle } from './ThemeToggle';
 import UserDropdown from './UserDropdown';
+import NotificationDropdown from './NotificationDropdown';
 import { useState } from 'react';
 
 export default function Navigation() {
@@ -108,15 +109,14 @@ export default function Navigation() {
               </div>
             </div>
           </div>
-          
-          {/* Desktop Right Side */}
+            {/* Desktop Right Side */}
           <div className="hidden md:flex items-center space-x-4">
+            <NotificationDropdown />
             <ThemeToggle />
             <UserDropdown />
-          </div>
-
-          {/* Mobile menu button */}
+          </div>          {/* Mobile menu button */}
           <div className="md:hidden flex items-center space-x-2">
+            <NotificationDropdown />
             <ThemeToggle />
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}

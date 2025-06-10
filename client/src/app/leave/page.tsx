@@ -29,22 +29,16 @@ export default function LeavePage() {
             <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
               Manage your leave requests and view your available balance
             </p>
-          </div>            <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-            {/* Leave Balance - Top for all users, Sidebar for employees */}
-            {user?.role === UserRole.EMPLOYEE ? (
-              <div className="xl:col-span-1 xl:order-2">
-                <div className="xl:sticky xl:top-6">
-                  <LeaveBalance />
-                </div>
-              </div>
-            ) : (
-              <div className="xl:col-span-3 mb-4 sm:mb-6">
+          </div>          <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+            {/* Leave Balance - Sidebar for all users */}
+            <div className="xl:col-span-1 xl:order-2">
+              <div className="xl:sticky xl:top-6">
                 <LeaveBalance />
               </div>
-            )}
+            </div>
 
             {/* Main Leave Requests Section */}
-            <div className={`${user?.role === UserRole.EMPLOYEE ? 'xl:col-span-2 xl:order-1' : 'xl:col-span-3'}`}>
+            <div className="xl:col-span-2 xl:order-1">
               <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 transition-all duration-200">                <div className="p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div className="flex items-center space-x-3">

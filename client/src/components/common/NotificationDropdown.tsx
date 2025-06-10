@@ -139,12 +139,9 @@ export default function NotificationDropdown() {  const [notifications, setNotif
             {isLoading ? (
               <div className="flex items-center justify-center p-8">
                 <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-              </div>
-            ) : notifications.length === 0 ? (
+              </div>            ) : notifications.length === 0 ? (
               <div className="text-center p-8">
-                <svg className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5-5-5h5v-5a7.5 7.5 0 00-15 0v5h5l-5 5-5-5h5V7a7.5 7.5 0 0015 0v10z" />
-                </svg>
+                <Bell className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
                 <p className="text-gray-500 dark:text-gray-400">No notifications yet</p>
               </div>
             ) : (
