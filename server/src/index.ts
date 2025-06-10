@@ -8,7 +8,7 @@ import leaveRoutes from './routes/leave';
 import attendanceRoutes from './routes/attendance';
 import userRoutes from './routes/users';
 import notificationRoutes from './routes/notifications';
-import logger, { setupLogCleanup, logInfo, logError } from './utils/logger';
+import logger, { setupLogCleanup, logInfo, logError, logUserAction } from './utils/logger';
 import { morganMiddleware, morganErrorMiddleware } from './middleware/morganLogger';
 import { requestIdMiddleware, responseTimeMiddleware } from './middleware/requestTracking';
 import errorHandler from './middleware/errorHandler';
@@ -127,6 +127,86 @@ app.get('/health/detailed', async (req, res) => {
 
   const statusCode = health.status === 'ok' ? 200 : 503;
   res.status(statusCode).json(health);
+});
+
+// Diagnostic endpoint to test MongoDB logging
+app.get('/test-logging', async (req, res) => {
+  try {
+    // Test different log levels
+    logInfo('Test logging endpoint called', { 
+      testType: 'manual_test',
+      timestamp: new Date().toISOString(),
+      source: 'diagnostic_endpoint'
+    });
+
+    logUserAction(
+      'Test user action from diagnostic endpoint',
+      'test-user-id',
+      'test@diagnostic.com',
+      'admin',
+      {
+        testType: 'user_action_test',
+        source: 'diagnostic_endpoint'
+      }
+    );
+
+    // Test security event
+    import('./utils/logger').then(({ logSecurityEvent }) => {
+      logSecurityEvent(
+        'Test security event from diagnostic',
+        'low',
+        'test-user-id',
+        'test@diagnostic.com',
+        {
+          testType: 'security_test',
+          source: 'diagnostic_endpoint'
+        }
+      );
+    });
+
+    // Test direct MongoDB connection
+    const db = mongoose.connection.db;
+    if (db) {
+      const testDoc = {
+        timestamp: new Date(),
+        level: 'info',
+        message: 'Direct MongoDB test log',
+        metadata: {
+          testType: 'direct_mongo_test',
+          source: 'diagnostic_endpoint'
+        }
+      };
+      
+      await db.collection('logs').insertOne(testDoc);
+      
+      // Check if logs collection exists and count documents
+      const logsCount = await db.collection('logs').countDocuments();
+      
+      res.json({
+        success: true,
+        message: 'Logging tests completed',
+        mongoDirectTest: 'success',
+        totalLogsInCollection: logsCount,
+        tests: [
+          'logInfo test',
+          'logUserAction test', 
+          'logSecurityEvent test',
+          'Direct MongoDB insert test'
+        ]
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        error: 'MongoDB connection not available'
+      });
+    }
+  } catch (error) {
+    logError('Test logging endpoint error', { error: error instanceof Error ? error.message : error });
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
 });
 
 // Start server
