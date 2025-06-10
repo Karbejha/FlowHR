@@ -428,7 +428,8 @@ export default function EmployeeList() {
                       aria-label={`Select ${employee.firstName} ${employee.lastName}`}
                     />
                   </td>
-                )}                <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-100">
+                )}
+                <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-100">
                   <div className="flex items-center space-x-3">
                     <AvatarUpload 
                       currentAvatar={employee.avatar}

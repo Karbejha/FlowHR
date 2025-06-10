@@ -35,9 +35,7 @@ export default function AttendanceList({
         params: { startDate, endDate },
         headers: { Authorization: `Bearer ${token}` }
       });
-      setRecords(data);
-    } catch (err) {
-      console.error('Error fetching attendance records:', err);
+      setRecords(data);    } catch {
       toast.error('Failed to fetch attendance records');
     } finally {
       setIsLoading(false);
@@ -58,9 +56,7 @@ export default function AttendanceList({
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('Attendance status updated successfully');
-      fetchAttendanceRecords();
-    } catch (err) {
-      console.error('Error updating attendance status:', err);
+      fetchAttendanceRecords();    } catch {
       toast.error('Failed to update attendance status');
     }
   };
@@ -133,13 +129,9 @@ export default function AttendanceList({
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                    {records.map((record, index) => (
-                      <tr 
-                        key={record._id}
-                        className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150 ${
-                          index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50/50 dark:bg-gray-750'
-                        }`}
-                      >
+                    {records.map((record) => (
+                      <tr key={record._id}
+                        className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150 bg-white dark:bg-gray-800">
                         {user?.role !== UserRole.EMPLOYEE && (
                           <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                             {record.employee.firstName} {record.employee.lastName}
@@ -180,19 +172,18 @@ export default function AttendanceList({
                               </div>
                             ))}
                           </div>
-                        </td>
-                        {(user?.role === UserRole.MANAGER || user?.role === UserRole.ADMIN) && (
+                        </td>                        {(user?.role === UserRole.MANAGER || user?.role === UserRole.ADMIN) && (
                           <td className="px-4 py-4 whitespace-nowrap">
                             <select
                               aria-label={`Update status for ${record.employee.firstName} ${record.employee.lastName}`}
                               onChange={(e) => handleStatusUpdate(record._id, { status: e.target.value as AttendanceStatus })}
-                              className="block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-blue-500 dark:focus:border-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400 sm:text-sm transition-colors duration-150"
+                              className="block w-full rounded-lg border-2 border-gray-300 dark:border-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm hover:border-gray-400 dark:hover:border-gray-400 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 focus:outline-none sm:text-sm transition-all duration-200 ease-in-out cursor-pointer"
                               value={record.status}
                             >
-                              <option value="present">Present</option>
-                              <option value="absent">Absent</option>
-                              <option value="late">Late</option>
-                              <option value="half-day">Half Day</option>
+                              <option value="present" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">Present</option>
+                              <option value="absent" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">Absent</option>
+                              <option value="late" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">Late</option>
+                              <option value="half-day" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">Half Day</option>
                             </select>
                           </td>
                         )}
