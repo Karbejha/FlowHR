@@ -1,5 +1,6 @@
 import { S3Client, PutObjectCommand, DeleteObjectCommand, PutObjectCommandInput, DeleteObjectCommandInput } from '@aws-sdk/client-s3';
 import { config } from '../config/config';
+import { logInfo, logError } from './logger';
 import fs from 'fs';
 import path from 'path';
 
@@ -43,9 +44,15 @@ export const uploadToS3 = async (
 
     const command = new PutObjectCommand(params);
     const result = await s3Client.send(command);
-    
-    // Construct the S3 URL manually since v3 doesn't return Location
+      // Construct the S3 URL manually since v3 doesn't return Location
     const location = `https://${config.aws.bucket}.s3.${config.aws.region}.amazonaws.com/${key}`;
+    
+    logInfo('File uploaded to S3 successfully', {
+      s3Key: key,
+      fileSize: fileContent.length,
+      contentType,
+      location
+    });
     
     // Clean up local file after successful upload
     if (fs.existsSync(filePath)) {
@@ -56,9 +63,15 @@ export const uploadToS3 = async (
       Location: location,
       ETag: result.ETag || '',
       Key: key
-    };
-  } catch (error: any) {
-    console.error('S3 upload failed:', error.message);
+    };  } catch (error: any) {
+    logError('S3 upload failed', {
+      error: error.message,
+      code: error.code,
+      statusCode: error.statusCode,
+      bucket: config.aws.bucket,
+      region: config.aws.region,
+      key
+    });
     
     // Provide more specific error messages
     if (error.code === 'NoSuchBucket') {
@@ -85,12 +98,12 @@ export const deleteFromS3 = async (key: string): Promise<void> => {
     const params: DeleteObjectCommandInput = {
       Bucket: config.aws.bucket,
       Key: key
-    };
-
-    const command = new DeleteObjectCommand(params);
+    };    const command = new DeleteObjectCommand(params);
     await s3Client.send(command);
+    
+    logInfo('File deleted from S3 successfully', { s3Key: key });
   } catch (error) {
-    console.error('S3 deletion failed:', error);
+    logError('S3 deletion failed', { error, s3Key: key });
     throw new Error(`S3 deletion failed: ${error}`);
   }
 };

@@ -1,11 +1,12 @@
 import nodemailer from 'nodemailer';
 import { config } from '../config/config';
+import { logInfo, logWarn, logError } from './logger';
 import { LeaveStatus } from '../models/Leave';
 
 // Create email transporter
 const createTransporter = () => {
   if (!config.email.user || !config.email.pass) {
-    console.warn('Email credentials not configured. Email notifications will be disabled.');
+    logWarn('Email credentials not configured. Email notifications will be disabled.');
     return null;
   }
 
@@ -306,26 +307,29 @@ export const sendLeaveRequestNotification = async (
   leaveType: string,
   startDate: string,
   endDate: string,
-  totalDays: number,
-  reason: string
+  totalDays: number,  reason: string
 ): Promise<void> => {
   if (!transporter) {
-    console.warn('Email transporter not configured. Skipping email notification.');
+    logWarn('Email transporter not configured. Skipping email notification.');
     return;
   }
 
   try {
-    const template = emailTemplates.leaveRequestSubmitted(employeeName, leaveType, startDate, endDate, totalDays, reason);
-      await transporter.sendMail({
+    const template = emailTemplates.leaveRequestSubmitted(employeeName, leaveType, startDate, endDate, totalDays, reason);    await transporter.sendMail({
       from: config.email.from,
       to: employeeEmail,
       subject: template.subject,
       html: template.html
     });
 
-    // Success - no need to log every email send in production
+    logInfo('Leave request notification sent successfully', { 
+      to: employeeEmail, 
+      leaveType, 
+      startDate, 
+      endDate 
+    });
   } catch (error) {
-    console.error('Error sending leave request notification:', error);
+    logError('Error sending leave request notification', { error, to: employeeEmail });
   }
 };
 
@@ -337,11 +341,10 @@ export const sendLeaveStatusUpdateNotification = async (
   endDate: string,
   totalDays: number,
   status: LeaveStatus,
-  approverName: string,
-  approvalNotes?: string
+  approverName: string,  approvalNotes?: string
 ): Promise<void> => {
   if (!transporter) {
-    console.warn('Email transporter not configured. Skipping email notification.');
+    logWarn('Email transporter not configured. Skipping email notification.');
     return;
   }
 
@@ -360,11 +363,15 @@ export const sendLeaveStatusUpdateNotification = async (
       to: employeeEmail,
       subject: template.subject,
       html: template.html
-    });
-
-    // Success - no need to log every email send in production
+    });    // Success - no need to log every email send in production
   } catch (error) {
-    console.error('Error sending leave status update notification:', error);
+    logError('Error sending leave status update notification', {
+      employeeEmail,
+      employeeName,
+      leaveType,
+      status,
+      error: error instanceof Error ? error.message : error
+    });
   }
 };
 
@@ -378,9 +385,12 @@ export const sendLeaveRequestAdminNotification = async (
   totalDays: number,
   reason: string,
   employeeDepartment?: string
-): Promise<void> => {
-  if (!transporter) {
-    console.warn('Email transporter not configured. Skipping email notification.');
+): Promise<void> => {  if (!transporter) {
+    logWarn('Email transporter not configured. Skipping email notification.', {
+      operation: 'sendLeaveRequestEmail',
+      employeeEmail,
+      leaveType
+    });
     return;
   }
 
@@ -391,11 +401,15 @@ export const sendLeaveRequestAdminNotification = async (
       to: adminEmail,
       subject: template.subject,
       html: template.html
-    });
-
-    // Success - no need to log every email send in production
+    });    // Success - no need to log every email send in production
   } catch (error) {
-    console.error('Error sending leave request admin notification:', error);
+    logError('Error sending leave request admin notification', {
+      adminEmail,
+      employeeName,
+      employeeEmail,
+      leaveType,
+      error: error instanceof Error ? error.message : error
+    });
   }
 };
 
@@ -410,9 +424,12 @@ export const sendAdminLeaveRequestNotification = async (
   totalDays: number,
   reason: string,
   employeeDepartment?: string
-): Promise<void> => {
-  if (!transporter) {
-    console.warn('Email transporter not configured. Skipping admin notification.');
+): Promise<void> => {  if (!transporter) {
+    logWarn('Email transporter not configured. Skipping admin notification.', {
+      operation: 'sendAdminNotificationEmail',
+      employeeEmail,
+      leaveType
+    });
     return;
   }
 
@@ -432,11 +449,15 @@ export const sendAdminLeaveRequestNotification = async (
       to: adminEmail,
       subject: template.subject,
       html: template.html
-    });
-
-    // Success - no need to log every email send in production
+    });    // Success - no need to log every email send in production
   } catch (error) {
-    console.error('Error sending admin leave request notification:', error);
+    logError('Error sending admin leave request notification', {
+      adminEmail,
+      employeeName,
+      employeeEmail,
+      leaveType,
+      error: error instanceof Error ? error.message : error
+    });
   }
 };
 

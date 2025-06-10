@@ -4,6 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import { User, UserRole } from '../models/User';
 import { uploadToS3, deleteFromS3, getS3KeyFromUrl } from '../utils/s3Service';
+import { logError, logWarn } from '../utils/logger';
 
 export const getEmployees = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -102,11 +103,13 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
 
     // Remove password from response
     const userResponse = user.toObject();
-    const { password: _, ...userWithoutPassword } = userResponse;
-
-    res.status(201).json(userWithoutPassword);
+    const { password: _, ...userWithoutPassword } = userResponse;    res.status(201).json(userWithoutPassword);
   } catch (error) {
-    console.error('Error creating user:', error);
+    logError('Error creating user', {
+      email: req.body.email,
+      role: req.body.role,
+      error: error instanceof Error ? error.message : error
+    });
     res.status(500).json({ error: 'Error creating user' });
   }
 };
@@ -261,11 +264,12 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
     if (!updatedUser) {
       res.status(404).json({ error: 'User not found' });
       return;
-    }
-
-    res.json(updatedUser);
+    }    res.json(updatedUser);
   } catch (error) {
-    console.error('Error updating user:', error);
+    logError('Error updating user', {
+      userId: req.params.id,
+      error: error instanceof Error ? error.message : error
+    });
     res.status(500).json({ error: 'Error updating user' });
   }
 };
@@ -294,11 +298,13 @@ export const deleteUser = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    await User.findByIdAndDelete(id);
-
-    res.json({ message: 'User deleted successfully' });
+    await User.findByIdAndDelete(id);    res.json({ message: 'User deleted successfully' });
   } catch (error) {
-    console.error('Error deleting user:', error);
+    logError('Error deleting user', {
+      userId: req.params.id,
+      adminId: req.user._id,
+      error: error instanceof Error ? error.message : error
+    });
     res.status(500).json({ error: 'Error deleting user' });
   }
 };
@@ -350,7 +356,11 @@ export const adminChangePassword = async (req: Request, res: Response): Promise<
     user.password = newPassword;
     await user.save();    res.json({ message: 'Password updated successfully' });
   } catch (error) {
-    console.error('Error changing password:', error);
+    logError('Error changing password', {
+      userId: req.params.id,
+      adminId: req.user._id,
+      error: error instanceof Error ? error.message : error
+    });
     res.status(500).json({ error: 'Error changing password' });
   }
 };
@@ -403,10 +413,13 @@ export const uploadAvatar = async (req: Request, res: Response): Promise<void> =
       // Delete old avatar from S3 if it exists
       if (user.avatar) {
         try {
-          const oldS3Key = getS3KeyFromUrl(user.avatar);
-          await deleteFromS3(oldS3Key);
+          const oldS3Key = getS3KeyFromUrl(user.avatar);          await deleteFromS3(oldS3Key);
         } catch (deleteError) {
-          console.warn('Failed to delete old avatar from S3:', deleteError);
+          logWarn('Failed to delete old avatar from S3', {
+            userId: user._id,
+            oldS3Key: getS3KeyFromUrl(user.avatar),
+            error: deleteError instanceof Error ? deleteError.message : deleteError
+          });
           // Continue with upload even if deletion fails
         }
       }
@@ -423,20 +436,26 @@ export const uploadAvatar = async (req: Request, res: Response): Promise<void> =
 
       res.json({ 
         message: 'Avatar uploaded successfully',
-        avatar: s3Result.Location
-      });
+        avatar: s3Result.Location      });
     } catch (s3Error) {
-      console.error('S3 upload error:', s3Error);
+      logError('S3 upload error', {
+        userId: user._id,
+        filename: req.file.filename,
+        error: s3Error instanceof Error ? s3Error.message : s3Error
+      });
       
       // Clean up temporary file
       if (fs.existsSync(req.file.path)) {
         fs.unlinkSync(req.file.path);
       }
       
-      res.status(500).json({ error: 'Failed to upload avatar to cloud storage' });
-    }
+      res.status(500).json({ error: 'Failed to upload avatar to cloud storage' });    }
   } catch (error) {
-    console.error('Error uploading avatar:', error);
+    logError('Error uploading avatar', {
+      userId: req.params.id,
+      filename: req.file?.filename,
+      error: error instanceof Error ? error.message : error
+    });
     
     // Clean up temporary file
     if (req.file && fs.existsSync(req.file.path)) {
@@ -477,20 +496,25 @@ export const deleteAvatar = async (req: Request, res: Response): Promise<void> =
     // Delete avatar from S3 if it exists
     if (user.avatar) {
       try {
-        const s3Key = getS3KeyFromUrl(user.avatar);
-        await deleteFromS3(s3Key);
+        const s3Key = getS3KeyFromUrl(user.avatar);        await deleteFromS3(s3Key);
       } catch (deleteError) {
-        console.warn('Failed to delete avatar from S3:', deleteError);
+        logWarn('Failed to delete avatar from S3', {
+          userId: user._id,
+          s3Key: getS3KeyFromUrl(user.avatar),
+          error: deleteError instanceof Error ? deleteError.message : deleteError
+        });
         // Continue with database update even if S3 deletion fails
       }
     }
 
     // Remove avatar from user
     user.avatar = undefined;
-    await user.save();
-
-    res.json({ message: 'Avatar deleted successfully' });
+    await user.save();    res.json({ message: 'Avatar deleted successfully' });
   } catch (error) {
-    console.error('Error deleting avatar:', error);
-    res.status(500).json({ error: 'Error deleting avatar' });  }
+    logError('Error deleting avatar', {
+      userId: req.params.id,
+      error: error instanceof Error ? error.message : error
+    });
+    res.status(500).json({ error: 'Error deleting avatar' });
+  }
 };

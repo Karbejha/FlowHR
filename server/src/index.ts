@@ -8,6 +8,12 @@ import leaveRoutes from './routes/leave';
 import attendanceRoutes from './routes/attendance';
 import userRoutes from './routes/users';
 import notificationRoutes from './routes/notifications';
+import logger, { setupLogCleanup, logInfo, logError } from './utils/logger';
+import { morganMiddleware, morganErrorMiddleware } from './middleware/morganLogger';
+import { requestIdMiddleware, responseTimeMiddleware } from './middleware/requestTracking';
+import errorHandler from './middleware/errorHandler';
+import { captureAuthAttempt } from './middleware/captureAuthAttempt';
+import { userActivityTracker } from './middleware/userActivityTracker';
 
 const app = express();
 
@@ -26,29 +32,53 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
+// Request tracking middleware
+app.use(requestIdMiddleware);
+app.use(responseTimeMiddleware);
+
+// Capture auth attempts middleware
+app.use(captureAuthAttempt);
+
+// HTTP request logging
+app.use(morganMiddleware);
+app.use(morganErrorMiddleware);
+
 // Serve uploaded files statically
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/leave', leaveRoutes);
-app.use('/api/attendance', attendanceRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/notifications', notificationRoutes);
+
+// Add user activity tracking for all protected routes
+app.use('/api/leave', userActivityTracker, leaveRoutes);
+app.use('/api/attendance', userActivityTracker, attendanceRoutes);
+app.use('/api/users', userActivityTracker, userRoutes);
+app.use('/api/notifications', userActivityTracker, notificationRoutes);
+
+// Error handling middleware (must be after routes)
+app.use(errorHandler);
 
 // Connect to MongoDB
 mongoose.connect(config.mongoUri)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch((err) => console.error('MongoDB connection error:', err));
+  .then(() => {
+    logInfo('Connected to MongoDB successfully');
+    setupLogCleanup(mongoose.connection); // Initialize log cleanup system with connection
+  })
+  .catch((err) => {
+    logError('MongoDB connection error:', err);
+    process.exit(1);
+  });
 
 // Health check routes
 app.get('/health', (req, res) => {
-  res.json({ 
+  const healthData = { 
     status: 'ok',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     environment: process.env.NODE_ENV || 'development'
-  });
+  };
+  logInfo('Health check requested', { requestId: req.requestId, ...healthData });
+  res.json(healthData);
 });
 
 // Simple health check for load balancers/monitoring tools
@@ -89,5 +119,9 @@ app.get('/health/detailed', async (req, res) => {
 
 // Start server
 app.listen(config.port, () => {
-  console.log(`Server is running on port ${config.port}`);
+  logInfo(`Server started successfully on port ${config.port}`, {
+    port: config.port,
+    environment: process.env.NODE_ENV || 'development',
+    nodeVersion: process.version
+  });
 });

@@ -9,6 +9,7 @@ import {
   createLeaveRejectionNotification 
 } from './notificationController';
 import { Document } from 'mongoose';
+import { logError, logWarn } from '../utils/logger';
 
 export const submitLeaveRequest = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -42,13 +43,15 @@ export const submitLeaveRequest = async (req: Request, res: Response): Promise<v
         leave.leaveType,
         formatDate(leave.startDate),
         formatDate(leave.endDate),
-        totalDays,
-        leave.reason || 'No reason provided'
-      );
-    } catch (emailError) {
-      console.error('Error sending leave request email notification:', emailError);
+        totalDays,        leave.reason || 'No reason provided'
+      );    } catch (emailError) {
+      logError('Error sending leave request email notification', {
+        employeeId: leave.employee,
+        leaveId: leave._id,
+        error: emailError instanceof Error ? emailError.message : emailError
+      });
       // Don't fail the request if email fails
-    }    // Send admin notification
+    }// Send admin notification
     const { config } = await import('../config/config');
     try {
       await sendAdminLeaveRequestNotification(
@@ -59,11 +62,14 @@ export const submitLeaveRequest = async (req: Request, res: Response): Promise<v
         formatDate(leave.startDate),
         formatDate(leave.endDate),
         totalDays,
-        leave.reason || 'No reason provided',
-        employee.department
-      );
-    } catch (emailError) {
-      console.error('Error sending admin leave request notification:', emailError);
+        leave.reason || 'No reason provided',        employee.department
+      );    } catch (emailError) {
+      logError('Error sending admin leave request notification', {
+        employeeId: leave.employee,
+        leaveId: leave._id,
+        adminEmail: config.email.adminEmail,
+        error: emailError instanceof Error ? emailError.message : emailError
+      });
       // Don't fail the request if email fails
     }
 
@@ -83,16 +89,21 @@ export const submitLeaveRequest = async (req: Request, res: Response): Promise<v
           leave.leaveType,
           formatDate(leave.startDate),
           formatDate(leave.endDate)
-        );
-      }
-    } catch (notificationError) {
-      console.error('Error creating leave request notifications:', notificationError);
+        );      }    } catch (notificationError) {
+      logError('Error creating leave request notifications', {
+        employeeId: leave.employee,
+        leaveId: leave._id,
+        error: notificationError instanceof Error ? notificationError.message : notificationError
+      });
       // Don't fail the request if notification creation fails
     }
     
     res.status(201).json(leave);
   } catch (error) {
-    console.error('Leave request error:', error);
+    logError('Leave request error', {
+      employeeId: (req as any).user?.id,
+      error: error instanceof Error ? error.message : error
+    });
     res.status(400).json({ error: error instanceof Error ? error.message : 'Error submitting leave request' });
   }
 };
@@ -218,10 +229,13 @@ export const updateLeaveStatus = async (req: Request, res: Response): Promise<vo
         leave.totalDays,
         status,
         `${req.user.firstName} ${req.user.lastName}`,
-        approvalNotes
-      );
-    } catch (emailError) {
-      console.error('Error sending leave status update email notification:', emailError);
+        approvalNotes      );    } catch (emailError) {
+      logError('Error sending leave status update email notification', {
+        employeeId: leave.employee,
+        leaveId: leave._id,
+        status,
+        error: emailError instanceof Error ? emailError.message : emailError
+      });
       // Don't fail the request if email fails
     }
 
@@ -241,10 +255,13 @@ export const updateLeaveStatus = async (req: Request, res: Response): Promise<vo
           formatDate(leave.startDate),
           formatDate(leave.endDate),
           approvalNotes
-        );
-      }
-    } catch (notificationError) {
-      console.error('Error creating leave status notification:', notificationError);
+        );      }    } catch (notificationError) {
+      logError('Error creating leave status notification', {
+        employeeId: leave.employee,
+        leaveId: leave._id,
+        status,
+        error: notificationError instanceof Error ? notificationError.message : notificationError
+      });
       // Don't fail the request if notification creation fails
     }
     

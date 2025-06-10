@@ -1,6 +1,7 @@
 import express from 'express';
 import { authenticate, authorize } from '../middleware/auth';
 import { avatarUpload } from '../middleware/upload';
+import { userActionLogger } from '../middleware/errorHandler';
 import { UserRole } from '../models/User';
 import { 
   getEmployees, 

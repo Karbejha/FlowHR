@@ -1,5 +1,6 @@
 import express, { Request, Response, NextFunction, RequestHandler } from 'express';
 import { authenticate, authorize } from '../middleware/auth';
+import { userActionLogger } from '../middleware/errorHandler';
 import { UserRole } from '../models/User';
 import {
   submitLeaveRequest,

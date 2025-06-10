@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import Notification, { NotificationType } from '../models/Notification';
+import { logError } from '../utils/logger';
 
 // Define AuthenticatedRequest interface
 interface AuthenticatedRequest extends Request {
@@ -37,9 +38,11 @@ export const getNotifications = async (req: AuthenticatedRequest, res: Response)
       page,
       limit,
       totalPages: Math.ceil(totalCount / limit)
+    });  } catch (error) {
+    logError('Error fetching notifications', {
+      userId: req.user?.id,
+      error: error instanceof Error ? error.message : error
     });
-  } catch (error) {
-    console.error('Error fetching notifications:', error);
     res.status(500).json({ message: 'Failed to fetch notifications' });
   }
 };
@@ -58,11 +61,13 @@ export const markAsRead = async (req: AuthenticatedRequest, res: Response) => {
 
     if (!notification) {
       return res.status(404).json({ message: 'Notification not found' });
-    }
-
-    res.json({ message: 'Notification marked as read', notification });
+    }    res.json({ message: 'Notification marked as read', notification });
   } catch (error) {
-    console.error('Error marking notification as read:', error);
+    logError('Error marking notification as read', {
+      userId: req.user?.id,
+      notificationId: req.params.id,
+      error: error instanceof Error ? error.message : error
+    });
     res.status(500).json({ message: 'Failed to mark notification as read' });
   }
 };
@@ -75,11 +80,12 @@ export const markAllAsRead = async (req: AuthenticatedRequest, res: Response) =>
     await Notification.updateMany(
       { userId, isRead: false },
       { isRead: true }
-    );
-
-    res.json({ message: 'All notifications marked as read' });
+    );    res.json({ message: 'All notifications marked as read' });
   } catch (error) {
-    console.error('Error marking all notifications as read:', error);
+    logError('Error marking all notifications as read', {
+      userId: req.user?.id,
+      error: error instanceof Error ? error.message : error
+    });
     res.status(500).json({ message: 'Failed to mark all notifications as read' });
   }
 };
@@ -94,11 +100,13 @@ export const deleteNotification = async (req: AuthenticatedRequest, res: Respons
 
     if (!notification) {
       return res.status(404).json({ message: 'Notification not found' });
-    }
-
-    res.json({ message: 'Notification deleted successfully' });
+    }    res.json({ message: 'Notification deleted successfully' });
   } catch (error) {
-    console.error('Error deleting notification:', error);
+    logError('Error deleting notification', {
+      userId: req.user?.id,
+      notificationId: req.params.id,
+      error: error instanceof Error ? error.message : error
+    });
     res.status(500).json({ message: 'Failed to delete notification' });
   }
 };
@@ -118,12 +126,14 @@ export const createNotification = async (
       message,
       type,
       actionUrl
-    });
-
-    await notification.save();
+    });    await notification.save();
     return notification;
   } catch (error) {
-    console.error('Error creating notification:', error);
+    logError('Error creating notification', {
+      userId,
+      type,
+      error: error instanceof Error ? error.message : error
+    });
     throw error;
   }
 };
