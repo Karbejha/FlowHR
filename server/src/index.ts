@@ -83,6 +83,16 @@ mongoose.connect(config.mongoUri)
     process.exit(1);
   });
 
+// Root route for basic connectivity test
+app.get('/', (req, res) => {
+  res.json({
+    status: 'Server is running',
+    message: 'HR-VS Backend API',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
 // Health check routes
 app.get('/health', (req, res) => {
   const healthData = { 
