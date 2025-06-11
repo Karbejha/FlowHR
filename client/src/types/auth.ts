@@ -16,6 +16,8 @@ export interface User {
   hireDate: Date;
   isActive: boolean;
   avatar?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface AuthState {

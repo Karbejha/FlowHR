@@ -104,18 +104,21 @@ export default function SettingsPage() {
     breakReminders: false,
     overtimeAlerts: true,
     weeklyReports: true,
-  });
-  const [security, setSecurity] = useState<SecuritySettings>({
+  });  const [security, setSecurity] = useState<SecuritySettings>({
     twoFactorEnabled: false,
     sessionTimeout: 60,
     loginNotifications: true,
-    deviceManagement: true,  });
+    deviceManagement: true,
+  });
+
   // RTL helper functions
   const getToggleClasses = (isEnabled: boolean) => {
     const baseClasses = `relative inline-flex h-6 w-11 items-center justify-start rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 p-1 ${isRTL ? 'flex-row-reverse' : ''}`;
     const backgroundClasses = isEnabled ? "bg-blue-600" : "bg-gray-200 dark:bg-gray-700";
     return `${baseClasses} ${backgroundClasses}`;
-  };const getToggleCircleClasses = (isEnabled: boolean) => {
+  };
+
+  const getToggleCircleClasses = (isEnabled: boolean) => {
     const baseClasses = "absolute h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ease-in-out";
     
     // RTL-aware positioning for toggle circle
@@ -242,12 +245,19 @@ export default function SettingsPage() {
             <p className="text-sm text-gray-600 dark:text-gray-400 capitalize bg-white dark:bg-gray-800 px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600">
               {user?.role.toLowerCase()}
             </p>
-          </div>
-          <div>
+          </div>          <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               {t('settings.memberSince')}
             </label>            <p className="text-sm text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600">
-              {new Date().toLocaleDateString()}
+              {(() => {
+                // Use hireDate if available, otherwise use createdAt, fallback to current date
+                const memberDate = user?.hireDate 
+                  ? new Date(user.hireDate)
+                  : user?.createdAt 
+                    ? new Date(user.createdAt)
+                    : new Date();
+                return memberDate.toLocaleDateString();
+              })()}
             </p>
           </div>
         </div>
