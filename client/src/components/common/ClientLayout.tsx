@@ -3,15 +3,21 @@
 import { ReactNode, useEffect } from 'react';
 import Navigation from './Navigation';
 import { Toaster } from 'react-hot-toast';
+import { useTranslation } from '@/contexts/I18nContext';
 
 interface ClientLayoutProps {
   children: ReactNode;
 }
 
 export default function ClientLayout({ children }: ClientLayoutProps) {
-  // Prevent theme flash and add mobile optimizations
+  const { isRTL } = useTranslation();
+  
+  // Apply RTL direction and prevent theme flash
   useEffect(() => {
     document.documentElement.classList.add('no-transitions');
+    
+    // Apply RTL direction
+    document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
     
     // Mobile-specific optimizations for Capacitor
     const viewport = document.querySelector('meta[name="viewport"]');
@@ -29,11 +35,10 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
     root.style.setProperty('--safe-area-inset-bottom', 'env(safe-area-inset-bottom, 0px)');
     root.style.setProperty('--safe-area-inset-left', 'env(safe-area-inset-left, 0px)');
     root.style.setProperty('--safe-area-inset-right', 'env(safe-area-inset-right, 0px)');
-    
-    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
       document.documentElement.classList.remove('no-transitions');
     });
-  }, []);
+  }, [isRTL]);
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 overflow-x-hidden">

@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback, Fragment } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from '@/contexts/I18nContext';
 import axios, { AxiosError } from 'axios';
 import { User, UserRole } from '@/types/auth';
 import toast from 'react-hot-toast';
@@ -12,6 +13,7 @@ import { Menu, Transition } from '@headlessui/react';
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function EmployeeList() {
+  const { t, isRTL } = useTranslation();
   const [employees, setEmployees] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -33,10 +35,9 @@ export default function EmployeeList() {
   });
 
   const { user, token } = useAuth();
-
   const fetchEmployees = useCallback(async () => {
     if (!token) {
-      toast.error('Authentication required');
+      toast.error(t('messages.authenticationRequired'));
       return;
     }
     
@@ -48,11 +49,11 @@ export default function EmployeeList() {
       setEmployees(data);
     } catch (error) {
       const err = error as AxiosError<{ error: string }>;
-      toast.error(err.response?.data?.error || 'Error fetching employees');
+      toast.error(err.response?.data?.error || t('messages.failedToFetchAttendanceRecords'));
     } finally {
       setIsLoading(false);
     }
-  }, [token]);
+  }, [token, t]);
 
   useEffect(() => {
     if (token) {
@@ -77,10 +78,9 @@ export default function EmployeeList() {
       newSelected.delete(employeeId);
     }
     setSelectedEmployees(newSelected);
-  };
-  const handleBulkDelete = async () => {
+  };  const handleBulkDelete = async () => {
     if (selectedEmployees.size === 0) {
-      toast.error('Please select employees to delete');
+      toast.error(t('employee.selectEmployees'));
       return;
     }
     setDeleteConfirmation({
@@ -91,10 +91,9 @@ export default function EmployeeList() {
       selectedCount: selectedEmployees.size
     });
   };
-
   const updateEmployeeStatus = useCallback(async (employeeId: string, isActive: boolean) => {
     if (!token) {
-      toast.error('Authentication required');
+      toast.error(t('messages.authenticationRequired'));
       return;
     }
     
@@ -104,18 +103,17 @@ export default function EmployeeList() {
         { isActive },
         { headers: { Authorization: `Bearer ${token}` }}
       );
-      toast.success('Employee status updated successfully');
+      toast.success(t('employee.employeeUpdated'));
       fetchEmployees();
     } catch (error) {
       const err = error as AxiosError<{ error: string }>;
-      toast.error(err.response?.data?.error || 'Error updating employee status');
+      toast.error(err.response?.data?.error || t('messages.failedToUpdateUser'));
     }
-  }, [token, fetchEmployees]);
-  const confirmDeleteEmployee = useCallback(async () => {
+  }, [token, fetchEmployees, t]);  const confirmDeleteEmployee = useCallback(async () => {
     const { employeeId, isBulkDelete } = deleteConfirmation;
     
     if (!token) {
-      toast.error('Authentication required');
+      toast.error(t('messages.authenticationRequired'));
       return;
     }
     try {
@@ -128,23 +126,23 @@ export default function EmployeeList() {
             })
           )
         );
-        toast.success(`${selectedEmployees.size} employee(s) deleted successfully`);
+        toast.success(t('employee.confirmBulkDelete', { count: selectedEmployees.size }));
         setSelectedEmployees(new Set());
       } else {
         // Handle single delete
         await axios.delete(`${API_URL}/users/${employeeId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        toast.success('Employee deleted successfully');
+        toast.success(t('employee.employeeDeleted'));
       }
       
       fetchEmployees();
       setDeleteConfirmation({ isOpen: false, employeeId: '', employeeName: '', isBulkDelete: false, selectedCount: 0 });
     } catch (error) {
       const err = error as AxiosError<{ error: string }>;
-      toast.error(err.response?.data?.error || 'Error deleting employee(s)');
+      toast.error(err.response?.data?.error || t('messages.failedToUpdateUser'));
     }
-  }, [token, fetchEmployees, deleteConfirmation, selectedEmployees]);
+  }, [token, fetchEmployees, deleteConfirmation, selectedEmployees, t]);
 
   const cancelDeleteEmployee = useCallback(() => {
     setDeleteConfirmation({ isOpen: false, employeeId: '', employeeName: '', isBulkDelete: false, selectedCount: 0 });
@@ -199,9 +197,8 @@ export default function EmployeeList() {
       selectedCount: 0
     });
   };
-
   if (isLoading) {
-    return <div className="text-center">Loading...</div>;
+    return <div className="text-center">{t('common.loading')}</div>;
   }
 
   return (
@@ -217,11 +214,10 @@ export default function EmployeeList() {
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                  <span>Delete Selected ({selectedEmployees.size})</span>
+                  </svg>                  <span>{t('employee.bulkDelete')} ({selectedEmployees.size})</span>
                 </button>
                 <span className="text-sm text-gray-500 dark:text-gray-400 self-center">
-                  {selectedEmployees.size} employee(s) selected
+                  {selectedEmployees.size} {t('employee.selectEmployees')}
                 </span>
               </>
             )}
@@ -232,18 +228,16 @@ export default function EmployeeList() {
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            <span>Add New Employee</span>
+            </svg>            <span>{t('employee.addNewEmployee')}</span>
           </button>
         </div>
       )}
 
       {showAddForm && (
-        <AddUserForm
-          onSuccess={() => {
+        <AddUserForm          onSuccess={() => {
             setShowAddForm(false);
             fetchEmployees();
-            toast.success('User created successfully');
+            toast.success(t('messages.userCreatedSuccessfully'));
           }}
           onCancel={() => setShowAddForm(false)}
         />
@@ -251,12 +245,11 @@ export default function EmployeeList() {
 
       {showEditForm && editingEmployee && (
         <EditUserForm
-          employee={editingEmployee}
-          onSuccess={() => {
+          employee={editingEmployee}          onSuccess={() => {
             setShowEditForm(false);
             setEditingEmployee(null);
             fetchEmployees();
-            toast.success('Employee updated successfully');
+            toast.success(t('messages.employeeUpdatedSuccessfully'));
           }}
           onCancel={() => {
             setShowEditForm(false);
@@ -308,9 +301,8 @@ export default function EmployeeList() {
                     leaveFrom="transform opacity-100 scale-100"
                     leaveTo="transform opacity-0 scale-95"
                   >
-                    <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800 border border-gray-200 dark:border-gray-700 z-50">                      <Menu.Item>
-                        {({ close }) => (
-                          <button
+                    <Menu.Items className={`absolute ${isRTL ? 'left-0' : 'right-0'} mt-2 w-48 ${isRTL ? 'origin-top-left' : 'origin-top-right'} rounded-md bg-white py-1 shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800 border border-gray-200 dark:border-gray-700 z-50`}>                      <Menu.Item>
+                        {({ close }) => (                          <button
                             onClick={(e) => {
                               onEditEmployee(employee)(e);
                               close();
@@ -320,7 +312,7 @@ export default function EmployeeList() {
                             <svg className="w-4 h-4 mr-3 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>
-                            Edit Employee
+                            {t('employee.editEmployee')}
                           </button>
                         )}
                       </Menu.Item>
@@ -329,20 +321,18 @@ export default function EmployeeList() {
                           <button
                             onClick={onUpdateEmployeeStatus(employee._id, !employee.isActive)}
                             className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
-                          >
-                            <svg className={`w-4 h-4 mr-3 ${employee.isActive ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          >                            <svg className={`w-4 h-4 mr-3 ${employee.isActive ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               {employee.isActive ? (
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728" />
                               ) : (
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                               )}
                             </svg>
-                            {employee.isActive ? 'Deactivate' : 'Activate'}
+                            {employee.isActive ? t('employee.deactivate') : t('employee.activate')}
                           </button>
                         )}
                       </Menu.Item>
-                      <div className="border-t border-gray-100 dark:border-gray-600 my-1"></div>
-                      <Menu.Item>
+                      <div className="border-t border-gray-100 dark:border-gray-600 my-1"></div>                      <Menu.Item>
                         {() => (
                           <button
                             onClick={onDeleteEmployee(employee)}
@@ -351,7 +341,7 @@ export default function EmployeeList() {
                             <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
-                            Delete Employee
+                            {t('employee.deleteEmployee')}
                           </button>
                         )}
                       </Menu.Item>
@@ -361,27 +351,26 @@ export default function EmployeeList() {
               )}
             </div>
             
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <p className="text-gray-500 dark:text-gray-400">Department</p>
+            <div className="grid grid-cols-2 gap-4 text-sm">              <div>
+                <p className="text-gray-500 dark:text-gray-400">{t('employee.department')}</p>
                 <p className="font-medium text-gray-900 dark:text-white">{employee.department}</p>
               </div>
               <div>
-                <p className="text-gray-500 dark:text-gray-400">Role</p>
+                <p className="text-gray-500 dark:text-gray-400">{t('employee.role')}</p>
                 <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full 
                   ${employee.role === UserRole.ADMIN ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' :
                     employee.role === UserRole.MANAGER ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
                     'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'}`}>
-                  {employee.role}
+                  {t(`employee.roles.${employee.role.toLowerCase()}`)}
                 </span>
               </div>
               <div className="col-span-2">
-                <p className="text-gray-500 dark:text-gray-400">Status</p>
+                <p className="text-gray-500 dark:text-gray-400">{t('employee.status')}</p>
                 <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full 
                   ${employee.isActive ? 
                     'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 
                     'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'}`}>
-                  {employee.isActive ? 'Active' : 'Inactive'}
+                  {employee.isActive ? t('employee.active') : t('employee.inactive')}
                 </span>
               </div>
             </div>
@@ -393,8 +382,7 @@ export default function EmployeeList() {
       <div className="hidden md:block overflow-x-auto rounded-lg shadow">
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead className="bg-gray-50 dark:bg-gray-800">
-            <tr>
-              {user?.role === UserRole.ADMIN && (
+            <tr>{user?.role === UserRole.ADMIN && (
                 <th className="px-6 py-3 text-left">
                   <input
                     type="checkbox"
@@ -402,16 +390,14 @@ export default function EmployeeList() {
                     onChange={(e) => handleSelectAll(e.target.checked)}
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     aria-label="Select all employees"
-                  />
-                </th>
-              )}
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Email</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Department</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Role</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                  /></th>
+              )}<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.name')}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('employee.email')}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('employee.department')}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('employee.role')}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('employee.status')}</th>
               {user?.role === UserRole.ADMIN && (
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
               )}
             </tr>
           </thead>
@@ -441,30 +427,27 @@ export default function EmployeeList() {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-100">{employee.email}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-gray-900 dark:text-gray-100">{employee.department}</td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                <td className="px-6 py-4 whitespace-nowrap">                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                     ${employee.role === UserRole.ADMIN ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' :
                       employee.role === UserRole.MANAGER ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
                       'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'}`}>
-                    {employee.role}
+                    {t(`employee.roles.${employee.role.toLowerCase()}`)}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                <td className="px-6 py-4 whitespace-nowrap">                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                     ${employee.isActive ? 
                       'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 
                       'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'}`}>
-                    {employee.isActive ? 'Active' : 'Inactive'}
+                    {employee.isActive ? t('employee.active') : t('employee.inactive')}
                   </span>
                 </td>
                 {user?.role === UserRole.ADMIN && (
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <Menu as="div" className="relative inline-block text-left" key={`menu-${employee._id}`}>
-                      <Menu.Button className="inline-flex items-center px-3 py-1 rounded-md text-gray-600 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-800/30">
-                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <Menu.Button className="inline-flex items-center px-3 py-1 rounded-md text-gray-600 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-800/30">                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
-                        Edit
+                        {t('common.edit')}
                         <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                         </svg>
@@ -479,9 +462,8 @@ export default function EmployeeList() {
                         leaveFrom="transform opacity-100 scale-100"
                         leaveTo="transform opacity-0 scale-95"
                       >
-                        <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800 border border-gray-200 dark:border-gray-700 z-50">                          <Menu.Item>
-                            {({ close }) => (
-                              <button
+                        <Menu.Items className={`absolute ${isRTL ? 'left-0' : 'right-0'} mt-2 w-48 ${isRTL ? 'origin-top-left' : 'origin-top-right'} rounded-md bg-white py-1 shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800 border border-gray-200 dark:border-gray-700 z-50`}>                          <Menu.Item>
+                            {({ close }) => (                              <button
                                 onClick={(e) => {
                                   onEditEmployee(employee)(e);
                                   close();
@@ -491,7 +473,7 @@ export default function EmployeeList() {
                                 <svg className="w-4 h-4 mr-3 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
-                                Edit Employee
+                                {t('employee.editEmployee')}
                               </button>
                             )}
                           </Menu.Item>
@@ -500,30 +482,28 @@ export default function EmployeeList() {
                               <button
                                 onClick={onUpdateEmployeeStatus(employee._id, !employee.isActive)}
                                 className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 transition-colors duration-200"
-                              >
-                                <svg className={`w-4 h-4 mr-3 ${employee.isActive ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              >                                <svg className={`w-4 h-4 mr-3 ${employee.isActive ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   {employee.isActive ? (
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728" />
                                   ) : (
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                   )}
                                 </svg>
-                                {employee.isActive ? 'Deactivate' : 'Activate'}
+                                {employee.isActive ? t('employee.deactivate') : t('employee.activate')}
                               </button>
                             )}
                           </Menu.Item>
                           
                           <div className="border-t border-gray-100 dark:border-gray-600 my-1"></div>
                           <Menu.Item>
-                            {() => (
-                              <button
+                            {() => (                              <button
                                 onClick={onDeleteEmployee(employee)}
                                 className="flex items-center w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 transition-colors duration-200"
                               >
                                 <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                 </svg>
-                                Delete Employee
+                                {t('employee.deleteEmployee')}
                               </button>
                             )}
                           </Menu.Item>
@@ -564,12 +544,11 @@ export default function EmployeeList() {
               <svg className="text-gray-400 dark:text-gray-500 w-11 h-11 mb-3.5 mx-auto" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                 <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd"></path>
               </svg>
-              
-              <p className="mb-4 text-gray-500 dark:text-gray-300">
+                <p className="mb-4 text-gray-500 dark:text-gray-300">
                 {deleteConfirmation.isBulkDelete ? (
-                  <>Are you sure you want to delete {deleteConfirmation.selectedCount} employee(s)?</>
+                  <>{t('employee.confirmBulkDelete', { count: deleteConfirmation.selectedCount })}</>
                 ) : (
-                  <>Are you sure you want to delete <span className="font-semibold">{deleteConfirmation.employeeName}</span>?</>
+                  <>{t('employee.confirmDeleteEmployee')}</>
                 )}
               </p>
               
@@ -579,14 +558,14 @@ export default function EmployeeList() {
                   className="py-2 px-3 text-sm font-medium text-gray-500 bg-white rounded-lg border border-gray-200 hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-primary-300 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600"
                   onClick={cancelDeleteEmployee}
                 >
-                  No, cancel
+                  {t('common.no')}, {t('common.cancel')}
                 </button>
                 <button 
                   type="button" 
                   className="py-2 px-3 text-sm font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-900"
                   onClick={confirmDeleteEmployee}
                 >
-                  Yes, I&apos;m sure
+                  {t('common.yes')}, {t('common.confirm')}
                 </button>
               </div>
             </div>

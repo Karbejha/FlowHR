@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from '@/contexts/I18nContext';
 import AuthGuard from '@/components/auth/AuthGuard';
 import { Notification, NotificationType } from '@/types/notification';
 import api from '@/lib/api';
@@ -9,6 +10,7 @@ import Link from 'next/link';
 import { Bell, Check, Trash2, Eye } from 'lucide-react';
 
 export default function NotificationsPage() {
+  const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
@@ -130,16 +132,15 @@ export default function NotificationsPage() {
         );
     }
   };
-
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
     
-    if (diffInSeconds < 60) return 'Just now';
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+    if (diffInSeconds < 60) return t('notifications.justNow');
+    if (diffInSeconds < 3600) return t('notifications.minutesAgo', { count: Math.floor(diffInSeconds / 60) });
+    if (diffInSeconds < 86400) return t('notifications.hoursAgo', { count: Math.floor(diffInSeconds / 3600) });
+    if (diffInSeconds < 604800) return t('notifications.daysAgo', { count: Math.floor(diffInSeconds / 86400) });
     
     return date.toLocaleDateString();
   };
@@ -156,13 +157,12 @@ export default function NotificationsPage() {
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
                   <Bell className="w-6 h-6 text-white" />
-                </div>
-                <div>
+                </div>                <div>
                   <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                    Notifications
+                    {t('notifications.notifications')}
                   </h1>
                   <p className="text-gray-600 dark:text-gray-400">
-                    {unreadCount > 0 ? `${unreadCount} unread notifications` : 'All caught up!'}
+                    {unreadCount > 0 ? `${unreadCount} ${t('notifications.unread').toLowerCase()}` : t('notifications.noNotifications')}
                   </p>
                 </div>
               </div>
@@ -173,19 +173,19 @@ export default function NotificationsPage() {
                   className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200"
                 >
                   <Check className="w-4 h-4" />
-                  <span>Mark all read</span>
+                  <span>{t('notifications.markAllAsRead')}</span>
                 </button>
               )}
             </div>            {/* Filters */}
             <div className="flex flex-wrap gap-2">
               {[
-                { value: 'all' as const, label: 'All' },
-                { value: 'unread' as const, label: 'Unread' },
-                { value: NotificationType.LEAVE_REQUEST, label: 'Leave Requests' },
-                { value: NotificationType.LEAVE_APPROVED, label: 'Approved' },
-                { value: NotificationType.LEAVE_REJECTED, label: 'Rejected' },
-                { value: NotificationType.ATTENDANCE_REMINDER, label: 'Attendance' },
-                { value: NotificationType.SYSTEM_UPDATE, label: 'System' },
+                { value: 'all' as const, label: t('notifications.filters.all') },
+                { value: 'unread' as const, label: t('notifications.filters.unread') },
+                { value: NotificationType.LEAVE_REQUEST, label: t('leave.leaveRequests') },
+                { value: NotificationType.LEAVE_APPROVED, label: t('notifications.filters.leaveApproved') },
+                { value: NotificationType.LEAVE_REJECTED, label: t('notifications.filters.leaveRejected') },
+                { value: NotificationType.ATTENDANCE_REMINDER, label: t('notifications.filters.attendanceReminder') },
+                { value: NotificationType.SYSTEM_UPDATE, label: t('notifications.filters.systemUpdate') },
               ].map(({ value, label }) => (
                 <button
                   key={value}
@@ -203,16 +203,16 @@ export default function NotificationsPage() {
           </div>
 
           {/* Notifications List */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-            {loading ? (
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">            {loading ? (
               <div className="flex items-center justify-center p-12">
                 <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                <span className="ml-3 text-gray-600 dark:text-gray-400">{t('notifications.loading')}</span>
               </div>
             ) : filteredNotifications.length === 0 ? (
               <div className="text-center p-12">
                 <Bell className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
                 <p className="text-gray-500 dark:text-gray-400">
-                  {filter === 'all' ? 'No notifications yet' : `No ${filter} notifications`}
+                  {filter === 'all' ? t('notifications.noNotifications') : t('notifications.noFilteredNotifications', { filter: t(`notifications.filters.${filter}`) })}
                 </p>
               </div>
             ) : (
@@ -232,8 +232,7 @@ export default function NotificationsPage() {
                           <div className="flex-1">
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
                               {notification.title}
-                            </h3>
-                            <p className="text-gray-600 dark:text-gray-400 mb-3 leading-relaxed">
+                            </h3>                            <p className="text-gray-600 dark:text-gray-400 mb-3 leading-relaxed">
                               {notification.message}
                             </p>
                             <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-500">
@@ -241,18 +240,17 @@ export default function NotificationsPage() {
                               {!notification.isRead && (
                                 <span className="flex items-center space-x-1 text-blue-600 dark:text-blue-400">
                                   <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                                  <span>Unread</span>
+                                  <span>{t('notifications.unread')}</span>
                                 </span>
                               )}
                             </div>
                           </div>
                           
-                          <div className="flex items-center space-x-2 ml-4">
-                            {!notification.isRead && (
+                          <div className="flex items-center space-x-2 ml-4">                            {!notification.isRead && (
                               <button
                                 onClick={() => markAsRead(notification._id)}
                                 className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
-                                title="Mark as read"
+                                title={t('notifications.markAsRead')}
                               >
                                 <Eye className="w-4 h-4" />
                               </button>
@@ -260,7 +258,7 @@ export default function NotificationsPage() {
                             <button
                               onClick={() => deleteNotification(notification._id)}
                               className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors duration-200"
-                              title="Delete notification"
+                              title={t('notifications.deleteNotification')}
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -273,7 +271,7 @@ export default function NotificationsPage() {
                               href={notification.actionUrl}
                               className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200"
                             >
-                              View Details
+                              {t('common.view')} {t('common.details')}
                             </Link>
                           </div>
                         )}

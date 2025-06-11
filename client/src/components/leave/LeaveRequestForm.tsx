@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { LeaveRequest, LeaveType } from '@/types/leave';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from '@/contexts/I18nContext';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
@@ -20,6 +21,7 @@ interface LeaveBalanceData {
 }
 
 export default function LeaveRequestForm({ onSubmitSuccess }: { onSubmitSuccess?: () => void }) {
+  const { t } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [balance, setBalance] = useState<LeaveBalanceData | null>(null);
   const [showInsufficientBalanceModal, setShowInsufficientBalanceModal] = useState(false);
@@ -79,7 +81,7 @@ export default function LeaveRequestForm({ onSubmitSuccess }: { onSubmitSuccess?
     return true;
   };  const onSubmit = async (data: LeaveRequest) => {
     if (!token) {
-      toast.error('Authentication required');
+      toast.error(t('messages.authenticationRequired'));
       return;
     }
 
@@ -94,18 +96,17 @@ export default function LeaveRequestForm({ onSubmitSuccess }: { onSubmitSuccess?
       });
       
       if (response.data) {
-        toast.success('Leave request submitted successfully');
+        toast.success(t('leave.requestSubmitted'));
         reset();
         fetchLeaveBalance(); // Refresh balance after successful submission
         onSubmitSuccess?.();
       }
-    } catch (err: unknown) {
-      if (err && typeof err === 'object' && 'response' in err) {
+    } catch (err: unknown) {      if (err && typeof err === 'object' && 'response' in err) {
         const axiosErr = err as { response?: { data?: { error?: string }; status?: number } };
-        const errorMessage = axiosErr.response?.data?.error || 'Failed to submit leave request';
+        const errorMessage = axiosErr.response?.data?.error || t('messages.failedToSubmitLeaveRequest');
         toast.error(errorMessage);
       } else {
-        toast.error('Failed to submit leave request');
+        toast.error(t('messages.failedToSubmitLeaveRequest'));
       }
     } finally {
       setIsSubmitting(false);
@@ -118,24 +119,23 @@ export default function LeaveRequestForm({ onSubmitSuccess }: { onSubmitSuccess?
           <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-        </div>
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Submit Leave Request</h2>
+        </div>        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">{t('leave.submitRequest')}</h2>
       </div>
       
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div>
           <label htmlFor="leaveType" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-            Leave Type
+            {t('leave.leaveType')}
           </label>
           <div className="relative">
             <select
-              {...register('leaveType', { required: 'Leave type is required' })}
+              {...register('leaveType', { required: t('leave.leaveTypeRequired') })}
               className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-3 px-4 text-gray-900 dark:text-gray-100 shadow-sm focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all duration-200 appearance-none"
             >
-              <option value="" className="text-gray-500 dark:text-gray-400">Select a type</option>
+              <option value="" className="text-gray-500 dark:text-gray-400">{t('leave.selectLeaveType')}</option>
               {Object.values(LeaveType).map(type => (
                 <option key={type} value={type} className="text-gray-900 dark:text-gray-100">
-                  {type.charAt(0).toUpperCase() + type.slice(1)} Leave
+                  {t(`leave.${type}`)}
                 </option>
               ))}
             </select>
@@ -156,14 +156,13 @@ export default function LeaveRequestForm({ onSubmitSuccess }: { onSubmitSuccess?
         </div>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-          <div>
-            <label htmlFor="startDate" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-              Start Date
+          <div>            <label htmlFor="startDate" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              {t('leave.startDate')}
             </label>
             <div className="relative">
               <input
                 type="date"
-                {...register('startDate', { required: 'Start date is required' })}
+                {...register('startDate', { required: t('leave.startDateRequired') })}
                 className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-3 px-4 text-gray-900 dark:text-gray-100 shadow-sm focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all duration-200"
               />
               <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
@@ -182,14 +181,13 @@ export default function LeaveRequestForm({ onSubmitSuccess }: { onSubmitSuccess?
             )}
           </div>
 
-          <div>
-            <label htmlFor="endDate" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-              End Date
+          <div>            <label htmlFor="endDate" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              {t('leave.endDate')}
             </label>
             <div className="relative">
               <input
                 type="date"
-                {...register('endDate', { required: 'End date is required' })}
+                {...register('endDate', { required: t('leave.endDateRequired') })}
                 className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-3 px-4 text-gray-900 dark:text-gray-100 shadow-sm focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all duration-200"
               />
               <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
@@ -207,20 +205,18 @@ export default function LeaveRequestForm({ onSubmitSuccess }: { onSubmitSuccess?
               </p>
             )}
           </div>
-        </div>
-
-        <div>
+        </div>        <div>
           <label htmlFor="reason" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-            Reason for Leave
+            {t('leave.reason')}
           </label>
           <div className="relative">
             <textarea
               {...register('reason', { 
-                required: 'Reason is required',
-                minLength: { value: 10, message: 'Reason must be at least 10 characters' }
+                required: t('leave.reasonRequired'),
+                minLength: { value: 10, message: t('leave.reasonMinLength') }
               })}
               rows={4}
-              placeholder="Please provide a detailed reason for your leave request..."
+              placeholder={t('leave.reasonPlaceholder')}
               className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-3 px-4 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 shadow-sm focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all duration-200 resize-none"
             />
             <div className="absolute bottom-3 right-3 pointer-events-none">
@@ -239,13 +235,12 @@ export default function LeaveRequestForm({ onSubmitSuccess }: { onSubmitSuccess?
           )}
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3 pt-4">
-          <button
+        <div className="flex flex-col sm:flex-row gap-3 pt-4">          <button
             type="button"
             onClick={() => reset()}
             className="flex-1 sm:flex-none px-6 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500/20 dark:focus:ring-gray-400/20"
           >
-            Reset Form
+            {t('common.reset')}
           </button>
           <button
             type="submit"
@@ -255,16 +250,16 @@ export default function LeaveRequestForm({ onSubmitSuccess }: { onSubmitSuccess?
             {isSubmitting ? (
               <>
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
-                Submitting...
+                {t('common.submitting')}
               </>
             ) : (
               <>
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                 </svg>
-                Submit Request
+                {t('leave.submitRequest')}
               </>
-            )}          </button>
+            )}</button>
         </div>
       </form>
 
@@ -294,12 +289,14 @@ export default function LeaveRequestForm({ onSubmitSuccess }: { onSubmitSuccess?
               <svg className="text-red-400 dark:text-red-500 w-11 h-11 mb-3.5 mx-auto" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd"></path>
               </svg>
-              
-              <p className="mb-4 text-gray-500 dark:text-gray-300">
-                <span className="font-semibold text-red-600 dark:text-red-400">Insufficient Leave Balance!</span>
+                <p className="mb-4 text-gray-500 dark:text-gray-300">
+                <span className="font-semibold text-red-600 dark:text-red-400">{t('leave.insufficientBalance')}</span>
                 <br />
-                You requested <span className="font-semibold">{insufficientBalanceDetails.requestedDays} days</span> of {insufficientBalanceDetails.leaveType} leave, 
-                but you only have <span className="font-semibold">{insufficientBalanceDetails.availableDays} days</span> available.
+                {t('leave.insufficientBalanceMessage', {
+                  requestedDays: insufficientBalanceDetails.requestedDays,
+                  leaveType: insufficientBalanceDetails.leaveType,
+                  availableDays: insufficientBalanceDetails.availableDays
+                })}
               </p>
               
               <div className="flex justify-center items-center">
@@ -308,7 +305,7 @@ export default function LeaveRequestForm({ onSubmitSuccess }: { onSubmitSuccess?
                   className="py-2 px-4 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-900"
                   onClick={() => setShowInsufficientBalanceModal(false)}
                 >
-                  I understand
+                  {t('common.understand')}
                 </button>
               </div>
             </div>

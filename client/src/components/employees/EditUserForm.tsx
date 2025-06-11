@@ -2,6 +2,7 @@
 import * as React from 'react';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from '@/contexts/I18nContext';
 import { User, UserRole } from '@/types/auth';
 import Image from 'next/image';
 
@@ -26,6 +27,7 @@ const PasswordChangeModal: React.FC<{
   employeeName: string;
   isLoading: boolean;
 }> = ({ isOpen, onClose, onSubmit, employeeName, isLoading }) => {
+  const { t } = useTranslation();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
@@ -34,12 +36,12 @@ const PasswordChangeModal: React.FC<{
     e.preventDefault();
     
     if (password.length < 6) {
-      setError('Password must be at least 6 characters long');
+      setError(t('auth.passwordTooShort'));
       return;
     }
     
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('auth.passwordsDoNotMatch'));
       return;
     }
 
@@ -50,7 +52,7 @@ const PasswordChangeModal: React.FC<{
       setError('');
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to change password');
+      setError(err instanceof Error ? err.message : t('messages.failedToChangePassword'));
     }
   };
 
@@ -73,14 +75,14 @@ const PasswordChangeModal: React.FC<{
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
-              </div>
-              <h3 className="text-lg font-bold text-white">Change Password</h3>
-            </div>            <button
+              </div>              <h3 className="text-lg font-bold text-white">{t('employees.changePassword')}</h3>
+            </div>
+            <button
               onClick={handleClose}
               disabled={isLoading}
               className="text-white/80 hover:text-white transition-colors duration-200 disabled:opacity-50"
-              title="Close modal"
-              aria-label="Close password change modal"
+              title={t('common.close')}
+              aria-label={t('employees.closePasswordModal')}
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -89,9 +91,8 @@ const PasswordChangeModal: React.FC<{
           </div>
         </div>
 
-        <div className="p-6">
-          <p className="text-gray-600 dark:text-gray-300 mb-6">
-            Set a new password for <span className="font-semibold text-gray-900 dark:text-gray-100">{employeeName}</span>
+        <div className="p-6">          <p className="text-gray-600 dark:text-gray-300 mb-6">
+            {t('employees.setNewPasswordFor', { name: employeeName })}
           </p>
 
           {error && (
@@ -100,10 +101,9 @@ const PasswordChangeModal: React.FC<{
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
+          <form onSubmit={handleSubmit} className="space-y-4">            <div>
               <label htmlFor="newPassword" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                New Password *
+                {t('employees.newPassword')} *
               </label>
               <input
                 id="newPassword"
@@ -113,14 +113,14 @@ const PasswordChangeModal: React.FC<{
                 required
                 minLength={6}
                 className="block w-full px-4 py-3 text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                placeholder="Enter new password"
+                placeholder={t('employees.enterNewPassword')}
                 disabled={isLoading}
               />
             </div>
 
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                Confirm Password *
+                {t('employees.confirmPassword')} *
               </label>
               <input
                 id="confirmPassword"
@@ -130,19 +130,18 @@ const PasswordChangeModal: React.FC<{
                 required
                 minLength={6}
                 className="block w-full px-4 py-3 text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                placeholder="Confirm new password"
+                placeholder={t('employees.confirmNewPassword')}
                 disabled={isLoading}
               />
             </div>
 
-            <div className="flex space-x-3 pt-4">
-              <button
+            <div className="flex space-x-3 pt-4">              <button
                 type="button"
                 onClick={handleClose}
                 disabled={isLoading}
                 className="flex-1 px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 type="submit"
@@ -152,10 +151,10 @@ const PasswordChangeModal: React.FC<{
                 {isLoading ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    <span>Changing...</span>
+                    <span>{t('employees.changing')}</span>
                   </>
                 ) : (
-                  <span>Change Password</span>
+                  <span>{t('employees.changePassword')}</span>
                 )}
               </button>
             </div>
@@ -167,6 +166,7 @@ const PasswordChangeModal: React.FC<{
 };
 
 const EditUserForm: React.FC<EditUserFormProps> = ({ employee, onSuccess, onCancel }) => {
+  const { t } = useTranslation();
   const { user, token } = useAuth();
   const [formData, setFormData] = useState({
     email: employee.email,
@@ -341,7 +341,7 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ employee, onSuccess, onCanc
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
           </div>
-          <h2 className="text-xl font-bold text-white">Edit Employee</h2>
+          <h2 className="text-xl font-bold text-white">{t('employees.editEmployee')}</h2>
         </div>
       </div>
 
@@ -365,11 +365,10 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ employee, onSuccess, onCanc
                   <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Personal Information</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{t('employees.personalInformation')}</h3>
             </div>            {/* Avatar Upload Section */}
-            <div className="mb-6">
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-                Profile Picture
+            <div className="mb-6">              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                {t('employees.profilePicture')}
               </label>
               <div className="flex flex-col items-center space-y-3">
                 <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-dashed border-gray-300 dark:border-gray-600 hover:border-purple-500 dark:hover:border-purple-400 cursor-pointer transition-all duration-200">                  {(employee.avatar && !removeAvatar) ? (
@@ -462,10 +461,9 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ employee, onSuccess, onCanc
               </p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">              <div className="space-y-2">
                 <label htmlFor="firstName" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  First Name *
+                  {t('employees.firstName')} *
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -481,14 +479,14 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ employee, onSuccess, onCanc
                     onChange={handleChange}
                     required
                     className="block w-full pl-10 pr-4 py-3 text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent transition-all duration-200 placeholder-gray-400 dark:placeholder-gray-500"
-                    placeholder="John"
+                    placeholder={t('employees.firstNamePlaceholder')}
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <label htmlFor="lastName" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  Last Name *
+                  {t('employees.lastName')} *
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -504,14 +502,14 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ employee, onSuccess, onCanc
                     onChange={handleChange}
                     required
                     className="block w-full pl-10 pr-4 py-3 text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent transition-all duration-200 placeholder-gray-400 dark:placeholder-gray-500"
-                    placeholder="Doe"
+                    placeholder={t('employees.lastNamePlaceholder')}
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <label htmlFor="email" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  Email Address *
+                  {t('employees.emailAddress')} *
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -527,7 +525,7 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ employee, onSuccess, onCanc
                     onChange={handleChange}
                     required
                     className="block w-full pl-10 pr-4 py-3 text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent transition-all duration-200 placeholder-gray-400 dark:placeholder-gray-500"
-                    placeholder="user@example.com"
+                    placeholder={t('employees.emailPlaceholder')}
                   />
                 </div>
               </div>
@@ -542,13 +540,12 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ employee, onSuccess, onCanc
                   <path fillRule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clipRule="evenodd" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Professional Information</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{t('employees.professionalInformation')}</h3>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">              <div className="space-y-2">
                 <label htmlFor="department" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  Department *
+                  {t('employees.department')} *
                 </label>
                 <input
                   id="department"
@@ -558,13 +555,13 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ employee, onSuccess, onCanc
                   onChange={handleChange}
                   required
                   className="block w-full px-4 py-3 text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent transition-all duration-200 placeholder-gray-400 dark:placeholder-gray-500"
-                  placeholder="e.g., Engineering, Marketing"
+                  placeholder={t('employees.departmentPlaceholder')}
                 />
               </div>
 
               <div className="space-y-2">
                 <label htmlFor="jobTitle" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  Job Title *
+                  {t('employees.jobTitle')} *
                 </label>
                 <input
                   id="jobTitle"
@@ -574,13 +571,13 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ employee, onSuccess, onCanc
                   onChange={handleChange}
                   required
                   className="block w-full px-4 py-3 text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent transition-all duration-200 placeholder-gray-400 dark:placeholder-gray-500"
-                  placeholder="e.g., Software Engineer, Designer"
+                  placeholder={t('employees.jobTitlePlaceholder')}
                 />
               </div>
 
               <div className="space-y-2">
                 <label htmlFor="role" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  Role *
+                  {t('employees.role')} *
                 </label>
                 <div className="relative">
                   <select
@@ -603,12 +600,10 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ employee, onSuccess, onCanc
                     </svg>
                   </div>
                 </div>
-              </div>
-
-              {formData.role === UserRole.EMPLOYEE && user?.role === UserRole.ADMIN && (
+              </div>              {formData.role === UserRole.EMPLOYEE && user?.role === UserRole.ADMIN && (
                 <div className="space-y-2">
                   <label htmlFor="managerId" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                    Manager
+                    {t('employees.manager')}
                   </label>
                   <select
                     id="managerId"
@@ -616,9 +611,9 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ employee, onSuccess, onCanc
                     value={formData.managerId}
                     onChange={handleChange}
                     className="block w-full px-4 py-3 text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent transition-all duration-200"
-                    aria-label="Manager"
+                    aria-label={t('employees.manager')}
                   >
-                    <option value="">Select a manager (optional)</option>
+                    <option value="">{t('employees.selectManagerOptional')}</option>
                     {managers.map((manager) => (
                       <option key={manager._id} value={manager._id}>
                         {manager.firstName} {manager.lastName} ({manager.email})
@@ -631,14 +626,13 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ employee, onSuccess, onCanc
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200 dark:border-gray-700">
-            <button
+          <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200 dark:border-gray-700">            <button
               type="button"
               onClick={onCancel}
               disabled={isLoading}
               className="w-full sm:w-auto px-6 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 rounded-lg transition-all duration-200 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
@@ -648,14 +642,14 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ employee, onSuccess, onCanc
               {isLoading ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  <span>Updating...</span>
+                  <span>{t('employees.updating')}</span>
                 </>
               ) : (
                 <>
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  <span>Update Employee</span>
+                  <span>{t('employees.updateEmployee')}</span>
                 </>
               )}
             </button>
@@ -672,7 +666,7 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ employee, onSuccess, onCanc
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.5v15m7.5-7.5h-15" />
               </svg>
-              <span>Change Password</span>
+              <span>{t('employees.changePassword')}</span>
             </button>
           </div>
         )}

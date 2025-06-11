@@ -2,15 +2,18 @@
 
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from '@/contexts/I18nContext';
 import { UserRole } from '@/types/auth';
 import { usePathname } from 'next/navigation';
 import { ThemeToggle } from './ThemeToggle';
 import UserDropdown from './UserDropdown';
 import NotificationDropdown from './NotificationDropdown';
+import LanguageSwitcher from './LanguageSwitcher';
 import { useState } from 'react';
 
 export default function Navigation() {
   const { user, isAuthenticated } = useAuth();
+  const { t } = useTranslation();
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -38,18 +41,16 @@ export default function Navigation() {
     <nav className="bg-gray-800 dark:bg-gray-900 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
+          <div className="flex items-center">            <div className="flex-shrink-0">
               <Link href="/" className="text-white text-lg font-bold hover:text-gray-300 transition-colors">
-                HR System
+                {t('navigation.hrSystem')}
               </Link>
             </div>
             {/* Desktop Navigation */}
             <div className="hidden md:block">
               <div className="ml-10 flex items-baseline space-x-4">
                 {user?.role === UserRole.EMPLOYEE && (
-                  <>
-                    <Link
+                  <>                    <Link
                       href="/leave"
                       className={`${
                         isActive('/leave')
@@ -57,7 +58,7 @@ export default function Navigation() {
                           : 'text-gray-300 hover:bg-gray-700 hover:text-white'
                       } px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200`}
                     >
-                      Leave Management
+                      {t('navigation.leaveManagement')}
                     </Link>
                     <Link
                       href="/attendance"
@@ -67,14 +68,13 @@ export default function Navigation() {
                           : 'text-gray-300 hover:bg-gray-700 hover:text-white'
                       } px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200`}
                     >
-                      Attendance
+                      {t('navigation.attendance')}
                     </Link>
                   </>
                 )}
                 
                 {(user?.role === UserRole.ADMIN || user?.role === UserRole.MANAGER) && (
-                  <>
-                    <Link
+                  <>                    <Link
                       href="/employees"
                       className={`${
                         isActive('/employees')
@@ -82,7 +82,7 @@ export default function Navigation() {
                           : 'text-gray-300 hover:bg-gray-700 hover:text-white'
                       } px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200`}
                     >
-                      Employees
+                      {t('navigation.employees')}
                     </Link>
                     <Link
                       href="/leave"
@@ -92,7 +92,7 @@ export default function Navigation() {
                           : 'text-gray-300 hover:bg-gray-700 hover:text-white'
                       } px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200`}
                     >
-                      Leave Requests
+                      {t('navigation.leaveRequests')}
                     </Link>
                     <Link
                       href="/attendance"
@@ -102,21 +102,22 @@ export default function Navigation() {
                           : 'text-gray-300 hover:bg-gray-700 hover:text-white'
                       } px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200`}
                     >
-                      Team Attendance
+                      {t('navigation.teamAttendance')}
                     </Link>
                   </>
                 )}
               </div>
             </div>
-          </div>
-            {/* Desktop Right Side */}
+          </div>          {/* Desktop Right Side */}
           <div className="hidden md:flex items-center space-x-4">
             <NotificationDropdown />
+            <LanguageSwitcher variant="compact" />
             <ThemeToggle />
             <UserDropdown />
           </div>          {/* Mobile menu button */}
           <div className="md:hidden flex items-center space-x-2">
             <NotificationDropdown />
+            <LanguageSwitcher variant="compact" />
             <ThemeToggle />
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -141,19 +142,18 @@ export default function Navigation() {
       {/* Mobile menu */}
       {isMobileMenuOpen && (
         <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-gray-700 dark:bg-gray-800">
-            {user?.role === UserRole.EMPLOYEE && (
+          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-gray-700 dark:bg-gray-800">            {user?.role === UserRole.EMPLOYEE && (
               <>
-                <NavigationLink href="/leave">Leave Management</NavigationLink>
-                <NavigationLink href="/attendance">Attendance</NavigationLink>
+                <NavigationLink href="/leave">{t('navigation.leaveManagement')}</NavigationLink>
+                <NavigationLink href="/attendance">{t('navigation.attendance')}</NavigationLink>
               </>
             )}
             
             {(user?.role === UserRole.ADMIN || user?.role === UserRole.MANAGER) && (
               <>
-                <NavigationLink href="/employees">Employees</NavigationLink>
-                <NavigationLink href="/leave">Leave Requests</NavigationLink>
-                <NavigationLink href="/attendance">Team Attendance</NavigationLink>
+                <NavigationLink href="/employees">{t('navigation.employees')}</NavigationLink>
+                <NavigationLink href="/leave">{t('navigation.leaveRequests')}</NavigationLink>
+                <NavigationLink href="/attendance">{t('navigation.teamAttendance')}</NavigationLink>
               </>
             )}
             

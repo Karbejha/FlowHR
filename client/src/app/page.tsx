@@ -1,13 +1,14 @@
 'use client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from '@/contexts/I18nContext';
 import LoginForm from '@/components/auth/LoginForm';
-import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { UserRole } from '@/types/auth';
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
 
 export default function Home() {
   const { isAuthenticated, user, logout, isLoading } = useAuth();
+  const { t } = useTranslation();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   // Close dropdown when clicking outside
@@ -23,14 +24,13 @@ export default function Home() {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
-
   // Show loading spinner while checking authentication
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+          <p className="text-gray-600 dark:text-gray-400">{t('homepage.loading')}</p>
         </div>
       </div>
     );
@@ -42,14 +42,7 @@ export default function Home() {
         {/* Decorative background elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-200 dark:bg-blue-900 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-xl opacity-30 animate-pulse"></div>
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-200 dark:bg-purple-900 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-xl opacity-30 animate-pulse delay-1000"></div>
-        </div>
-          {/* Theme toggle for login page */}
-        <div className="absolute top-8 right-8 z-50">
-          <div className="p-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full shadow-lg border border-gray-200/50 dark:border-gray-700/50 hover:bg-white/90 dark:hover:bg-gray-800/90 transition-colors duration-200">
-            <ThemeToggle />
-          </div>
-        </div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-200 dark:bg-purple-900 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-xl opacity-30 animate-pulse delay-1000"></div>        </div>
         
         {/* Login form container */}
         <div className="relative z-10 flex items-center justify-center min-h-screen px-4 py-12">
@@ -103,7 +96,7 @@ export default function Home() {
             <div className="mt-4 flex items-center text-blue-600 dark:text-blue-400 opacity-0 
                             group-hover:opacity-100 transition-all duration-300 transform 
                             translate-x-0 group-hover:translate-x-1">
-              <span className="text-sm font-medium mr-1">Explore</span>
+              <span className="text-sm font-medium mr-1">{t('homepage.explore')}</span>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
@@ -113,28 +106,27 @@ export default function Home() {
       </div>
     </Link>
   );
-
   const getRoleCards = () => {
     const adminCards = [
       {
-        title: "Employee Management",
-        description: "Manage employee records, profiles, and organizational structure with comprehensive tools for HR operations.",
+        title: t('homepage.cards.employeeManagement.title'),
+        description: t('homepage.cards.employeeManagement.description'),
         href: "/employees",
         icon: <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
         </svg>
       },
       {
-        title: "Leave Management",
-        description: "Handle leave requests, approvals, and maintain comprehensive leave policies for all employees.",
+        title: t('homepage.cards.leaveManagement.title'),
+        description: t('homepage.cards.leaveManagement.description'),
         href: "/leave",
         icon: <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
       },
       {
-        title: "Attendance Tracking",
-        description: "Monitor employee attendance, time tracking, and generate detailed reports for workforce management.",
+        title: t('homepage.cards.attendanceTracking.title'),
+        description: t('homepage.cards.attendanceTracking.description'),
         href: "/attendance",
         icon: <svg className="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -144,24 +136,24 @@ export default function Home() {
 
     const managerCards = [
       {
-        title: "Team Management",
-        description: "Manage your team members, assignments, and foster collaboration.",
+        title: t('homepage.cards.teamManagement.title'),
+        description: t('homepage.cards.teamManagement.description'),
         href: "/team",
         icon: <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
         </svg>
       },
       {
-        title: "Leave Management",
-        description: "Review and manage team leave requests with streamlined approval workflows.",
+        title: t('homepage.cards.leaveManagementManager.title'),
+        description: t('homepage.cards.leaveManagementManager.description'),
         href: "/leave",
         icon: <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       },
       {
-        title: "Performance Management",
-        description: "Track and evaluate team performance with comprehensive analytics.",
+        title: t('homepage.cards.performanceManagement.title'),
+        description: t('homepage.cards.performanceManagement.description'),
         href: "/performance",
         icon: <svg className="w-6 h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -171,24 +163,24 @@ export default function Home() {
 
     const employeeCards = [
       {
-        title: "My Profile",
-        description: "View and update your personal information and preferences.",
+        title: t('homepage.cards.myProfileCard.title'),
+        description: t('homepage.cards.myProfileCard.description'),
         href: "/profile",
         icon: <svg className="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
         </svg>
       },
       {
-        title: "Leave Requests",
-        description: "Submit and track your leave requests with real-time status updates.",
+        title: t('homepage.cards.leaveRequests.title'),
+        description: t('homepage.cards.leaveRequests.description'),
         href: "/leave",
         icon: <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       },
       {
-        title: "My Attendance",
-        description: "View and manage your attendance records and time tracking.",
+        title: t('homepage.cards.myAttendance.title'),
+        description: t('homepage.cards.myAttendance.description'),
         href: "/attendance",
         icon: <svg className="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
@@ -219,12 +211,11 @@ export default function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
               </div>
-              <div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent">
-                  Dashboard
+              <div>                <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent">
+                  {t('homepage.dashboard')}
                 </h1>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  Welcome back, let&lsquo;s get things done
+                  {t('homepage.welcomeBack')}
                 </p>
               </div>
             </div>            <div className="flex items-center space-x-4">
@@ -265,7 +256,7 @@ export default function Home() {
                         <svg className="w-4 h-4 mr-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
-                        My Profile
+                        {t('homepage.myProfile')}
                       </Link>
                       <Link
                         href="/settings"
@@ -276,7 +267,7 @@ export default function Home() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
-                        Settings
+                        {t('homepage.settings')}
                       </Link>
                       <hr className="my-1 border-gray-200 dark:border-gray-600" />                      <button
                         onClick={() => {
@@ -288,7 +279,7 @@ export default function Home() {
                         <svg className="w-4 h-4 mr-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                         </svg>
-                        Logout
+                        {t('homepage.logout')}
                       </button>
                     </div>
                   </div>
@@ -307,7 +298,7 @@ export default function Home() {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                   </svg>
-                  <span>Logout</span>
+                  <span>{t('homepage.logout')}</span>
                 </span>
               </button>
             </div>
@@ -316,14 +307,20 @@ export default function Home() {
       </header>
 
       {/* Main content with enhanced layout */}
-      <main className="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
-        {/* Welcome section */}
+      <main className="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">        {/* Welcome section */}
         <div className="mb-8 text-center">
           <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-            Good {new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 18 ? 'Afternoon' : 'Evening'}, {user?.firstName}!
+            {t('homepage.welcomeUser', {
+              greeting: new Date().getHours() < 12 
+                ? t('homepage.goodMorning') 
+                : new Date().getHours() < 18 
+                  ? t('homepage.goodAfternoon') 
+                  : t('homepage.goodEvening'),
+              name: user?.firstName || ''
+            })}
           </h2>
           <p className="text-gray-600 dark:text-gray-400">
-            Here&lsquo;s what you can do today with your {user?.role.toLowerCase()} access
+            {t('homepage.roleAccessMessage', { role: user?.role?.toLowerCase() || '' })}
           </p>
         </div>
 
@@ -338,23 +335,21 @@ export default function Home() {
               icon={card.icon}
             />
           ))}
-        </div>
-
-        {/* Quick stats or additional info */}
+        </div>        {/* Quick stats or additional info */}
         <div className="mt-12 p-6 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-700/50">
           <div className="text-center">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-              Need Help?
+              {t('homepage.needHelp')}
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Check out our help center or contact support for assistance.
+              {t('homepage.helpDescription')}
             </p>
             <div className="flex justify-center space-x-4">
               <button className="px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 border border-blue-600 dark:border-blue-400 rounded-full hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors duration-200">
-                Help Center
+                {t('homepage.helpCenter')}
               </button>
               <button className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors duration-200">
-                Contact Support
+                {t('homepage.contactSupport')}
               </button>
             </div>
           </div>

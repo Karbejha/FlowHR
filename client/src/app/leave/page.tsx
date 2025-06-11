@@ -1,5 +1,6 @@
 'use client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from '@/contexts/I18nContext';
 import { UserRole } from '@/types/auth';
 import LeaveRequestForm from '@/components/leave/LeaveRequestForm';
 import LeaveList from '@/components/leave/LeaveList';
@@ -8,6 +9,7 @@ import AuthGuard from '@/components/auth/AuthGuard';
 import { useState } from 'react';
 
 export default function LeavePage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [showRequestForm, setShowRequestForm] = useState(false);
 
@@ -21,13 +23,12 @@ export default function LeavePage() {
                 <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-              </div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
-                Leave Management
+              </div>              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
+                {t('navigation.leaveManagement')}
               </h1>
             </div>
             <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
-              Manage your leave requests and view your available balance
+              {t('leave.manageLeaveDescription')}
             </p>
           </div>          <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             {/* Leave Balance - Sidebar for all users */}
@@ -46,29 +47,27 @@ export default function LeavePage() {
                         <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
-                      </div>
-                      <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100">
-                        Leave Requests
+                      </div>                      <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100">
+                        {t('leave.leaveRequests')}
                       </h2>
                     </div>
                     {user?.role === UserRole.EMPLOYEE && (
                       <button
                         onClick={() => setShowRequestForm(!showRequestForm)}
                         className="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 dark:from-blue-500 dark:to-blue-600 dark:hover:from-blue-600 dark:hover:to-blue-700 text-white rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 font-medium text-sm shadow-sm w-full sm:w-auto"
-                      >
-                        {showRequestForm ? (
+                      >                        {showRequestForm ? (
                           <>
                             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             </svg>
-                            Cancel
+                            {t('common.cancel')}
                           </>
                         ) : (
                           <>
                             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                             </svg>
-                            New Request
+                            {t('leave.newRequest')}
                           </>
                         )}
                       </button>

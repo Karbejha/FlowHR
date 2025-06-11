@@ -2,12 +2,14 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTranslation } from '../../contexts/I18nContext';
 import { Notification, NotificationSummary, NotificationType } from '../../types/notification';
 import api from '../../lib/api';
 import Link from 'next/link';
 import { Bell, BellRing } from 'lucide-react';
 
-export default function NotificationDropdown() {  const [notifications, setNotifications] = useState<Notification[]>([]);
+export default function NotificationDropdown() {
+  const { t, isRTL } = useTranslation();const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -107,29 +109,25 @@ export default function NotificationDropdown() {  const [notifications, setNotif
             <BellRing className="w-6 h-6 text-blue-400 dark:text-blue-300 animate-pulse" />
           ) : (
             <Bell className="w-6 h-6 text-gray-400 dark:text-gray-500" />
-          )}
-          {unreadCount > 0 && (
-            <span className="absolute -bottom-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium animate-bounce">
+          )}          {unreadCount > 0 && (
+            <span className={`absolute -bottom-2 ${isRTL ? '-left-2' : '-right-2'} bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium animate-bounce`}>
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
         </div>
-      </button>
-
-      {/* Dropdown Menu */}
+      </button>      {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 max-h-96 overflow-hidden">
+        <div className={`absolute ${isRTL ? 'left-0' : 'right-0'} mt-2 w-80 sm:w-96 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 max-h-96 overflow-hidden ${isRTL ? 'origin-top-left' : 'origin-top-right'}`}>
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-              Notifications
+          <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              {t('notifications.notifications')}
             </h3>
             {unreadCount > 0 && (
               <button
                 onClick={markAllAsRead}
                 className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
               >
-                Mark all read
+                {t('notifications.markAllAsRead')}
               </button>
             )}
           </div>
@@ -142,7 +140,7 @@ export default function NotificationDropdown() {  const [notifications, setNotif
               </div>            ) : notifications.length === 0 ? (
               <div className="text-center p-8">
                 <Bell className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
-                <p className="text-gray-500 dark:text-gray-400">No notifications yet</p>
+                <p className="text-gray-500 dark:text-gray-400">{t('notifications.noNotifications')}</p>
               </div>
             ) : (
               notifications.map((notification) => (
@@ -152,13 +150,11 @@ export default function NotificationDropdown() {  const [notifications, setNotif
                   className={`relative p-4 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors duration-200 ${
                     !notification.isRead ? 'bg-blue-50 dark:bg-blue-900/20' : ''
                   }`}
-                >
-                  {notification.actionUrl ? (
+                >                  {notification.actionUrl ? (
                     <Link href={notification.actionUrl} className="block">
-                      <NotificationContent notification={notification} />
-                    </Link>
-                  ) : (
-                    <NotificationContent notification={notification} />
+                      <NotificationContent notification={notification} t={t} />
+                    </Link>                  ) : (
+                    <NotificationContent notification={notification} t={t} />
                   )}
                   
                   {/* Unread indicator */}
@@ -172,13 +168,12 @@ export default function NotificationDropdown() {  const [notifications, setNotif
 
           {/* Footer */}
           {notifications.length > 0 && (
-            <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
-              <Link
+            <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">              <Link
                 href="/notifications"
                 onClick={() => setIsOpen(false)}
                 className="block text-center text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
               >
-                View all notifications
+                {t('notifications.viewAll')}
               </Link>
             </div>
           )}
@@ -189,7 +184,13 @@ export default function NotificationDropdown() {  const [notifications, setNotif
 }
 
 // Notification content component
-function NotificationContent({ notification }: { notification: Notification }) {
+function NotificationContent({ 
+  notification, 
+  t 
+}: { 
+  notification: Notification;
+  t: (key: string, params?: Record<string, string | number>) => string;
+}) {
   const getNotificationIcon = (type: NotificationType) => {
     switch (type) {
       case NotificationType.LEAVE_REQUEST:
@@ -230,16 +231,24 @@ function NotificationContent({ notification }: { notification: Notification }) {
         );
     }
   };
-
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
     
-    if (diffInSeconds < 60) return 'Just now';
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+    if (diffInSeconds < 60) return t('notifications.justNow');
+    if (diffInSeconds < 3600) {
+      const minutes = Math.floor(diffInSeconds / 60);
+      return t('notifications.minutesAgo', { count: minutes });
+    }
+    if (diffInSeconds < 86400) {
+      const hours = Math.floor(diffInSeconds / 3600);
+      return t('notifications.hoursAgo', { count: hours });
+    }
+    if (diffInSeconds < 604800) {
+      const days = Math.floor(diffInSeconds / 86400);
+      return t('notifications.daysAgo', { count: days });
+    }
     
     return date.toLocaleDateString();
   };

@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from '@/contexts/I18nContext';
 import { UserRole } from '@/types/auth';
 import FileUpload from '@/components/common/FileUpload';
 
@@ -17,7 +18,8 @@ interface AddUserFormProps {
 }
 
 const AddUserForm: React.FC<AddUserFormProps> = ({ onSuccess, onCancel }) => {
-  const { user, token } = useAuth();  const [formData, setFormData] = useState({
+  const { user, token } = useAuth();
+  const { t } = useTranslation();const [formData, setFormData] = useState({
     email: '',
     password: '',
     firstName: '',
@@ -58,9 +60,8 @@ const AddUserForm: React.FC<AddUserFormProps> = ({ onSuccess, onCancel }) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
-    
-    if (!token) {
-      setError('Authentication required');
+      if (!token) {
+      setError(t('messages.authenticationRequired'));
       setIsLoading(false);
       return;
     }
@@ -74,10 +75,9 @@ const AddUserForm: React.FC<AddUserFormProps> = ({ onSuccess, onCancel }) => {
         },
         body: JSON.stringify(formData),
       });
-      
-      if (!response.ok) {
+        if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Failed to create user');
+        throw new Error(data.error || t('messages.failedToCreateUser'));
       }
 
       const createdUser = await response.json();
@@ -101,9 +101,8 @@ const AddUserForm: React.FC<AddUserFormProps> = ({ onSuccess, onCancel }) => {
         }
       }
       
-      onSuccess();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create user');
+      onSuccess();    } catch (err) {
+      setError(err instanceof Error ? err.message : t('messages.failedToCreateUser'));
     } finally {
       setIsLoading(false);
     }
@@ -120,9 +119,8 @@ const AddUserForm: React.FC<AddUserFormProps> = ({ onSuccess, onCancel }) => {
   const availableRoles = user?.role === UserRole.ADMIN
     ? Object.values(UserRole)
     : [UserRole.EMPLOYEE];
-
   const getRoleDisplayName = (role: string) => {
-    return role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
+    return t(`employee.roles.${role.toLowerCase()}`);
   };
 
   return (
@@ -135,7 +133,7 @@ const AddUserForm: React.FC<AddUserFormProps> = ({ onSuccess, onCancel }) => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
           </div>
-          <h2 className="text-xl font-bold text-white">Add New User</h2>
+          <h2 className="text-xl font-bold text-white">{t('employee.addNewUser')}</h2>
         </div>
       </div>
 
@@ -163,26 +161,24 @@ const AddUserForm: React.FC<AddUserFormProps> = ({ onSuccess, onCancel }) => {
                   <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Personal Information</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{t('employee.personalInformation')}</h3>
             </div>            {/* Avatar Upload Section */}
-            <div className="mb-6">
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-                Profile Picture
+            <div className="mb-6">              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                {t('employee.profilePicture')}
               </label>
               <FileUpload
                 onFileSelect={setAvatarFile}
                 size="lg"
-                label="Upload Avatar"
+                label={t('employee.uploadAvatar')}
               />
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                Upload a profile picture (optional). Max size: 5MB. Supported formats: JPG, PNG, GIF.
+                {t('employee.profilePictureNoteAdd')}
               </p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">              <div className="space-y-2">
                 <label htmlFor="firstName" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  First Name *
+                  {t('employee.firstName')} *
                 </label>
                 <div className="relative">
                   <input
@@ -193,14 +189,14 @@ const AddUserForm: React.FC<AddUserFormProps> = ({ onSuccess, onCancel }) => {
                     onChange={handleChange}
                     required
                     className="block w-full px-4 py-3 text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200 placeholder-gray-400 dark:placeholder-gray-500"
-                    placeholder="Enter first name"
+                    placeholder={t('employee.enterFirstName')}
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <label htmlFor="lastName" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  Last Name *
+                  {t('employee.lastName')} *
                 </label>
                 <div className="relative">
                   <input
@@ -211,7 +207,7 @@ const AddUserForm: React.FC<AddUserFormProps> = ({ onSuccess, onCancel }) => {
                     onChange={handleChange}
                     required
                     className="block w-full px-4 py-3 text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200 placeholder-gray-400 dark:placeholder-gray-500"
-                    placeholder="Enter last name"
+                    placeholder={t('employee.enterLastName')}
                   />
                 </div>
               </div>
@@ -226,13 +222,12 @@ const AddUserForm: React.FC<AddUserFormProps> = ({ onSuccess, onCancel }) => {
                   <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Authentication</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{t('employee.authentication')}</h3>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">              <div className="space-y-2">
                 <label htmlFor="email" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  Email Address *
+                  {t('auth.emailAddress')} *
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -248,14 +243,14 @@ const AddUserForm: React.FC<AddUserFormProps> = ({ onSuccess, onCancel }) => {
                     onChange={handleChange}
                     required
                     className="block w-full pl-10 pr-4 py-3 text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200 placeholder-gray-400 dark:placeholder-gray-500"
-                    placeholder="user@example.com"
+                    placeholder={t('auth.enterEmail')}
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <label htmlFor="password" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  Password *
+                  {t('auth.password')} *
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -271,7 +266,7 @@ const AddUserForm: React.FC<AddUserFormProps> = ({ onSuccess, onCancel }) => {
                     onChange={handleChange}
                     required
                     className="block w-full pl-10 pr-4 py-3 text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200 placeholder-gray-400 dark:placeholder-gray-500"
-                    placeholder="Enter secure password"
+                    placeholder={t('employee.enterSecurePassword')}
                   />
                 </div>
               </div>
@@ -286,13 +281,12 @@ const AddUserForm: React.FC<AddUserFormProps> = ({ onSuccess, onCancel }) => {
                   <path fillRule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clipRule="evenodd" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Professional Information</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{t('employee.professionalInformation')}</h3>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">              <div className="space-y-2">
                 <label htmlFor="department" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  Department *
+                  {t('employee.department')} *
                 </label>
                 <input
                   id="department"
@@ -302,13 +296,13 @@ const AddUserForm: React.FC<AddUserFormProps> = ({ onSuccess, onCancel }) => {
                   onChange={handleChange}
                   required
                   className="block w-full px-4 py-3 text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200 placeholder-gray-400 dark:placeholder-gray-500"
-                  placeholder="e.g., Engineering, Marketing"
+                  placeholder={t('employee.enterDepartment')}
                 />
               </div>
 
               <div className="space-y-2">
                 <label htmlFor="jobTitle" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  Job Title *
+                  {t('employee.jobTitle')} *
                 </label>
                 <input
                   id="jobTitle"
@@ -318,13 +312,13 @@ const AddUserForm: React.FC<AddUserFormProps> = ({ onSuccess, onCancel }) => {
                   onChange={handleChange}
                   required
                   className="block w-full px-4 py-3 text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200 placeholder-gray-400 dark:placeholder-gray-500"
-                  placeholder="e.g., Software Engineer, Designer"
+                  placeholder={t('employee.enterJobTitle')}
                 />
               </div>
 
               <div className="space-y-2">
                 <label htmlFor="role" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  Role *
+                  {t('employee.role')} *
                 </label>
                 <div className="relative">
                   <select
@@ -346,10 +340,9 @@ const AddUserForm: React.FC<AddUserFormProps> = ({ onSuccess, onCancel }) => {
                     </svg>
                   </div>
                 </div>
-              </div>              {formData.role === UserRole.EMPLOYEE && user?.role === UserRole.ADMIN && (
-                <div className="space-y-2">
+              </div>              {formData.role === UserRole.EMPLOYEE && user?.role === UserRole.ADMIN && (                <div className="space-y-2">
                   <label htmlFor="managerId" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                    Manager
+                    {t('employee.managerId')}
                   </label>
                   <select
                     id="managerId"
@@ -359,7 +352,7 @@ const AddUserForm: React.FC<AddUserFormProps> = ({ onSuccess, onCancel }) => {
                     className="block w-full px-4 py-3 text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                     aria-label="Manager"
                   >
-                    <option value="">Select a manager (optional)</option>
+                    <option value="">{t('employee.selectManagerOptional')}</option>
                     {managers.map((manager) => (
                       <option key={manager._id} value={manager._id}>
                         {manager.firstName} {manager.lastName} ({manager.email})
@@ -372,14 +365,13 @@ const AddUserForm: React.FC<AddUserFormProps> = ({ onSuccess, onCancel }) => {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200 dark:border-gray-700">
-            <button
+          <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200 dark:border-gray-700">            <button
               type="button"
               onClick={onCancel}
               disabled={isLoading}
               className="w-full sm:w-auto px-6 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 rounded-lg transition-all duration-200 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
@@ -389,14 +381,14 @@ const AddUserForm: React.FC<AddUserFormProps> = ({ onSuccess, onCancel }) => {
               {isLoading ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  <span>Creating...</span>
+                  <span>{t('employee.creating')}</span>
                 </>
               ) : (
                 <>
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                   </svg>
-                  <span>Create User</span>
+                  <span>{t('employee.createUser')}</span>
                 </>
               )}
             </button>

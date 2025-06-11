@@ -43,3 +43,88 @@
 .theme-toggle svg {
   @apply w-5 h-5 text-gray-600 dark:text-gray-400;
 }
+
+/* RTL Support */
+[dir="rtl"] {
+  text-align: right;
+}
+
+[dir="rtl"] .rtl\:text-left {
+  text-align: left;
+}
+
+[dir="rtl"] .rtl\:text-right {
+  text-align: right;
+}
+
+[dir="rtl"] .rtl\:ml-auto {
+  margin-left: auto;
+  margin-right: 0;
+}
+
+[dir="rtl"] .rtl\:mr-auto {
+  margin-right: auto;
+  margin-left: 0;
+}
+
+[dir="rtl"] .rtl\:pl-3 {
+  padding-left: 0.75rem;
+  padding-right: 0;
+}
+
+[dir="rtl"] .rtl\:pr-3 {
+  padding-right: 0.75rem;
+  padding-left: 0;
+}
+
+/* Flip icons and arrows for RTL */
+[dir="rtl"] .rtl\:transform {
+  transform: scaleX(-1);
+}
+
+/* RTL Dropdown positioning fixes */
+[dir="rtl"] .dropdown-menu {
+  left: 0 !important;
+  right: auto !important;
+  transform-origin: top left !important;
+}
+
+/* Notification dropdown RTL fixes */
+[dir="rtl"] .notification-dropdown {
+  left: 0;
+  right: auto;
+}
+
+/* Language switcher improvements */
+.language-switcher {
+  @apply transition-colors duration-200;
+}
+
+.language-switcher:hover {
+  @apply bg-gray-100 dark:bg-gray-800;
+}
+
+/* Language dropdown item styling */
+.language-option {
+  @apply flex items-center w-full px-4 py-3 transition-all duration-200;
+}
+
+.language-option:hover {
+  @apply bg-gray-50 dark:bg-gray-700;
+}
+
+.language-flag {
+  @apply text-lg mr-4 flex-shrink-0;
+}
+
+.language-content {
+  @apply flex-1 text-center;
+}
+
+.language-name {
+  @apply font-medium text-sm;
+}
+
+.language-code {
+  @apply text-xs text-gray-500 dark:text-gray-400 capitalize mt-1;
+}

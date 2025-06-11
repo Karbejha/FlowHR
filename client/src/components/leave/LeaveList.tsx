@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import { Leave, LeaveStatus, LeaveStatusUpdate, LeaveType, LeaveFilters } from '@/types/leave';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from '@/contexts/I18nContext';
 import { UserRole, User } from '@/types/auth';
 import toast from 'react-hot-toast';
 
@@ -11,6 +12,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 type FilterType = 'all' | 'pending' | 'older';
 
 export default function LeaveList() {
+  const { t } = useTranslation();
   const [leaves, setLeaves] = useState<Leave[]>([]);
   const [filteredLeaves, setFilteredLeaves] = useState<Leave[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -54,10 +56,9 @@ export default function LeaveList() {
       fetchEmployees();
     }
   }, [fetchEmployees, user?.role]);
-
   const fetchLeaves = useCallback(async () => {
     if (!token) {
-      toast.error('Authentication required');
+      toast.error(t('messages.authenticationRequired'));
       return;
     }
     
@@ -79,11 +80,11 @@ export default function LeaveList() {
       setLeaves(data);
     } catch (err) {
       console.error('Error fetching leaves:', err);
-      toast.error('Failed to fetch leave requests');
+      toast.error(t('messages.failedToFetchLeaveRequests'));
     } finally {
       setIsLoading(false);
     }
-  }, [user?.role, token]);
+  }, [user?.role, token, t]);
 
   // Filter leaves based on active filter and advanced filters
   const filterLeaves = useCallback((leavesToFilter: Leave[]) => {
@@ -176,10 +177,9 @@ export default function LeaveList() {
   useEffect(() => {
     fetchLeaves();
   }, [fetchLeaves]);
-
   const handleStatusUpdate = async (leaveId: string, update: LeaveStatusUpdate) => {
     if (!token) {
-      toast.error('Authentication required');
+      toast.error(t('messages.authenticationRequired'));
       return;
     }
     
@@ -187,17 +187,17 @@ export default function LeaveList() {
       await axios.post(`${API_URL}/leave/${leaveId}/status`, update, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      toast.success('Leave request updated successfully');
+      toast.success(t('messages.leaveRequestUpdated'));
       fetchLeaves();
     } catch (err) {
       console.error('Error updating leave status:', err);
-      toast.error('Failed to update leave request');
+      toast.error(t('messages.failedToUpdateLeaveRequest'));
     }
   };
 
   const handleCancel = async (leaveId: string) => {
     if (!token) {
-      toast.error('Authentication required');
+      toast.error(t('messages.authenticationRequired'));
       return;
     }
     
@@ -205,11 +205,11 @@ export default function LeaveList() {
       await axios.post(`${API_URL}/leave/${leaveId}/cancel`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      toast.success('Leave request cancelled successfully');
+      toast.success(t('messages.leaveRequestCancelled'));
       fetchLeaves();
     } catch (err) {
       console.error('Error cancelling leave:', err);
-      toast.error('Failed to cancel leave request');
+      toast.error(t('messages.failedToCancelLeaveRequest'));
     }
   };
 
@@ -225,13 +225,12 @@ export default function LeaveList() {
         return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-700';
     }
   };
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
           <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 dark:border-blue-400"></div>
-          <span>Loading...</span>
+          <span>{t('common.loading')}</span>
         </div>
       </div>
     );
@@ -242,9 +241,8 @@ export default function LeaveList() {
       <div className="px-4 py-5 sm:p-6">
         <div className="flex flex-col gap-4 mb-6">
           {/* Header with Filter Tabs and Advanced Filter Toggle */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">
-              Leave Requests
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">            <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">
+              {t('leave.leaveRequests')}
             </h3>
             
             <div className="flex items-center gap-3">
@@ -262,7 +260,7 @@ export default function LeaveList() {
                             : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                         }`}
                       >
-                        <span>All</span>
+                        <span>{t('common.all')}</span>
                         <span className="ml-1 px-1.5 py-0.5 text-xs bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 rounded">
                           {counts.all}
                         </span>
@@ -275,7 +273,7 @@ export default function LeaveList() {
                             : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                         }`}
                       >
-                        <span>Pending</span>
+                        <span>{t('leave.pending')}</span>
                         <span className="ml-1 px-1.5 py-0.5 text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 rounded">
                           {counts.pending}
                         </span>
@@ -288,7 +286,7 @@ export default function LeaveList() {
                             : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                         }`}
                       >
-                        <span>History</span>
+                        <span>{t('leave.history')}</span>
                         <span className="ml-1 px-1.5 py-0.5 text-xs bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 rounded">
                           {counts.older}
                         </span>
@@ -310,7 +308,7 @@ export default function LeaveList() {
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.707V4z" />
                 </svg>
-                <span>Filters</span>
+                <span>{t('common.filter')}</span>
                 {hasAdvancedFilters() && (
                   <span className="ml-1 px-1.5 py-0.5 text-xs bg-blue-200 dark:bg-blue-800 text-blue-700 dark:text-blue-300 rounded-full">
                     •
@@ -326,9 +324,8 @@ export default function LeaveList() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 {/* Employee Filter - Only for managers/admins */}
                 {user?.role !== UserRole.EMPLOYEE && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Employee
+                  <div>                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('leave.employee')}
                     </label>
                     <select
                       value={advancedFilters.employee}
@@ -336,7 +333,7 @@ export default function LeaveList() {
                       aria-label="Filter by employee"
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
                     >
-                      <option value="">All Employees</option>
+                      <option value="">{t('employee.allEmployees')}</option>
                       {employees.map((emp) => (
                         <option key={emp._id} value={emp._id}>
                           {emp.firstName} {emp.lastName}
@@ -347,9 +344,8 @@ export default function LeaveList() {
                 )}
 
                 {/* Leave Type Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Type
+                <div>                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    {t('leave.type')}
                   </label>
                   <select
                     value={advancedFilters.leaveType}
@@ -357,19 +353,18 @@ export default function LeaveList() {
                     aria-label="Filter by leave type"
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
                   >
-                    <option value="">All Types</option>
+                    <option value="">{t('leave.allTypes')}</option>
                     {Object.values(LeaveType).map((type) => (
                       <option key={type} value={type}>
-                        {type.charAt(0).toUpperCase() + type.slice(1)}
+                        {t(`leave.${type}`)}
                       </option>
                     ))}
                   </select>
                 </div>
 
                 {/* Status Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Status
+                <div>                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    {t('leave.status')}
                   </label>
                   <select
                     value={advancedFilters.status}
@@ -377,19 +372,18 @@ export default function LeaveList() {
                     aria-label="Filter by status"
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
                   >
-                    <option value="">All Statuses</option>
+                    <option value="">{t('leave.allStatuses')}</option>
                     {Object.values(LeaveStatus).map((status) => (
                       <option key={status} value={status}>
-                        {status.charAt(0).toUpperCase() + status.slice(1)}
+                        {t(`leave.${status}`)}
                       </option>
                     ))}
                   </select>
                 </div>
 
                 {/* Start Date Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    From Date
+                <div>                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    {t('leave.dateFrom')}
                   </label>
                   <input
                     type="date"
@@ -401,9 +395,8 @@ export default function LeaveList() {
                 </div>
 
                 {/* End Date Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    To Date
+                <div>                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    {t('leave.toDate')}
                   </label>
                   <input
                     type="date"
@@ -416,9 +409,8 @@ export default function LeaveList() {
               </div>
 
               {/* Filter Actions */}
-              <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-200 dark:border-gray-600">
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Showing {filteredLeaves.length} of {leaves.length} requests
+              <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-200 dark:border-gray-600">                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  {t('leave.showingResults', { showing: filteredLeaves.length, total: leaves.length })}
                 </div>
                 <div className="flex items-center space-x-2">
                   <button
@@ -426,13 +418,13 @@ export default function LeaveList() {
                     disabled={!hasAdvancedFilters()}
                     className="px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
                   >
-                    Clear Filters
+                    {t('leave.clearFilters')}
                   </button>
                   <button
                     onClick={() => setShowAdvancedFilters(false)}
                     className="px-3 py-1.5 text-sm font-medium bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors duration-150"
                   >
-                    Done
+                    {t('common.done')}
                   </button>
                 </div>
               </div>
@@ -449,23 +441,21 @@ export default function LeaveList() {
                     <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
                       {leave.employee.firstName} {leave.employee.lastName}
                     </div>
-                  )}
-                  <div className="text-lg font-semibold text-gray-900 dark:text-gray-100 capitalize">
-                    {leave.leaveType} Leave
+                  )}                  <div className="text-lg font-semibold text-gray-900 dark:text-gray-100 capitalize">
+                    {t(`leave.${leave.leaveType}`)}
                   </div>
                 </div>
                 <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadgeColor(leave.status)}`}>
-                  {leave.status}
+                  {t(`leave.${leave.status}`)}
                 </span>
               </div>
-              
-              <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
+                <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
                 <div>
-                  <span className="text-gray-500 dark:text-gray-400">Duration:</span>
-                  <div className="font-medium text-gray-900 dark:text-gray-100">{leave.totalDays} days</div>
+                  <span className="text-gray-500 dark:text-gray-400">{t('leave.mobileLabels.duration')}</span>
+                  <div className="font-medium text-gray-900 dark:text-gray-100">{leave.totalDays} {t('leave.days')}</div>
                 </div>
                 <div>
-                  <span className="text-gray-500 dark:text-gray-400">Dates:</span>
+                  <span className="text-gray-500 dark:text-gray-400">{t('leave.mobileLabels.dates')}</span>
                   <div className="font-medium text-gray-900 dark:text-gray-100 text-xs">
                     {new Date(leave.startDate).toLocaleDateString()} - {new Date(leave.endDate).toLocaleDateString()}
                   </div>
@@ -474,7 +464,7 @@ export default function LeaveList() {
 
               {leave.reason && (
                 <div className="mb-4">
-                  <span className="text-gray-500 dark:text-gray-400 text-sm">Reason:</span>
+                  <span className="text-gray-500 dark:text-gray-400 text-sm">{t('leave.mobileLabels.reason')}</span>
                   <div className="text-sm text-gray-900 dark:text-gray-100 mt-1 line-clamp-2">
                     {leave.reason}
                   </div>
@@ -487,26 +477,24 @@ export default function LeaveList() {
                  leave.status === LeaveStatus.PENDING && (
                   <>
                     <button
-                      onClick={() => handleStatusUpdate(leave._id, { status: LeaveStatus.APPROVED })}
-                      className="flex-1 min-w-0 px-3 py-2 text-sm font-medium text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 rounded-md hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors duration-150"
+                      onClick={() => handleStatusUpdate(leave._id, { status: LeaveStatus.APPROVED })}                      className="flex-1 min-w-0 px-3 py-2 text-sm font-medium text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 rounded-md hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors duration-150"
                     >
-                      Approve
+                      {t('leave.approve')}
                     </button>
                     <button
                       onClick={() => handleStatusUpdate(leave._id, { status: LeaveStatus.REJECTED })}
                       className="flex-1 min-w-0 px-3 py-2 text-sm font-medium text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-md hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors duration-150"
                     >
-                      Reject
+                      {t('leave.reject')}
                     </button>
                   </>
                 )}
                 {user?.role === UserRole.EMPLOYEE && 
                  leave.status === LeaveStatus.PENDING && (
                   <button
-                    onClick={() => handleCancel(leave._id)}
-                    className="flex-1 px-3 py-2 text-sm font-medium text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-md hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors duration-150"
+                    onClick={() => handleCancel(leave._id)}                    className="flex-1 px-3 py-2 text-sm font-medium text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-md hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors duration-150"
                   >
-                    Cancel Request
+                    {t('leave.cancel')}
                   </button>
                 )}
               </div>
@@ -533,28 +521,26 @@ export default function LeaveList() {
 
         {/* Desktop Table View */}
         <div className="hidden md:block overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
-            <thead className="bg-gray-50 dark:bg-gray-700">
-              <tr>
-                {user?.role !== UserRole.EMPLOYEE && (
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600"><thead className="bg-gray-50 dark:bg-gray-700">
+              <tr>{user?.role !== UserRole.EMPLOYEE && (
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Employee
+                    {t('leave.tableHeaders.employee')}
                   </th>
                 )}
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Type
+                  {t('leave.tableHeaders.type')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Dates
+                  {t('leave.tableHeaders.dates')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Days
+                  {t('leave.tableHeaders.days')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Status
+                  {t('leave.tableHeaders.status')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Actions
+                  {t('leave.tableHeaders.actions')}
                 </th>
               </tr>
             </thead>
@@ -564,9 +550,8 @@ export default function LeaveList() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-medium">
                     {leave.employee.firstName} {leave.employee.lastName}
                   </td>
-                )}
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 capitalize">
-                  {leave.leaveType}
+                )}<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 capitalize">
+                  {t(`leave.${leave.leaveType}`)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-1">
@@ -577,10 +562,9 @@ export default function LeaveList() {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-medium">
                   {leave.totalDays}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                </td>                <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeColor(leave.status)}`}>
-                    {leave.status}
+                    {t(`leave.${leave.status}`)}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -589,16 +573,15 @@ export default function LeaveList() {
                      leave.status === LeaveStatus.PENDING && (
                       <>
                         <button
-                          onClick={() => handleStatusUpdate(leave._id, { status: LeaveStatus.APPROVED })}
-                          className="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 transition-colors duration-150 px-2 py-1 rounded hover:bg-green-50 dark:hover:bg-green-900/20"
+                          onClick={() => handleStatusUpdate(leave._id, { status: LeaveStatus.APPROVED })}                          className="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 transition-colors duration-150 px-2 py-1 rounded hover:bg-green-50 dark:hover:bg-green-900/20"
                         >
-                          Approve
+                          {t('leave.approve')}
                         </button>
                         <button
                           onClick={() => handleStatusUpdate(leave._id, { status: LeaveStatus.REJECTED })}
                           className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition-colors duration-150 px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20"
                         >
-                          Reject
+                          {t('leave.reject')}
                         </button>
                       </>
                     )}
@@ -624,15 +607,14 @@ export default function LeaveList() {
                   <div className="flex flex-col items-center space-y-2">
                     <svg className="w-12 h-12 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <p>
-                      {activeFilter === 'pending' && 'No pending leave requests found'}
-                      {activeFilter === 'older' && 'No historical leave requests found'}
-                      {activeFilter === 'all' && 'No leave requests found'}
+                    </svg>                    <p>
+                      {activeFilter === 'pending' && t('leave.emptyStates.noPendingRequests')}
+                      {activeFilter === 'older' && t('leave.emptyStates.noHistoricalRequests')}
+                      {activeFilter === 'all' && t('leave.emptyStates.noRequests')}
                     </p>
                     {activeFilter !== 'all' && leaves.length > 0 && (
                       <p className="text-xs text-gray-400 dark:text-gray-500">
-                        Try switching to &quot;All&quot; to see other requests
+                        {t('leave.emptyStates.tryAllFilter')}
                       </p>
                     )}
                   </div>
