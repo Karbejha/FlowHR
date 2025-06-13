@@ -14,12 +14,31 @@ export const getEmployees = async (req: Request, res: Response): Promise<void> =
     if (req.user.role === UserRole.MANAGER) {
       query = { managerId: req.user._id };
     }
-
+    
+    // Pagination parameters
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+    
+    // Count total employees for pagination
+    const totalEmployees = await User.countDocuments(query);
+    
+    // Get paginated results
     const employees = await User.find(query)
       .select('-password')
-      .sort({ firstName: 1, lastName: 1 });
+      .sort({ firstName: 1, lastName: 1 })
+      .skip(skip)
+      .limit(limit);
     
-    res.json(employees);
+    res.json({
+      employees,
+      pagination: {
+        total: totalEmployees,
+        page,
+        limit,
+        totalPages: Math.ceil(totalEmployees / limit)
+      }
+    });
   } catch (error) {
     res.status(500).json({ error: 'Error fetching employees' });
   }

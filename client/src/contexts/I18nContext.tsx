@@ -86,7 +86,7 @@ export function I18nProvider({ children }: I18nProviderProps) {
         value = (value as Record<string, unknown>)[k];
       } else {
         // Return key if translation not found
-        console.warn(`Translation not found for key: ${key} in locale: ${locale}`);
+        // console.warn(`Translation not found for key: ${key} in locale: ${locale}`);
         return key;
       }
     }
