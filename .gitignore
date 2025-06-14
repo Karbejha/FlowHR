@@ -54,3 +54,4 @@ debug-*.js
 # Documentation files (keep only main README)
 IMPLEMENTATION_COMPLETE.md
 ENHANCEMENT_COMPLETE.md
+.hintrc

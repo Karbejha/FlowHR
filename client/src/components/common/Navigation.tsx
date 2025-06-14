@@ -106,9 +106,9 @@ export default function Navigation() {
                     </Link>
                     {user?.role === UserRole.ADMIN && (
                       <Link
-                        href="/reports/demographics"
+                        href="/reports"
                         className={`${
-                          isActive('/reports/demographics')
+                          pathname.startsWith('/reports')
                             ? 'bg-gray-900 dark:bg-gray-800 text-white'
                             : 'text-gray-300 hover:bg-gray-700 hover:text-white'
                         } px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200`}
@@ -167,7 +167,7 @@ export default function Navigation() {
                 <NavigationLink href="/leave">{t('navigation.leaveRequests')}</NavigationLink>
                 <NavigationLink href="/attendance">{t('navigation.teamAttendance')}</NavigationLink>
                 {user?.role === UserRole.ADMIN && (
-                  <NavigationLink href="/reports/demographics">{t('navigation.reports')}</NavigationLink>
+                  <NavigationLink href="/reports">{t('navigation.reports')}</NavigationLink>
                 )}
               </>
             )}
