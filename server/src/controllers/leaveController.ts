@@ -333,3 +333,70 @@ export const getAllLeaveRequests = async (req: Request, res: Response): Promise<
     res.status(500).json({ error: 'Error fetching leave requests' });
   }
 };
+
+// New function to get leave requests for a specific month
+export const getMonthlyLeaveRequests = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { month } = req.query;
+    const monthNum = parseInt(month as string, 10);
+    
+    if (isNaN(monthNum) || monthNum < 1 || monthNum > 12) {
+      res.status(400).json({ error: 'Invalid month parameter. Must be between 1-12.' });
+      return;
+    }
+
+    // Get the current year
+    const currentYear = new Date().getFullYear();
+    
+    // Create start and end dates for the month
+    const startDate = new Date(currentYear, monthNum - 1, 1);
+    const endDate = new Date(currentYear, monthNum, 0); // Last day of the month
+    
+    console.log(`Fetching leave requests between ${startDate.toISOString()} and ${endDate.toISOString()}`);
+    
+    // Find leaves that overlap with the month
+    // A leave request overlaps with the month if:
+    // - The start date is within the month, OR
+    // - The end date is within the month, OR
+    // - The start date is before the month AND the end date is after the month
+    const leaves = await Leave.find({
+      $and: [
+        { status: LeaveStatus.APPROVED }, // Only show approved leaves
+        {
+          $or: [
+            // Start date falls within the month
+            {
+              startDate: {
+                $gte: startDate,
+                $lte: endDate
+              }
+            },
+            // End date falls within the month
+            {
+              endDate: {
+                $gte: startDate,
+                $lte: endDate
+              }
+            },
+            // Leave spans across the month
+            {
+              startDate: { $lt: startDate },
+              endDate: { $gt: endDate }
+            }
+          ]
+        }
+      ]
+    })
+    .populate('employee', 'firstName lastName avatar dateOfBirth')
+    .sort({ startDate: 1 });
+    
+    console.log(`Found ${leaves.length} leave requests for month ${monthNum}`);
+    res.json(leaves);
+  } catch (error) {
+    console.error('Error fetching monthly leave requests:', error);
+    res.status(500).json({ 
+      error: 'Error fetching monthly leave requests', 
+      details: error instanceof Error ? error.message : String(error)
+    });
+  }
+};

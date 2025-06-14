@@ -367,7 +367,7 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ employee, onSuccess, onCanc
               </div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{t('employees.personalInformation')}</h3>
             </div>            {/* Avatar Upload Section */}
-            <div className="mb-6">              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+            <div className="mb-6">              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 text-center mb-3">
                 {t('employees.profilePicture')}
               </label>
               <div className="flex flex-col items-center space-y-3">
@@ -549,7 +549,7 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ employee, onSuccess, onCanc
                   />
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  {t('employees.dateOfBirthNote') || 'Please enter the employee\'s date of birth'}
+                  {t('employees.dateOfBirthNote')}
                 </p>
               </div>
             </div>

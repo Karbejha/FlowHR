@@ -6,6 +6,7 @@ import { UserRole } from '@/types/auth';
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
 import BirthdayCard from '@/components/common/BirthdayCard';
+import LeaveCard from '@/components/common/LeaveCard';
 
 export default function Home() {
   const { isAuthenticated, user, logout, isLoading } = useAuth();
@@ -316,8 +317,7 @@ export default function Home() {
                 ? t('homepage.goodMorning') 
                 : new Date().getHours() < 18 
                   ? t('homepage.goodAfternoon') 
-                  : t('homepage.goodEvening'),
-              name: user?.firstName || ''
+                  : t('homepage.goodEvening'),              name: user?.firstName || ''
             })}
           </h2>
           <p className="text-gray-600 dark:text-gray-400">
@@ -335,8 +335,14 @@ export default function Home() {
             />
           ))}
           
-          {/* Birthday Card */}
-          <BirthdayCard className="lg:col-span-3 sm:col-span-2" />
+          {/* Information Cards Section */}
+          <div className="lg:col-span-3 sm:col-span-2 grid grid-cols-1 gap-8 md:grid-cols-2">
+            {/* Birthday Card */}
+            <BirthdayCard />
+            
+            {/* Leave Card */}
+            <LeaveCard />
+          </div>
         </div>{/* Quick stats or additional info */}
         <div className="mt-12 p-6 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-700/50">
           <div className="text-center">

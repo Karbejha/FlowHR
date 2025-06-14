@@ -9,7 +9,8 @@ import {
   getAllLeaveRequests,
   updateLeaveStatus,
   cancelLeaveRequest,
-  getLeaveBalance
+  getLeaveBalance,
+  getMonthlyLeaveRequests
 } from '../controllers/leaveController';
 
 const router = express.Router();
@@ -23,6 +24,7 @@ router.get('/balance', authenticate, asyncMiddleware(getLeaveBalance));
 router.post('/request', authenticate, asyncMiddleware(submitLeaveRequest));
 router.get('/my-requests', authenticate, asyncMiddleware(getMyLeaveRequests));
 router.post('/:leaveId/cancel', authenticate, asyncMiddleware(cancelLeaveRequest));
+router.get('/monthly', authenticate, asyncMiddleware(getMonthlyLeaveRequests));
 
 // Manager/Admin routes
 router.get(

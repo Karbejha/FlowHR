@@ -21,19 +21,16 @@ const BirthdayCard: React.FC<BirthdayCardProps> = ({ className = '' }) => {
   const currentMonthName = new Date().toLocaleString('default', { month: 'long' });
   useEffect(() => {
     const fetchBirthdayEmployees = async () => {
-      if (!token) return;      try {
+      if (!token) return;
+      try {
         setIsLoading(true);
-        console.log(`Fetching birthdays for month: ${currentMonth}`);
-        
-        const response = await fetch(`/api/users/birthdays/${currentMonth}`, {
+        const response = await fetch(`/api/users/birthdays?month=${currentMonth}`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         });
-
-        console.log('API response status:', response.status);
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({ error: 'Failed to parse error response' }));
@@ -42,7 +39,6 @@ const BirthdayCard: React.FC<BirthdayCardProps> = ({ className = '' }) => {
         }
 
         const data = await response.json();
-        console.log('Birthday data received:', data.length, 'employees');
         setBirthdayEmployees(data);
       } catch (err) {
         console.error('Error fetching birthday employees:', err);
@@ -118,7 +114,7 @@ const BirthdayCard: React.FC<BirthdayCardProps> = ({ className = '' }) => {
             {birthdayEmployees.map((employee) => (
               <div 
                 key={employee._id} 
-                className="flex items-center p-3 rounded-lg border border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors"
+                className="flex items-center p-3 rounded-lg border border-gray-100 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
               >
                 {employee.avatar ? (
                   <div className="relative w-10 h-10 rounded-full overflow-hidden">

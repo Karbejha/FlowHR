@@ -8,11 +8,42 @@ import { logError, logWarn } from '../utils/logger';
 
 export const getEmployees = async (req: Request, res: Response): Promise<void> => {
   try {
-    let query = {};
+    let query: any = {};
     
     // If manager, only show their team members
     if (req.user.role === UserRole.MANAGER) {
       query = { managerId: req.user._id };
+    }
+    
+    // Handle search parameter
+    if (req.query.search) {
+      const searchTerm = req.query.search as string;
+      // Search across multiple fields
+      const searchRegex = new RegExp(searchTerm, 'i');
+      query = {
+        ...query,
+        $or: [
+          { firstName: searchRegex },
+          { lastName: searchRegex },
+          { email: searchRegex },
+          { jobTitle: searchRegex }
+        ]
+      };
+    }
+    
+    // Handle department filter
+    if (req.query.department) {
+      query.department = req.query.department;
+    }
+    
+    // Handle role filter
+    if (req.query.role) {
+      query.role = req.query.role;
+    }
+    
+    // Handle active status filter
+    if (req.query.isActive !== undefined) {
+      query.isActive = req.query.isActive === 'true';
     }
     
     // Pagination parameters
@@ -40,6 +71,7 @@ export const getEmployees = async (req: Request, res: Response): Promise<void> =
       }
     });
   } catch (error) {
+    logError('Error fetching employees', { error });
     res.status(500).json({ error: 'Error fetching employees' });
   }
 };
@@ -221,7 +253,7 @@ export const getManagers = async (req: Request, res: Response): Promise<void> =>
 export const updateUser = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const { email, firstName, lastName, role, department, jobTitle, managerId } = req.body;
+    const { email, firstName, lastName, role, department, jobTitle, managerId, dateOfBirth } = req.body;
 
     // Only admins can update other users
     if (req.user.role !== UserRole.ADMIN) {
@@ -262,9 +294,7 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
         res.status(400).json({ error: 'Invalid manager selected' });
         return;
       }
-    }
-
-    // Update user
+    }    // Update user
     const updatedUser = await User.findByIdAndUpdate(
       id,
       {
@@ -275,6 +305,7 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
         department: department || user.department,
         jobTitle: jobTitle || user.jobTitle,
         managerId: role === UserRole.EMPLOYEE ? managerId : undefined,
+        dateOfBirth: dateOfBirth || user.dateOfBirth,
       },
       { new: true }
     ).select('-password');

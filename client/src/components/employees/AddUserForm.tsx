@@ -213,9 +213,8 @@ const AddUserForm: React.FC<AddUserFormProps> = ({ onSuccess, onCancel }) => {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label htmlFor="dateOfBirth" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  {t('employee.dateOfBirth') || 'Date of Birth'} *
+              <div className="space-y-2">                <label htmlFor="dateOfBirth" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  {t('employees.dateOfBirth')} *
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -235,7 +234,7 @@ const AddUserForm: React.FC<AddUserFormProps> = ({ onSuccess, onCancel }) => {
                   />
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  {t('employee.dateOfBirthNote') || 'Please enter the employee\'s date of birth'}
+                  {t('employees.dateOfBirthNote')}
                 </p>
               </div>
             </div>

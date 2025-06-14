@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, Fragment } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/contexts/I18nContext';
+import { useDebounce } from '@/hooks/useDebounce';
 import axios, { AxiosError } from 'axios';
 import { User, UserRole } from '@/types/auth';
 import toast from 'react-hot-toast';
@@ -29,7 +30,7 @@ const DEPARTMENTS = [
 
 export default function EmployeeList() {
   const { t, isRTL } = useTranslation();
-  const [employees, setEmployees] = useState<User[]>([]);
+  // const [employees, setEmployees] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
@@ -54,9 +55,10 @@ export default function EmployeeList() {
   const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [totalEmployees, setTotalEmployees] = useState(0);
-  
   // Search state
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  const [searchLoading, setSearchLoading] = useState(false);
   const [filteredEmployees, setFilteredEmployees] = useState<User[]>([]);
   
   // Filter state
@@ -67,46 +69,75 @@ export default function EmployeeList() {
     isActive: ''
   });
 
-  const { user, token } = useAuth();
-  const fetchEmployees = useCallback(async () => {
+  const { user, token } = useAuth();  const fetchEmployees = useCallback(async () => {
     if (!token) {
       toast.error(t('messages.authenticationRequired'));
       return;
     }
     
     try {
-      setIsLoading(true);
+      if (debouncedSearchTerm) {
+        setSearchLoading(true);
+      } else {
+        setIsLoading(true);
+      }
+      
+      // Build query parameters including filters
+      const params: {
+        page: number;
+        limit: number;
+        search?: string;
+        department?: string;
+        role?: string;
+        isActive?: boolean;
+      } = {
+        page: currentPage,
+        limit: pageSize
+      };
+        // Only add search and filters if they're non-empty
+      if (debouncedSearchTerm.trim()) {
+        params.search = debouncedSearchTerm.trim();
+      }
+      
+      if (filters.department) {
+        params.department = filters.department;
+      }
+      
+      if (filters.role) {
+        params.role = filters.role;
+      }
+      
+      if (filters.isActive !== '') {
+        params.isActive = filters.isActive === 'active';
+      }
+      
       const { data } = await axios.get(`${API_URL}/users/employees`, {
         headers: { Authorization: `Bearer ${token}` },
-        params: {
-          page: currentPage,
-          limit: pageSize
-        }
+        params
       });
-      
-      setEmployees(data.employees);
-      setFilteredEmployees(data.employees);
+      // setEmployees(data.employees);
+      setFilteredEmployees(data.employees); // We no longer need client-side filtering
       setTotalPages(data.pagination.totalPages);
-      setTotalEmployees(data.pagination.total);
-    } catch (error) {
+      setTotalEmployees(data.pagination.total);    } catch (error) {
       const err = error as AxiosError<{ error: string }>;
+      console.error('Error fetching employees:', err);
       toast.error(err.response?.data?.error || t('messages.failedToFetchAttendanceRecords'));
     } finally {
       setIsLoading(false);
+      setSearchLoading(false);
     }
-  }, [token, t, currentPage, pageSize]);
-
-  useEffect(() => {
+  }, [token, t, currentPage, pageSize, debouncedSearchTerm, filters.department, filters.role, filters.isActive]);  useEffect(() => {
     if (token) {
       fetchEmployees();
     }
-  }, [token, fetchEmployees]);
-  // Handle filter changes
+  }, [token, fetchEmployees, currentPage, pageSize, debouncedSearchTerm, filters.department, filters.role, filters.isActive]);// Handle filter changes
   const handleFilterChange = useCallback((filterKey: string, value: string) => {
     setFilters(prev => ({
       ...prev,
       [filterKey]: value
     }));
+    // Reset to first page when filters change
+    setCurrentPage(1);
   }, []);
 
   // Clear all filters
@@ -116,44 +147,19 @@ export default function EmployeeList() {
       role: '',
       isActive: ''
     });
+    // Reset to first page when clearing filters
+    setCurrentPage(1);
   }, []);
 
   // Check if any filters are active
   const hasActiveFilters = useCallback(() => {
     return Object.values(filters).some(value => value !== '');
-  }, [filters]);
-
-  // Filter employees based on search term and advanced filters
-  useEffect(() => {
-    let filtered = employees;
-    
-    // Apply search filter
-    if (searchTerm.trim() !== '') {
-      const searchLower = searchTerm.toLowerCase();
-      filtered = filtered.filter(employee => 
-        `${employee.firstName} ${employee.lastName}`.toLowerCase().includes(searchLower) ||
-        employee.email.toLowerCase().includes(searchLower)
-      );
-    }
-    
-    // Apply department filter
-    if (filters.department) {
-      filtered = filtered.filter(employee => employee.department === filters.department);
-    }
-    
-    // Apply role filter
-    if (filters.role) {
-      filtered = filtered.filter(employee => employee.role === filters.role);
-    }
-    
-    // Apply active status filter
-    if (filters.isActive !== '') {
-      const isActive = filters.isActive === 'active';
-      filtered = filtered.filter(employee => employee.isActive === isActive);
-    }
-    
-    setFilteredEmployees(filtered);
-  }, [searchTerm, employees, filters]);
+  }, [filters]);  // Handle search term change
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    // Reset to first page when search term changes
+    setCurrentPage(1);
+  }, []);
 
   // Reset to first page when changing page size
   useEffect(() => {
@@ -297,35 +303,10 @@ export default function EmployeeList() {
     setDeleteConfirmation({
       isOpen: true,
       employeeId: employee._id,
-      employeeName: `${employee.firstName} ${employee.lastName}`,
-      isBulkDelete: false,
+      employeeName: `${employee.firstName} ${employee.lastName}`,      isBulkDelete: false,
       selectedCount: 0
     });
   };
-
-  // Filter employees based on selected filters
-  useEffect(() => {
-    let filtered = employees;
-
-    // Filter by department
-    if (filters.department) {
-      filtered = filtered.filter(employee => employee.department === filters.department);
-    }
-
-    // Filter by role
-    if (filters.role) {
-      filtered = filtered.filter(employee => employee.role === filters.role);
-    }
-
-    // Filter by active status
-    if (filters.isActive !== '') {
-      const isActive = filters.isActive === 'true';
-      filtered = filtered.filter(employee => employee.isActive === isActive);
-    }
-
-    setFilteredEmployees(filtered);
-    setCurrentPage(1); // Reset to first page on filter change
-  }, [filters, employees]);
 
   if (isLoading) {
     return <div className="text-center">{t('common.loading')}</div>;
@@ -339,14 +320,20 @@ export default function EmployeeList() {
               <input
                 type="text"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={handleSearchChange}
                 placeholder={t('employee.searchEmployees')}
                 className="w-full pl-10 pr-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-gray-200"
-              />
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-                </svg>
+              />              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                {searchLoading ? (
+                  <svg className="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                ) : (
+                  <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+                  </svg>
+                )}
               </div>
               {searchTerm && (
                 <button
@@ -670,11 +657,26 @@ export default function EmployeeList() {
               )}
             </tr>
           </thead>
-          <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-            {filteredEmployees.length === 0 ? (
+          <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">            {filteredEmployees.length === 0 ? (
               <tr>
                 <td colSpan={user?.role === UserRole.ADMIN ? 8 : 7} className="px-6 py-10 text-center text-gray-500 dark:text-gray-400">
-                  {searchTerm ? t('employee.noMatchingEmployees') : t('employee.noEmployeesFound')}
+                  {searchTerm ? (
+                    <div className="flex flex-col items-center justify-center">
+                      <svg className="w-12 h-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.5 15.5l-3-3 3-3m-6 6l-3-3 3-3" />
+                      </svg>
+                      <p className="text-lg font-medium">{t('employee.noMatchingEmployees')}</p>
+                      <p className="text-sm">{t('employee.tryDifferentSearch')}</p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center">
+                      <svg className="w-12 h-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                      <p className="text-lg font-medium">{t('employee.noEmployeesFound')}</p>
+                      <p className="text-sm">{t('employee.addEmployeePrompt')}</p>
+                    </div>
+                  )}
                 </td>
               </tr>
             ) : (
@@ -882,10 +884,13 @@ export default function EmployeeList() {
               {t('employee.showing')} <span className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md font-medium text-gray-700 dark:text-gray-300">{(currentPage - 1) * pageSize + 1}-
               {Math.min(currentPage * pageSize, totalEmployees)}</span> {t('employee.of')} <span className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md font-medium text-gray-700 dark:text-gray-300">{totalEmployees}</span> {t('employee.employees')}
             </span>
-            
-            <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-              <button
-                onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+            <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">              <button
+                onClick={() => {
+                  setCurrentPage(p => {
+                    const newPage = Math.max(p - 1, 1);
+                    return newPage;
+                  });
+                }}
                 disabled={currentPage === 1}
                 className={`relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:z-20 focus:outline-offset-0 
                   ${currentPage === 1 
@@ -922,10 +927,11 @@ export default function EmployeeList() {
                   return null;
                 }
                 
-                return (
-                  <button
+                return (                  <button
                     key={pageNumber}
-                    onClick={() => setCurrentPage(pageNumber)}
+                    onClick={() => {
+                      setCurrentPage(pageNumber);
+                    }}
                     className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold 
                       ${currentPage === pageNumber 
                         ? 'z-10 bg-blue-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600' 
@@ -935,9 +941,13 @@ export default function EmployeeList() {
                   </button>
                 );
               })}
-              
-              <button
-                onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
+                <button
+                onClick={() => {
+                  setCurrentPage(p => {
+                    const newPage = Math.min(p + 1, totalPages);
+                    return newPage;
+                  });
+                }}
                 disabled={currentPage === totalPages}
                 className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:z-20 focus:outline-offset-0 
                   ${currentPage === totalPages 
