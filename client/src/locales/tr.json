@@ -633,9 +633,10 @@
     "agePercentage": "Yaş Yüzdesi",
     "tenureDistribution": "Kıdem Dağılımı",
     "tenurePercentage": "Kıdem Yüzdesi",
-    "employees": "Çalışanlar",
-    "insightsTitle": "Pano İçgörüleri",
+    "employees": "Çalışanlar",    "insightsTitle": "Pano İçgörüleri",
     "insightsDescription": "Bu pano, işgücü demografilerinizin kapsamlı bir görünümünü sağlayarak, daha iyi kaynak tahsisi ve stratejik planlama için veri odaklı kararlar almanıza yardımcı olur.",
-    "loadingDemographics": "Çalışan demografik verileri yükleniyor..."
+    "loadingDemographics": "Çalışan demografik verileri yükleniyor...",
+    "clickLegendToggle": "Grafikte göstermek/gizlemek için bir açıklama öğesine tıklayın.",
+    "resetFilters": "Filtreleri sıfırla"
   }
 }

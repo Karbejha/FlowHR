@@ -666,6 +666,8 @@
     "employees": "Employees",
     "insightsTitle": "Dashboard Insights",
     "insightsDescription": "This dashboard provides a comprehensive view of your workforce demographics, helping you make data-driven decisions for better resource allocation and strategic planning.",
-    "loadingDemographics": "Loading employee demographics data..."
+    "loadingDemographics": "Loading employee demographics data...",
+    "clickLegendToggle": "Click on a legend item to show/hide it from the chart.",
+    "resetFilters": "Reset filters"
   }
 }
