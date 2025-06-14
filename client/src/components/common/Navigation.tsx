@@ -104,6 +104,18 @@ export default function Navigation() {
                     >
                       {t('navigation.teamAttendance')}
                     </Link>
+                    {user?.role === UserRole.ADMIN && (
+                      <Link
+                        href="/reports/demographics"
+                        className={`${
+                          isActive('/reports/demographics')
+                            ? 'bg-gray-900 dark:bg-gray-800 text-white'
+                            : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                        } px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200`}
+                      >
+                        {t('navigation.reports')}
+                      </Link>
+                    )}
                   </>
                 )}
               </div>
@@ -154,6 +166,9 @@ export default function Navigation() {
                 <NavigationLink href="/employees">{t('navigation.employees')}</NavigationLink>
                 <NavigationLink href="/leave">{t('navigation.leaveRequests')}</NavigationLink>
                 <NavigationLink href="/attendance">{t('navigation.teamAttendance')}</NavigationLink>
+                {user?.role === UserRole.ADMIN && (
+                  <NavigationLink href="/reports/demographics">{t('navigation.reports')}</NavigationLink>
+                )}
               </>
             )}
             

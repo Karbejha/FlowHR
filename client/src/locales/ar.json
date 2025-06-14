@@ -5,6 +5,7 @@
     "employees": "الموظفين",
     "leaveRequests": "طلبات الإجازة",
     "teamAttendance": "حضور الفريق",
+    "reports": "التقارير",
     "profile": "الملف الشخصي",
     "settings": "الإعدادات",
     "notifications": "الإشعارات",
@@ -627,5 +628,26 @@
     "emailPlaceholder": "email@example.com",
     "lastNamePlaceholder": "الاسم الأخير",
     "firstNamePlaceholder": "الاسم الأول"
+  },
+  "reports": {
+    "demographicsTitle": "لوحة تحكم ديموغرافيا الموظفين",
+    "employeeDemographics": "ديموغرافيا الموظفين",
+    "totalEmployees": "إجمالي الموظفين",
+    "byDepartment": "حسب القسم",
+    "byRole": "حسب الدور",
+    "byAge": "حسب العمر",
+    "byTenure": "حسب مدة الخدمة",
+    "departmentDistribution": "توزيع الأقسام",
+    "departmentPercentage": "نسبة الأقسام",
+    "roleDistribution": "توزيع الأدوار",
+    "rolePercentage": "نسبة الأدوار",
+    "ageDistribution": "توزيع الأعمار",
+    "agePercentage": "نسبة الأعمار",
+    "tenureDistribution": "توزيع مدة الخدمة",
+    "tenurePercentage": "نسبة مدة الخدمة",
+    "employees": "الموظفين",
+    "insightsTitle": "رؤى لوحة التحكم",
+    "insightsDescription": "توفر لوحة التحكم هذه نظرة شاملة على ديموغرافيا القوى العاملة لديك، مما يساعدك على اتخاذ قرارات مستندة إلى البيانات لتخصيص الموارد بشكل أفضل والتخطيط الاستراتيجي.",
+    "loadingDemographics": "جاري تحميل بيانات ديموغرافيا الموظفين..."
   }
 }

@@ -6,6 +6,7 @@
     "employees": "Employees",
     "leaveRequests": "Leave Requests",
     "teamAttendance": "Team Attendance",
+    "reports": "Reports",
     "profile": "Profile",
     "settings": "Settings",
     "notifications": "Notifications",
@@ -645,5 +646,26 @@
     "emailPlaceholder": "email@example.com",
     "lastNamePlaceholder": "Last Name",
     "firstNamePlaceholder": "First Name"
+  },
+  "reports": {
+    "demographicsTitle": "Employee Demographics Dashboard",
+    "employeeDemographics": "Employee Demographics",
+    "totalEmployees": "Total Employees",
+    "byDepartment": "By Department",
+    "byRole": "By Role",
+    "byAge": "By Age",
+    "byTenure": "By Tenure",
+    "departmentDistribution": "Department Distribution",
+    "departmentPercentage": "Department Percentage",
+    "roleDistribution": "Role Distribution",
+    "rolePercentage": "Role Percentage",
+    "ageDistribution": "Age Distribution",
+    "agePercentage": "Age Percentage",
+    "tenureDistribution": "Tenure Distribution",
+    "tenurePercentage": "Tenure Percentage",
+    "employees": "Employees",
+    "insightsTitle": "Dashboard Insights",
+    "insightsDescription": "This dashboard provides a comprehensive view of your workforce demographics, helping you make data-driven decisions for better resource allocation and strategic planning.",
+    "loadingDemographics": "Loading employee demographics data..."
   }
 }

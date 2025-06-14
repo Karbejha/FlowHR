@@ -1,5 +1,6 @@
 import morgan, { StreamOptions } from 'morgan';
 import logger from '../utils/logger';
+import { Request, Response } from 'express';
 
 // Custom stream for morgan to use our winston logger
 const stream: StreamOptions = {
@@ -13,9 +14,9 @@ const skip = () => {
 };
 
 // Custom token for response time in milliseconds
-morgan.token('response-time-ms', (req: any, res) => {
+morgan.token('response-time-ms', (req: Request, res: Response) => {
   // Try to get from our custom property first, then fallback to default
-  const customTime = req.responseTime;
+  const customTime = (req as any).responseTime;
   if (customTime) {
     return `${customTime.toFixed(3)} ms`;
   }
@@ -23,36 +24,36 @@ morgan.token('response-time-ms', (req: any, res) => {
 });
 
 // Custom token for user ID if authenticated
-morgan.token('user-id', (req: any) => {
-  return req.user?.id || 'anonymous';
+morgan.token('user-id', (req: Request) => {
+  return (req as any).user?.id || 'anonymous';
 });
 
 // Custom token for user email
-morgan.token('user-email', (req: any) => {
-  return req.user?.email || req.attemptedEmail || 'unknown';
+morgan.token('user-email', (req: Request) => {
+  return (req as any).user?.email || (req as any).attemptedEmail || 'unknown';
 });
 
 // Custom token for user role
-morgan.token('user-role', (req: any) => {
-  return req.user?.role || 'unknown';
+morgan.token('user-role', (req: Request) => {
+  return (req as any).user?.role || 'unknown';
 });
 
 // Custom token for request body email (for failed auth attempts)
-morgan.token('request-email', (req: any) => {
-  if (req.body && req.body.email && req.originalUrl.includes('/auth/')) {
-    return req.body.email;
+morgan.token('request-email', (req: Request) => {
+  if (req.body && (req.body as any).email && req.originalUrl.includes('/auth/')) {
+    return (req.body as any).email;
   }
-  return req.user?.email || 'unknown';
+  return (req as any).user?.email || 'unknown';
 });
 
 // Custom token for request ID (you can add this via middleware)
-morgan.token('request-id', (req: any) => {
-  return req.requestId || '-';
+morgan.token('request-id', (req: Request) => {
+  return (req as any).requestId || '-';
 });
 
 // Custom token for real client IP
-morgan.token('real-ip', (req: any) => {
-  return req.clientIp || req.ip || req.connection?.remoteAddress || 'unknown';
+morgan.token('real-ip', (req: Request) => {
+  return (req as any).clientIp || req.ip || (req.connection as any)?.remoteAddress || 'unknown';
 });
 
 // Custom token for GMT+3 timestamp
@@ -116,7 +117,7 @@ const morganErrorMiddleware = morgan(
         });
       },
     },
-    skip: (req, res) => res.statusCode < 400,
+    skip: (req: Request, res: Response) => res.statusCode < 400,
   }
 );
 

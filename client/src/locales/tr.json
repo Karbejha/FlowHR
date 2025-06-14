@@ -5,6 +5,7 @@
     "employees": "Çalışanlar",
     "leaveRequests": "İzin Talepleri",
     "teamAttendance": "Takım Devamı",
+    "reports": "Raporlar",
     "profile": "Profil",
     "settings": "Ayarlar",
     "notifications": "Bildirimler",
@@ -615,5 +616,26 @@
     "emailPlaceholder": "email@example.com",
     "lastNamePlaceholder": "Soyad",
     "firstNamePlaceholder": "Ad"
+  },
+  "reports": {
+    "demographicsTitle": "Çalışan Demografik Panosu",
+    "employeeDemographics": "Çalışan Demografileri",
+    "totalEmployees": "Toplam Çalışan",
+    "byDepartment": "Bölüme Göre",
+    "byRole": "Role Göre",
+    "byAge": "Yaşa Göre",
+    "byTenure": "Kıdeme Göre",
+    "departmentDistribution": "Bölüm Dağılımı",
+    "departmentPercentage": "Bölüm Yüzdesi",
+    "roleDistribution": "Rol Dağılımı",
+    "rolePercentage": "Rol Yüzdesi",
+    "ageDistribution": "Yaş Dağılımı",
+    "agePercentage": "Yaş Yüzdesi",
+    "tenureDistribution": "Kıdem Dağılımı",
+    "tenurePercentage": "Kıdem Yüzdesi",
+    "employees": "Çalışanlar",
+    "insightsTitle": "Pano İçgörüleri",
+    "insightsDescription": "Bu pano, işgücü demografilerinizin kapsamlı bir görünümünü sağlayarak, daha iyi kaynak tahsisi ve stratejik planlama için veri odaklı kararlar almanıza yardımcı olur.",
+    "loadingDemographics": "Çalışan demografik verileri yükleniyor..."
   }
 }
