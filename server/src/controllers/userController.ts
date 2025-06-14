@@ -72,11 +72,11 @@ export const updateEmployeeStatus = async (req: Request, res: Response): Promise
 
 export const createUser = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { email, password, firstName, lastName, role, department, jobTitle, managerId } = req.body;
+    const { email, password, firstName, lastName, role, department, jobTitle, managerId, dateOfBirth } = req.body;
 
     // Validate required fields
-    if (!email || !password || !firstName || !lastName || !role || !department || !jobTitle) {
-      res.status(400).json({ error: 'Required fields: email, password, firstName, lastName, role, department, jobTitle' });
+    if (!email || !password || !firstName || !lastName || !role || !department || !jobTitle || !dateOfBirth) {
+      res.status(400).json({ error: 'Required fields: email, password, firstName, lastName, role, department, jobTitle, dateOfBirth' });
       return;
     }
 
@@ -104,9 +104,7 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
         res.status(400).json({ error: 'Manager ID is required for employee accounts' });
         return;
       }
-    }
-
-    // Create new user
+    }    // Create new user
     const user = new User({
       email,
       password,
@@ -115,7 +113,8 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
       role,
       department,
       jobTitle,
-      managerId: effectiveManagerId
+      managerId: effectiveManagerId,
+      dateOfBirth: new Date(dateOfBirth)
     });
 
     await user.save();
@@ -532,8 +531,72 @@ export const deleteAvatar = async (req: Request, res: Response): Promise<void> =
   } catch (error) {
     logError('Error deleting avatar', {
       userId: req.params.id,
+      error: error instanceof Error ? error.message : error    });
+    res.status(500).json({ error: 'Error deleting avatar' });
+  }
+};
+
+export const getUsersByBirthMonth = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const month = parseInt(req.params.month, 10);
+    
+    if (isNaN(month) || month < 1 || month > 12) {
+      res.status(400).json({ error: 'Invalid month parameter' });
+      return;
+    }
+
+    console.log(`Finding users with birthdays in month: ${month}`);
+
+    // Debug: Log all users with their birth months
+    const allUsers = await User.find({}).select('firstName lastName dateOfBirth');
+    console.log('All users:', allUsers.map(u => ({
+      name: `${u.firstName} ${u.lastName}`,
+      dateOfBirth: u.dateOfBirth,
+      month: u.dateOfBirth ? new Date(u.dateOfBirth).getMonth() + 1 : 'no date'
+    })));
+
+    // Create a MongoDB aggregation to find users with birthdays in the specified month
+    const users = await User.aggregate([
+      {
+        $addFields: {
+          birthMonth: { $month: '$dateOfBirth' }
+        }
+      },
+      {
+        $match: {
+          birthMonth: month,
+          isActive: true
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          firstName: 1,
+          lastName: 1,
+          email: 1,
+          dateOfBirth: 1,
+          avatar: 1,
+          department: 1,
+          jobTitle: 1,
+          role: 1
+        }
+      },
+      {
+        $sort: {
+          // Sort by day of month
+          dateOfBirth: 1
+        }
+      }
+    ]);
+
+    console.log(`Found ${users.length} users with birthdays in month ${month}`);
+    res.json(users);
+  } catch (error) {
+    console.error('Error in getUsersByBirthMonth:', error);
+    logError('Error fetching users by birth month', {
+      month: req.params.month,
       error: error instanceof Error ? error.message : error
     });
-    res.status(500).json({ error: 'Error deleting avatar' });
+    res.status(500).json({ error: 'Error fetching users by birth month' });
   }
 };

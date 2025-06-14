@@ -13,10 +13,14 @@ import {
   updateUser,
   deleteUser,
   uploadAvatar,
-  deleteAvatar
+  deleteAvatar,
+  getUsersByBirthMonth
 } from '../controllers/userController';
 
 const router = express.Router();
+
+// Define the birthdays route first to ensure it takes precedence
+router.get('/birthdays/:month', authenticate, getUsersByBirthMonth);
 
 router.get('/employees', authenticate, authorize(UserRole.ADMIN, UserRole.MANAGER), getEmployees);
 router.get('/managers', authenticate, authorize(UserRole.ADMIN, UserRole.MANAGER), getManagers);
@@ -31,5 +35,7 @@ router.post('/upload-avatar', authenticate, avatarUpload.single('avatar'), uploa
 router.delete('/avatar', authenticate, deleteAvatar);
 router.post('/:id/avatar', authenticate, avatarUpload.single('avatar'), uploadAvatar);
 router.delete('/:id/avatar', authenticate, deleteAvatar);
+// Ensure the birthdays route is defined before any routes with id parameters
+router.get('/birthdays/:month', authenticate, getUsersByBirthMonth);
 
 export default router;

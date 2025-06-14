@@ -167,8 +167,7 @@ const PasswordChangeModal: React.FC<{
 
 const EditUserForm: React.FC<EditUserFormProps> = ({ employee, onSuccess, onCancel }) => {
   const { t } = useTranslation();
-  const { user, token } = useAuth();
-  const [formData, setFormData] = useState({
+  const { user, token } = useAuth();  const [formData, setFormData] = useState({
     email: employee.email,
     firstName: employee.firstName,
     lastName: employee.lastName,
@@ -176,6 +175,7 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ employee, onSuccess, onCanc
     department: employee.department || '',
     jobTitle: employee.jobTitle || '',
     managerId: employee.managerId || '',
+    dateOfBirth: employee.dateOfBirth ? new Date(employee.dateOfBirth).toISOString().split('T')[0] : '',
   });
   const [managers, setManagers] = useState<Manager[]>([]);  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -456,11 +456,10 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ employee, onSuccess, onCanc
                   )}
                 </div>
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                Upload a new profile picture (optional). Max size: 5MB. Supported formats: JPG, PNG, GIF.
-              </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center w-fit mx-auto">
+              Upload a new profile picture (optional). Max size: 5MB. Supported formats: JPG, PNG, GIF.
+            </p>
             </div>
-            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">              <div className="space-y-2">
                 <label htmlFor="firstName" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                   {t('employees.firstName')} *
@@ -505,9 +504,7 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ employee, onSuccess, onCanc
                     placeholder={t('employees.lastNamePlaceholder')}
                   />
                 </div>
-              </div>
-
-              <div className="space-y-2">
+              </div>              <div className="space-y-2">
                 <label htmlFor="email" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                   {t('employees.emailAddress')} *
                 </label>
@@ -528,6 +525,32 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ employee, onSuccess, onCanc
                     placeholder={t('employees.emailPlaceholder')}
                   />
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="dateOfBirth" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  {t('employees.dateOfBirth') || 'Date of Birth'} *
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <input
+                    id="dateOfBirth"
+                    type="date"
+                    name="dateOfBirth"
+                    value={formData.dateOfBirth}
+                    onChange={handleChange}
+                    required
+                    className="block w-full pl-10 pr-4 py-3 text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent transition-all duration-200 placeholder-gray-400 dark:placeholder-gray-500"
+                    max={new Date().toISOString().split('T')[0]} // Prevents selecting future dates
+                  />
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  {t('employees.dateOfBirthNote') || 'Please enter the employee\'s date of birth'}
+                </p>
               </div>
             </div>
           </div>

@@ -14,6 +14,7 @@ import { requestIdMiddleware, responseTimeMiddleware } from './middleware/reques
 import errorHandler from './middleware/errorHandler';
 import { captureAuthAttempt } from './middleware/captureAuthAttempt';
 import { userActivityTracker } from './middleware/userActivityTracker';
+import { seedTestUser } from './utils/seedTestUser';
 
 const app = express();
 
@@ -66,6 +67,9 @@ mongoose.connect(config.mongoUri)
   .then(async () => {
     logInfo('Connected to MongoDB successfully');
     setupLogCleanup(mongoose.connection); // Initialize log cleanup system with connection
+    
+    // Seed test user with June birthday
+    await seedTestUser();
     
     // Test MongoDB logging after connection
     console.log('Testing MongoDB logging setup...');

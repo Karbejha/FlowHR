@@ -5,6 +5,7 @@ import LoginForm from '@/components/auth/LoginForm';
 import { UserRole } from '@/types/auth';
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
+import BirthdayCard from '@/components/common/BirthdayCard';
 
 export default function Home() {
   const { isAuthenticated, user, logout, isLoading } = useAuth();
@@ -322,9 +323,7 @@ export default function Home() {
           <p className="text-gray-600 dark:text-gray-400">
             {t('homepage.roleAccessMessage', { role: user?.role?.toLowerCase() || '' })}
           </p>
-        </div>
-
-        {/* Dashboard cards */}
+        </div>        {/* Dashboard cards */}
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {getRoleCards().map((card, index) => (
             <DashboardCard
@@ -335,7 +334,10 @@ export default function Home() {
               icon={card.icon}
             />
           ))}
-        </div>        {/* Quick stats or additional info */}
+          
+          {/* Birthday Card */}
+          <BirthdayCard className="lg:col-span-3 sm:col-span-2" />
+        </div>{/* Quick stats or additional info */}
         <div className="mt-12 p-6 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-700/50">
           <div className="text-center">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">

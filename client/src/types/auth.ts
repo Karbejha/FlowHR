@@ -18,6 +18,7 @@ export interface User {
   avatar?: string;
   createdAt?: Date;
   updatedAt?: Date;
+  dateOfBirth: Date;
 }
 
 export interface AuthState {
