@@ -93,7 +93,7 @@ export default function OperationalDashboard({
     });
   };  // Generic custom legend component creator
   const createCustomLegend = (
-    items: Array<{id: string; name: string; value: number}>, 
+    items: Array<{id: string; name: string; value: number; hidden?: boolean}>, 
     hiddenItems: string[],
     handleClick: (id: string) => void,
     formatLabel?: (value: number) => string
@@ -105,7 +105,7 @@ export default function OperationalDashboard({
       return (
         <ul className="recharts-default-legend flex flex-wrap justify-center p-0 m-0">
           {items.map((item, index) => {
-            const isHidden = hiddenItems.includes(item.id);
+            const isHidden = item.hidden || hiddenItems.includes(item.id);
             const displayValue = formatLabel ? formatLabel(item.value) : item.value;
             
             return (
@@ -144,12 +144,13 @@ export default function OperationalDashboard({
       { id: 'late', name: t('reports.late'), value: timeAttendanceData.late },
       { id: 'absent', name: t('reports.absent'), value: timeAttendanceData.absent },
       { id: 'earlyDeparture', name: t('reports.earlyDeparture'), value: timeAttendanceData.earlyDeparture }
-    ].filter(item => !hiddenAttendanceStatus.includes(item.id));
-
-    // Calculate active total for percentages
-    const activeAttendanceTotal = attendanceStatusData.reduce((sum, item) => sum + item.value, 0);
+    ];
     
-    // Format for percentage display
+    // Calculate active total for percentages (only count non-hidden items)
+    const activeAttendanceTotal = attendanceStatusData
+      .filter(item => !hiddenAttendanceStatus.includes(item.id))
+      .reduce((sum, item) => sum + item.value, 0);
+      // Format for percentage display
     const formatPercentage = (value: number): string => {
       return `${((value / activeAttendanceTotal) * 100).toFixed(1)}%`;
     };
@@ -160,18 +161,17 @@ export default function OperationalDashboard({
         id: dept,
         name: dept,
         hours: parseFloat(data.average.toFixed(2)),
-        value: parseFloat(data.average.toFixed(2))
-      }))
-      .filter(item => !hiddenWorkHoursDepts.includes(item.id));
-
-    // Attendance by day with filtering
+        value: parseFloat(data.average.toFixed(2)),
+        hidden: hiddenWorkHoursDepts.includes(dept)
+      }));    // Attendance by day with filtering
     const attendanceByDayData = Object.entries(timeAttendanceData.attendanceByDay)
-      .map(([day, count]) => ({        id: day,
+      .map(([day, count]) => ({
+        id: day,
         name: day,
         count,
-        value: count
-      }))
-      .filter(item => !hiddenAttendanceDays.includes(item.id));    
+        value: count,
+        hidden: hiddenAttendanceDays.includes(day)
+      }));
 
     return (
       <div className="space-y-8">
@@ -208,12 +208,11 @@ export default function OperationalDashboard({
                 {t('reports.resetFilters')}
               </button>
             </div>
-          )}
-          <div className="h-80" dir={rtlMode ? "rtl" : "ltr"}>
+          )}          <div className="h-80" dir={rtlMode ? "rtl" : "ltr"}>
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={attendanceStatusData}
+                  data={attendanceStatusData.filter(item => !hiddenAttendanceStatus.includes(item.id))}
                   dataKey="value"
                   nameKey="name"
                   cx="50%"
@@ -222,9 +221,11 @@ export default function OperationalDashboard({
                   fill="#8884d8"
                   label
                 >
-                  {attendanceStatusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
+                  {attendanceStatusData
+                    .filter(item => !hiddenAttendanceStatus.includes(item.id))
+                    .map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
                 </Pie>
                 <Tooltip 
                   formatter={(value) => [formatPercentage(value as number), t('reports.attendance')]} 
@@ -257,9 +258,8 @@ export default function OperationalDashboard({
               </button>
             </div>
           )}
-          <div className="h-80" dir={rtlMode ? "rtl" : "ltr"}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={workHoursByDeptData}>
+          <div className="h-80" dir={rtlMode ? "rtl" : "ltr"}>            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={workHoursByDeptData.filter(item => !item.hidden)}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
@@ -333,48 +333,47 @@ export default function OperationalDashboard({
   const renderLeaveUsageDashboard = () => {
     if (!leaveUsageData) return <div>{t('reports.noDataAvailable')}</div>;    // Prepare data for charts with filtering for hidden items
     const leaveStatusData = [
-      { id: 'pending', name: t('reports.pending'), value: leaveUsageData.pendingRequests },
-      { id: 'approved', name: t('reports.approved'), value: leaveUsageData.approvedRequests },
-      { id: 'rejected', name: t('reports.rejected'), value: leaveUsageData.rejectedRequests }
-    ].filter(item => !hiddenLeaveStatus.includes(item.id));
-
-    // Calculate active total for percentages
-    const activeLeaveStatusTotal = leaveStatusData.reduce((sum, item) => sum + item.value, 0);
+      { id: 'pending', name: t('reports.pending'), value: leaveUsageData?.pendingRequests || 0 },
+      { id: 'approved', name: t('reports.approved'), value: leaveUsageData?.approvedRequests || 0 },
+      { id: 'rejected', name: t('reports.rejected'), value: leaveUsageData?.rejectedRequests || 0 }
+    ];
     
+    // Calculate active total for percentages (only count non-hidden items)
+    const activeLeaveStatusTotal = leaveStatusData
+      .filter(item => !hiddenLeaveStatus.includes(item.id))
+      .reduce((sum, item) => sum + item.value, 0);
+      
     // Format for percentage display
     const formatLeavePercentage = (value: number): string => {
       return `${((value / activeLeaveStatusTotal) * 100).toFixed(1)}%`;
     };
-
-    // Leave by type with filtering
-    const leaveTypeData = Object.entries(leaveUsageData.leaveByType)
+      // Leave by type with filtering
+    const leaveTypeData = Object.entries(leaveUsageData?.leaveByType || {})
       .map(([type, days]) => ({
         id: type,
         name: type.charAt(0).toUpperCase() + type.slice(1), // Capitalize type
         days,
-        value: days
-      }))
-      .filter(item => !hiddenLeaveTypes.includes(item.id));
+        value: days,
+        hidden: hiddenLeaveTypes.includes(type)
+      }));
 
     // Leave by department with filtering
-    const leaveByDeptData = Object.entries(leaveUsageData.leaveByDepartment)
+    const leaveByDeptData = Object.entries(leaveUsageData?.leaveByDepartment || {})
       .map(([dept, days]) => ({
         id: dept,
         name: dept,
         days,
-        value: days
-      }))
-      .filter(item => !hiddenLeaveDepts.includes(item.id));
-
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const leaveByMonthData = leaveUsageData.leaveByMonth
+        value: days,
+        hidden: hiddenLeaveDepts.includes(dept)
+      }));    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const leaveByMonthData = (leaveUsageData?.leaveByMonth || [])
       .map((days, index) => ({
         id: monthNames[index],
         name: monthNames[index],
         days,
-        value: days
-      }))
-      .filter(item => !hiddenLeaveMonths.includes(item.id));
+        value: days,
+        hidden: hiddenLeaveMonths.includes(monthNames[index])
+      }));
       
     // Event handlers for legend clicks
     const handleLeaveStatusLegendClick = (id: string) => {
@@ -388,55 +387,24 @@ export default function OperationalDashboard({
     const handleLeaveDeptLegendClick = (id: string) => {
       toggleItemVisibility(id, hiddenLeaveDepts, setHiddenLeaveDepts);
     };
-    
-    const handleLeaveMonthLegendClick = (id: string) => {
+      const handleLeaveMonthLegendClick = (id: string) => {
       toggleItemVisibility(id, hiddenLeaveMonths, setHiddenLeaveMonths);
     };
-
-    // Custom legend components
-    const LeaveStatusLegend = createCustomLegend(
-      leaveStatusData, 
-      hiddenLeaveStatus, 
-      handleLeaveStatusLegendClick,
-      formatLeavePercentage
-    );
-
-    const LeaveTypeLegend = createCustomLegend(
-      leaveTypeData, 
-      hiddenLeaveTypes, 
-      handleLeaveTypeLegendClick,
-      (value) => `${value} ${t('reports.days')}`
-    );
-
-    const LeaveDeptLegend = createCustomLegend(
-      leaveByDeptData, 
-      hiddenLeaveDepts, 
-      handleLeaveDeptLegendClick,
-      (value) => `${value} ${t('reports.days')}`
-    );
-    
-    const LeaveMonthLegend = createCustomLegend(
-      leaveByMonthData, 
-      hiddenLeaveMonths, 
-      handleLeaveMonthLegendClick,
-      (value) => `${value} ${t('reports.days')}`
-    );
 
     return (
       <div className="space-y-8">
         {/* Summary Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-blue-50 dark:bg-blue-900 p-4 rounded-lg shadow">
-            <h4 className="text-sm font-medium text-blue-500 dark:text-blue-300">{t('reports.totalLeaveRequests')}</h4>
-            <p className="text-2xl font-bold">{leaveUsageData.totalLeaveRequests}</p>
+            <h4 className="text-sm font-medium text-blue-500 dark:text-blue-300">{t('reports.totalLeaveRequests')}</h4>            <p className="text-2xl font-bold">{leaveUsageData?.totalLeaveRequests || 0}</p>
           </div>
           <div className="bg-green-50 dark:bg-green-900 p-4 rounded-lg shadow">
             <h4 className="text-sm font-medium text-green-500 dark:text-green-300">{t('reports.totalDaysTaken')}</h4>
-            <p className="text-2xl font-bold">{leaveUsageData.totalDaysTaken}</p>
+            <p className="text-2xl font-bold">{leaveUsageData?.totalDaysTaken || 0}</p>
           </div>
           <div className="bg-yellow-50 dark:bg-yellow-900 p-4 rounded-lg shadow">
             <h4 className="text-sm font-medium text-yellow-500 dark:text-yellow-300">{t('reports.pendingRequests')}</h4>
-            <p className="text-2xl font-bold">{leaveUsageData.pendingRequests}</p>
+            <p className="text-2xl font-bold">{leaveUsageData?.pendingRequests || 0}</p>
           </div>
         </div>        {/* Leave Status Distribution */}
         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
@@ -451,12 +419,11 @@ export default function OperationalDashboard({
                 {t('reports.resetFilters')}
               </button>
             </div>
-          )}
-          <div className="h-80" dir={rtlMode ? "rtl" : "ltr"}>
+          )}          <div className="h-80" dir={rtlMode ? "rtl" : "ltr"}>
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={leaveStatusData}
+                  data={leaveStatusData.filter(item => !hiddenLeaveStatus.includes(item.id))}
                   dataKey="value"
                   nameKey="name"
                   cx="50%"
@@ -465,15 +432,23 @@ export default function OperationalDashboard({
                   fill="#8884d8"
                   label
                 >
-                  {leaveStatusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip 
+                  {leaveStatusData
+                    .filter(item => !hiddenLeaveStatus.includes(item.id))
+                    .map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                </Pie><Tooltip 
                   formatter={(value) => [formatLeavePercentage(value as number), t('reports.requests')]} 
                   contentStyle={rtlMode ? { textAlign: 'right', direction: 'rtl' } : undefined}
                 />
-                <Legend content={<LeaveStatusLegend />} />
+                <Legend 
+                  content={createCustomLegend(
+                    leaveStatusData, 
+                    hiddenLeaveStatus, 
+                    handleLeaveStatusLegendClick,
+                    formatLeavePercentage
+                  )}
+                />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -498,12 +473,18 @@ export default function OperationalDashboard({
               <BarChart data={leaveTypeData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip 
+                <YAxis />                <Tooltip 
                   formatter={(value) => [value, t('reports.days')]}
                   contentStyle={rtlMode ? { textAlign: 'right', direction: 'rtl' } : undefined}
                 />
-                <Legend content={<LeaveTypeLegend />} />
+                <Legend 
+                  content={createCustomLegend(
+                    leaveTypeData, 
+                    hiddenLeaveTypes, 
+                    handleLeaveTypeLegendClick,
+                    (value) => `${value} ${t('reports.days')}`
+                  )}
+                />
                 <Bar 
                   dataKey="days" 
                   fill="#FFBB28" 
@@ -533,12 +514,18 @@ export default function OperationalDashboard({
               <LineChart data={leaveByMonthData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip 
+                <YAxis />                <Tooltip 
                   formatter={(value) => [value, t('reports.days')]}
                   contentStyle={rtlMode ? { textAlign: 'right', direction: 'rtl' } : undefined}
                 />
-                <Legend content={<LeaveMonthLegend />} />
+                <Legend 
+                  content={createCustomLegend(
+                    leaveByMonthData, 
+                    hiddenLeaveMonths, 
+                    handleLeaveMonthLegendClick,
+                    (value) => `${value} ${t('reports.days')}`
+                  )}
+                />
                 <Line
                   type="monotone"
                   dataKey="days"
@@ -571,12 +558,18 @@ export default function OperationalDashboard({
               <BarChart data={leaveByDeptData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip 
+                <YAxis />                <Tooltip 
                   formatter={(value) => [value, t('reports.days')]}
                   contentStyle={rtlMode ? { textAlign: 'right', direction: 'rtl' } : undefined}
                 />
-                <Legend content={<LeaveDeptLegend />} />
+                <Legend 
+                  content={createCustomLegend(
+                    leaveByDeptData, 
+                    hiddenLeaveDepts, 
+                    handleLeaveDeptLegendClick,
+                    (value) => `${value} ${t('reports.days')}`
+                  )}
+                />
                 <Bar dataKey="days" fill="#8884d8" name={t('reports.days')} />
               </BarChart>
             </ResponsiveContainer>
@@ -584,57 +577,51 @@ export default function OperationalDashboard({
         </div>
       </div>
     );
-  };
-  // Render Resource Allocation Dashboard
+  };  // Render Resource Allocation Dashboard
   const renderResourceAllocationDashboard = () => {
-    if (!resourceAllocationData) return <div>{t('reports.noDataAvailable')}</div>;
-
-    // Prepare data for charts with filtering for hidden items
+    if (!resourceAllocationData) return <div>{t('reports.noDataAvailable')}</div>;    // Prepare data for charts with filtering for hidden items
     const departmentAllocationData = resourceAllocationData.departmentAllocation
-      .map(dept => ({
+      .map((dept) => ({
         id: dept.department,
         name: dept.department,
         count: dept.count,
         value: dept.count,
         percentage: dept.percentage
-      }))
-      .filter(item => !hiddenDepartments.includes(item.id));
+      }));
 
-    // Calculate active total for departments
-    const activeDepartmentTotal = departmentAllocationData.reduce((sum, item) => sum + item.count, 0);
+    // Calculate active total for departments (only count non-hidden items)
+    const activeDepartmentTotal = departmentAllocationData
+      .filter(item => !hiddenDepartments.includes(item.id))
+      .reduce((sum, item) => sum + item.count, 0);
     
     // Format for percentage display
     const formatDeptPercentage = (value: number): string => {
       return `${((value / activeDepartmentTotal) * 100).toFixed(1)}%`;
-    };
-
-    const roleDistributionData = resourceAllocationData.roleDistribution
-      .map(role => ({
+    };    const roleDistributionData = resourceAllocationData.roleDistribution
+      .map((role) => ({
         id: role.role,
         name: role.role,
         count: role.count,
         value: role.count,
         percentage: role.percentage
-      }))
-      .filter(item => !hiddenRoles.includes(item.id));
+      }));
 
-    // Calculate active total for roles
-    const activeRoleTotal = roleDistributionData.reduce((sum, item) => sum + item.count, 0);
+    // Calculate active total for roles (only count non-hidden items)
+    const activeRoleTotal = roleDistributionData
+      .filter(item => !hiddenRoles.includes(item.id))
+      .reduce((sum, item) => sum + item.count, 0);
     
     // Format for percentage display
     const formatRolePercentage = (value: number): string => {
       return `${((value / activeRoleTotal) * 100).toFixed(1)}%`;
-    };
-
-    const projectAllocationData = resourceAllocationData.projectAllocation
-      .map(project => ({
+    };    const projectAllocationData = resourceAllocationData.projectAllocation
+      .map((project) => ({
         id: project.projectName,
         name: project.projectName,
         employees: project.employees,
         value: project.employees,
         allocation: project.allocation
-      }))
-      .filter(item => !hiddenProjects.includes(item.id));
+      }));
       
     // Event handlers for legend clicks
     const handleDepartmentLegendClick = (id: string) => {
@@ -643,33 +630,9 @@ export default function OperationalDashboard({
 
     const handleRoleLegendClick = (id: string) => {
       toggleItemVisibility(id, hiddenRoles, setHiddenRoles);
-    };
-
-    const handleProjectLegendClick = (id: string) => {
+    };    const handleProjectLegendClick = (id: string) => {
       toggleItemVisibility(id, hiddenProjects, setHiddenProjects);
     };
-
-    // Custom legend components
-    const DepartmentLegend = createCustomLegend(
-      departmentAllocationData, 
-      hiddenDepartments, 
-      handleDepartmentLegendClick,
-      formatDeptPercentage
-    );
-
-    const RoleLegend = createCustomLegend(
-      roleDistributionData, 
-      hiddenRoles, 
-      handleRoleLegendClick,
-      formatRolePercentage
-    );
-
-    const ProjectLegend = createCustomLegend(
-      projectAllocationData, 
-      hiddenProjects, 
-      handleProjectLegendClick,
-      (value) => `${value} ${t('reports.employees')}`
-    );
 
     return (
       <div className="space-y-8">
@@ -703,9 +666,8 @@ export default function OperationalDashboard({
           )}
           <div className="h-80" dir={rtlMode ? "rtl" : "ltr"}>
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={departmentAllocationData}
+              <PieChart>                <Pie
+                  data={departmentAllocationData.filter(item => !hiddenDepartments.includes(item.id))}
                   dataKey="count"
                   nameKey="name"
                   cx="50%"
@@ -714,14 +676,23 @@ export default function OperationalDashboard({
                   fill="#8884d8"
                   label={({ name, percentage }) => `${name}: ${percentage.toFixed(1)}%`}
                 >
-                  {departmentAllocationData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>                <Tooltip 
+                  {departmentAllocationData
+                    .filter(item => !hiddenDepartments.includes(item.id))
+                    .map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                </Pie><Tooltip 
                   formatter={(value) => [`${value} (${formatDeptPercentage(value as number)})`, t('reports.employees')]}
                   contentStyle={rtlMode ? { textAlign: 'right', direction: 'rtl' } : undefined}
                 />
-                <Legend content={<DepartmentLegend />} />
+                <Legend 
+                  content={createCustomLegend(
+                    departmentAllocationData, 
+                    hiddenDepartments, 
+                    handleDepartmentLegendClick,
+                    formatDeptPercentage
+                  )}
+                />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -739,17 +710,22 @@ export default function OperationalDashboard({
               </button>
             </div>
           )}
-          <div className="h-80" dir={rtlMode ? "rtl" : "ltr"}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={roleDistributionData}>
+          <div className="h-80" dir={rtlMode ? "rtl" : "ltr"}>            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={roleDistributionData.filter(item => !hiddenRoles.includes(item.id))}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip 
+                <YAxis /><Tooltip 
                   formatter={(value) => [`${value} (${formatRolePercentage(value as number)})`, t('reports.employees')]}
                   contentStyle={rtlMode ? { textAlign: 'right', direction: 'rtl' } : undefined}
                 />
-                <Legend content={<RoleLegend />} />
+                <Legend 
+                  content={createCustomLegend(
+                    roleDistributionData, 
+                    hiddenRoles, 
+                    handleRoleLegendClick,
+                    formatRolePercentage
+                  )}
+                />
                 <Bar dataKey="count" fill="#00C49F" name={t('reports.employees')} />
               </BarChart>
             </ResponsiveContainer>
@@ -768,21 +744,26 @@ export default function OperationalDashboard({
               </button>
             </div>
           )}
-          <div className="h-80" dir={rtlMode ? "rtl" : "ltr"}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={projectAllocationData}>
+          <div className="h-80" dir={rtlMode ? "rtl" : "ltr"}>            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={projectAllocationData.filter(item => !hiddenProjects.includes(item.id))}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis yAxisId="left" orientation="left" stroke="#0088FE" />
-                <YAxis yAxisId="right" orientation="right" stroke="#FFBB28" />
-                <Tooltip 
+                <YAxis yAxisId="right" orientation="right" stroke="#FFBB28" /><Tooltip 
                   formatter={(value, name) => {
                     if (name === t('reports.employeesAssigned')) return [value, name];
                     return [`${value}%`, name];
                   }}
                   contentStyle={rtlMode ? { textAlign: 'right', direction: 'rtl' } : undefined}
                 />
-                <Legend content={<ProjectLegend />} />
+                <Legend 
+                  content={createCustomLegend(
+                    projectAllocationData, 
+                    hiddenProjects, 
+                    handleProjectLegendClick,
+                    (value) => `${value} ${t('reports.employees')}`
+                  )}
+                />
                 <Bar
                   yAxisId="left"
                   dataKey="employees"
