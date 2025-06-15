@@ -18,8 +18,7 @@ const BirthdayCard: React.FC<BirthdayCardProps> = ({ className = '' }) => {
 
   // Get current month
   const currentMonth = new Date().getMonth() + 1; // JavaScript months are 0-indexed
-  const currentMonthName = new Date().toLocaleString('default', { month: 'long' });
-  useEffect(() => {
+  const currentMonthName = new Date().toLocaleString('default', { month: 'long' });  useEffect(() => {
     const fetchBirthdayEmployees = async () => {
       if (!token) return;
       try {
@@ -39,7 +38,20 @@ const BirthdayCard: React.FC<BirthdayCardProps> = ({ className = '' }) => {
         }
 
         const data = await response.json();
-        setBirthdayEmployees(data);      } catch (err) {
+          // Filter out birthdays that have already passed this month
+        const today = new Date();
+        const currentDay = today.getDate();
+        
+        const filteredBirthdays = data.filter((employee: User) => {
+          const birthDate = new Date(employee.dateOfBirth);
+          const birthDay = birthDate.getDate();
+          
+          // Only show birthdays that are today or in the future for the current month
+          return birthDay >= currentDay;
+        });
+        
+        setBirthdayEmployees(filteredBirthdays);
+      } catch (err) {
         console.error('Error fetching birthday employees:', err);
         const errorMessage = err instanceof Error ? err.message : 'Failed to load birthday employees';
         setError(errorMessage);
@@ -71,6 +83,15 @@ const BirthdayCard: React.FC<BirthdayCardProps> = ({ className = '' }) => {
     return age;
   };
 
+  // Function to get appropriate height class based on number of items
+  const getHeightClass = (itemCount: number) => {
+    if (itemCount === 0) return 'min-h-[80px]';
+    if (itemCount === 1) return 'min-h-[80px]';
+    if (itemCount === 2) return 'min-h-[160px]';
+    if (itemCount === 3) return 'min-h-[240px]';
+    return 'min-h-[280px]'; // 4 or more items
+  };
+
   // Default avatar placeholder
   const defaultAvatar = (
     <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
@@ -90,7 +111,7 @@ const BirthdayCard: React.FC<BirthdayCardProps> = ({ className = '' }) => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.701 2.701 0 00-1.5-.454M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z" />
             </svg>
           </div>
-          <h2 className="text-xl font-bold text-white">{`${currentMonthName} ${t('employee.birthdays') || 'Birthdays'}`}</h2>
+          <h2 className="text-xl font-bold px-2 text-white">{`${currentMonthName} ${t('employee.birthdays') || 'Birthdays'}`}</h2>
         </div>
       </div>
 
@@ -113,9 +134,8 @@ const BirthdayCard: React.FC<BirthdayCardProps> = ({ className = '' }) => {
             </svg>
             <p>{t('employee.noBirthdaysThisMonth') || `No birthdays in ${currentMonthName}`}</p>
             <p className="text-sm mt-2">Check back next month!</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
+          </div>        ) : (
+          <div className={`space-y-4 ${getHeightClass(birthdayEmployees.length)}`}>
             {birthdayEmployees.map((employee) => (
               <div 
                 key={employee._id} 

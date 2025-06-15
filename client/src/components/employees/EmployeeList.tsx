@@ -657,7 +657,8 @@ export default function EmployeeList() {
               )}
             </tr>
           </thead>
-          <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">            {filteredEmployees.length === 0 ? (
+          <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+            {filteredEmployees.length === 0 ? (
               <tr>
                 <td colSpan={user?.role === UserRole.ADMIN ? 8 : 7} className="px-6 py-10 text-center text-gray-500 dark:text-gray-400">
                   {searchTerm ? (

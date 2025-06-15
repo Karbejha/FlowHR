@@ -10,6 +10,7 @@ import UserDropdown from './UserDropdown';
 import NotificationDropdown from './NotificationDropdown';
 import LanguageSwitcher from './LanguageSwitcher';
 import { useState } from 'react';
+import Logo from './Logo';
 
 export default function Navigation() {
   const { user, isAuthenticated } = useAuth();
@@ -41,16 +42,16 @@ export default function Navigation() {
     <nav className="bg-gray-800 dark:bg-gray-900 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <div className="flex items-center">            <div className="flex-shrink-0">
-              <Link href="/" className="text-white text-lg font-bold hover:text-gray-300 transition-colors">
-                {t('navigation.hrSystem')}
-              </Link>
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <Logo />
             </div>
             {/* Desktop Navigation */}
             <div className="hidden md:block">
               <div className="ml-10 flex items-baseline space-x-4">
                 {user?.role === UserRole.EMPLOYEE && (
-                  <>                    <Link
+                  <>
+                    <Link
                       href="/leave"
                       className={`${
                         isActive('/leave')
@@ -80,7 +81,7 @@ export default function Navigation() {
                         isActive('/employees')
                           ? 'bg-gray-900 dark:bg-gray-800 text-white'
                           : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                      } px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200`}
+                      } px-3 py-2 rounded-md text-sm font-bold transition-colors duration-200`}
                     >
                       {t('navigation.employees')}
                     </Link>
@@ -90,7 +91,7 @@ export default function Navigation() {
                         isActive('/leave')
                           ? 'bg-gray-900 dark:bg-gray-800 text-white'
                           : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                      } px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200`}
+                      } px-3 py-2 rounded-md text-sm font-bold transition-colors duration-200`}
                     >
                       {t('navigation.leaveRequests')}
                     </Link>
@@ -100,7 +101,7 @@ export default function Navigation() {
                         isActive('/attendance')
                           ? 'bg-gray-900 dark:bg-gray-800 text-white'
                           : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                      } px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200`}
+                      } px-3 py-2 rounded-md text-sm font-bold transition-colors duration-200`}
                     >
                       {t('navigation.teamAttendance')}
                     </Link>
@@ -111,7 +112,7 @@ export default function Navigation() {
                           pathname.startsWith('/reports')
                             ? 'bg-gray-900 dark:bg-gray-800 text-white'
                             : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                        } px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200`}
+                        } px-3 py-2 rounded-md text-sm font-bold transition-colors duration-200`}
                       >
                         {t('navigation.reports')}
                       </Link>

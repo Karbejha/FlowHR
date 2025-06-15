@@ -17,7 +17,7 @@ const LeaveCard: React.FC<LeaveCardProps> = ({ className = '' }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
-  const itemsPerPage = 4; // Show only 4 leave requests per page
+  const itemsPerPage = 4; // Show at most 4 leave requests per page
 
   // Get current month
   const currentMonth = new Date().getMonth() + 1; // JavaScript months are 0-indexed
@@ -51,8 +51,15 @@ const LeaveCard: React.FC<LeaveCardProps> = ({ className = '' }) => {
 
         const data = await response.json();
         
+        // Filter out leave requests that have ended in the past
+        const today = new Date();
+        const filteredLeaves = data.filter((leave: Leave) => {
+          const endDate = new Date(leave.endDate);
+          return endDate >= today;
+        });
+        
         // Sort leave requests by start date (closest first)
-        const sortedLeaves = [...data].sort((a, b) => {
+        const sortedLeaves = [...filteredLeaves].sort((a, b) => {
           const dateA = new Date(a.startDate);
           const dateB = new Date(b.startDate);
           return dateA.getTime() - dateB.getTime();
@@ -98,6 +105,15 @@ const LeaveCard: React.FC<LeaveCardProps> = ({ className = '' }) => {
     }
   };
 
+  // Function to get appropriate height class based on number of items
+  const getHeightClass = (itemCount: number) => {
+    if (itemCount === 0) return 'min-h-[80px]';
+    if (itemCount === 1) return 'min-h-[80px]';
+    if (itemCount === 2) return 'min-h-[160px]';
+    if (itemCount === 3) return 'min-h-[240px]';
+    return 'min-h-[280px]'; // 4 or more items
+  };
+
   // Default avatar placeholder
   const defaultAvatar = (
     <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
@@ -121,7 +137,7 @@ const LeaveCard: React.FC<LeaveCardProps> = ({ className = '' }) => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
           </div>
-          <h2 className="text-xl font-bold text-white">
+          <h2 className="text-xl font-bold px-2 text-white">
             {`${currentMonthName} ${t('leave.monthlyLeaves') || 'Leave Requests'}`}
           </h2>
         </div>
@@ -145,7 +161,7 @@ const LeaveCard: React.FC<LeaveCardProps> = ({ className = '' }) => {
           </div>
         ) : (
           <div>
-            <div className="space-y-4 min-h-[280px]">
+            <div className={`space-y-4 ${getHeightClass(paginatedLeaveRequests.length)}`}>
               {paginatedLeaveRequests.map((leave) => {
                 const employee = leave.employee as unknown as User;
                 return (

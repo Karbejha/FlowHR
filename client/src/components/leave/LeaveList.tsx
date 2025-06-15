@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
-import { Leave, LeaveStatus, LeaveStatusUpdate, LeaveType, LeaveFilters } from '@/types/leave';
+import { Leave, LeaveStatus, LeaveType, LeaveFilters } from '@/types/leave';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/contexts/I18nContext';
 import { UserRole, User } from '@/types/auth';
@@ -11,11 +11,38 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 type FilterType = 'all' | 'pending' | 'older';
 
+// Loading spinner component
+const LoadingSpinner = ({ size = 'sm' }: { size?: 'sm' | 'md' }) => {
+  const sizeClasses = size === 'sm' ? 'h-4 w-4' : 'h-6 w-6';
+  return (
+    <svg 
+      className={`animate-spin ${sizeClasses} text-current`} 
+      xmlns="http://www.w3.org/2000/svg" 
+      fill="none" 
+      viewBox="0 0 24 24"
+    >
+      <circle 
+        className="opacity-25" 
+        cx="12" 
+        cy="12" 
+        r="10" 
+        stroke="currentColor" 
+        strokeWidth="4"
+      ></circle>
+      <path 
+        className="opacity-75" 
+        fill="currentColor" 
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      ></path>
+    </svg>
+  );
+};
+
 export default function LeaveList() {
-  const { t } = useTranslation();
-  const [leaves, setLeaves] = useState<Leave[]>([]);
+  const { t } = useTranslation();  const [leaves, setLeaves] = useState<Leave[]>([]);
   const [filteredLeaves, setFilteredLeaves] = useState<Leave[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadingLeaveIds, setLoadingLeaveIds] = useState<Set<string>>(new Set());
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [employees, setEmployees] = useState<User[]>([]);
@@ -176,30 +203,61 @@ export default function LeaveList() {
 
   useEffect(() => {
     fetchLeaves();
-  }, [fetchLeaves]);
-  const handleStatusUpdate = async (leaveId: string, update: LeaveStatusUpdate) => {
+  }, [fetchLeaves]);  const handleStatusUpdate = async (leaveId: string, update: { status: string; approvalNotes?: string }) => {
     if (!token) {
       toast.error(t('messages.authenticationRequired'));
       return;
     }
     
-    try {
-      await axios.post(`${API_URL}/leave/${leaveId}/status`, update, {
-        headers: { Authorization: `Bearer ${token}` }
+    if (!API_URL) {
+      console.error('API_URL is not defined');
+      toast.error('Configuration error');
+      return;
+    }
+    
+    // Set loading state for this specific leave
+    setLoadingLeaveIds(prev => new Set(prev).add(leaveId));
+    
+    try {      
+      const response = await axios.post(`${API_URL}/leave/${leaveId}/status`, {
+        status: update.status,
+        approvalNotes: update.approvalNotes || ''
+      }, {
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
-      toast.success(t('messages.leaveRequestUpdated'));
-      fetchLeaves();
+      
+      console.log('Leave status updated successfully:', response.data);
+      toast.success('Leave request updated successfully');
+      fetchLeaves(); // Refresh the list
     } catch (err) {
-      console.error('Error updating leave status:', err);
-      toast.error(t('messages.failedToUpdateLeaveRequest'));
+      
+      if (axios.isAxiosError(err) && err.response) {
+        console.error('Server response:', err.response.data);
+        const errorMessage = err.response.data.error || 'Failed to update leave request';
+        toast.error(errorMessage);
+      } else {
+        toast.error('Failed to update leave request');
+      }
+    } finally {
+      // Remove loading state for this specific leave
+      setLoadingLeaveIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(leaveId);
+        return newSet;
+      });
     }
   };
-
   const handleCancel = async (leaveId: string) => {
     if (!token) {
       toast.error(t('messages.authenticationRequired'));
       return;
     }
+    
+    // Set loading state for this specific leave
+    setLoadingLeaveIds(prev => new Set(prev).add(leaveId));
     
     try {
       await axios.post(`${API_URL}/leave/${leaveId}/cancel`, {}, {
@@ -210,6 +268,13 @@ export default function LeaveList() {
     } catch (err) {
       console.error('Error cancelling leave:', err);
       toast.error(t('messages.failedToCancelLeaveRequest'));
+    } finally {
+      // Remove loading state for this specific leave
+      setLoadingLeaveIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(leaveId);
+        return newSet;
+      });
     }
   };
 
@@ -469,22 +534,25 @@ export default function LeaveList() {
                     {leave.reason}
                   </div>
                 </div>
-              )}
-
-              {/* Mobile Actions */}
+              )}              {/* Mobile Actions */}
               <div className="flex flex-wrap gap-2 pt-3 border-t border-gray-200 dark:border-gray-600">
                 {(user?.role === UserRole.MANAGER || user?.role === UserRole.ADMIN) && 
                  leave.status === LeaveStatus.PENDING && (
                   <>
                     <button
-                      onClick={() => handleStatusUpdate(leave._id, { status: LeaveStatus.APPROVED })}                      className="flex-1 min-w-0 px-3 py-2 text-sm font-medium text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 rounded-md hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors duration-150"
+                      onClick={() => handleStatusUpdate(leave._id, { status: LeaveStatus.APPROVED })}
+                      disabled={loadingLeaveIds.has(leave._id)}
+                      className="flex-1 min-w-0 px-3 py-2 text-sm font-medium text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 rounded-md hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
+                      {loadingLeaveIds.has(leave._id) && <LoadingSpinner />}
                       {t('leave.approve')}
                     </button>
                     <button
                       onClick={() => handleStatusUpdate(leave._id, { status: LeaveStatus.REJECTED })}
-                      className="flex-1 min-w-0 px-3 py-2 text-sm font-medium text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-md hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors duration-150"
+                      disabled={loadingLeaveIds.has(leave._id)}
+                      className="flex-1 min-w-0 px-3 py-2 text-sm font-medium text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-md hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
+                      {loadingLeaveIds.has(leave._id) && <LoadingSpinner />}
                       {t('leave.reject')}
                     </button>
                   </>
@@ -492,8 +560,11 @@ export default function LeaveList() {
                 {user?.role === UserRole.EMPLOYEE && 
                  leave.status === LeaveStatus.PENDING && (
                   <button
-                    onClick={() => handleCancel(leave._id)}                    className="flex-1 px-3 py-2 text-sm font-medium text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-md hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors duration-150"
+                    onClick={() => handleCancel(leave._id)}
+                    disabled={loadingLeaveIds.has(leave._id)}
+                    className="flex-1 px-3 py-2 text-sm font-medium text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-md hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
+                    {loadingLeaveIds.has(leave._id) && <LoadingSpinner />}
                     {t('leave.cancel')}
                   </button>
                 )}
@@ -524,9 +595,7 @@ export default function LeaveList() {
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600"><thead className="bg-gray-50 dark:bg-gray-700">
               <tr>{user?.role !== UserRole.EMPLOYEE && (
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    {t('leave.tableHeaders.employee')}
-                  </th>
-                )}
+                    {t('leave.tableHeaders.employee')}</th>)}
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                   {t('leave.tableHeaders.type')}
                 </th>
@@ -541,90 +610,96 @@ export default function LeaveList() {
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                   {t('leave.tableHeaders.actions')}
-                </th>
-              </tr>
+              </th>
+            </tr>
             </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">{filteredLeaves.map((leave) => (
-              <tr key={leave._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150">
-                {user?.role !== UserRole.EMPLOYEE && (
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-medium">
-                    {leave.employee.firstName} {leave.employee.lastName}
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
+              {filteredLeaves.map((leave) => (
+                <tr key={leave._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150">
+                  {user?.role !== UserRole.EMPLOYEE && (
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-medium">
+                      {leave.employee.firstName} {leave.employee.lastName}
+                    </td>
+                  )}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 capitalize">
+                    {t(`leave.${leave.leaveType}`)}
+                  </td>                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1">
+                      <span>{new Date(leave.startDate).toLocaleDateString()}</span>
+                      <span className="text-gray-500 dark:text-gray-400 hidden sm:inline">-</span>
+                      <span>{new Date(leave.endDate).toLocaleDateString()}</span>
+                    </div>
                   </td>
-                )}<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 capitalize">
-                  {t(`leave.${leave.leaveType}`)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-1">
-                    <span>{new Date(leave.startDate).toLocaleDateString()}</span>
-                    <span className="text-gray-500 dark:text-gray-400 hidden sm:inline">-</span>
-                    <span>{new Date(leave.endDate).toLocaleDateString()}</span>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-medium">
-                  {leave.totalDays}
-                </td>                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeColor(leave.status)}`}>
-                    {t(`leave.${leave.status}`)}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    {(user?.role === UserRole.MANAGER || user?.role === UserRole.ADMIN) && 
-                     leave.status === LeaveStatus.PENDING && (
-                      <>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-medium">
+                    {leave.totalDays}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeColor(leave.status)}`}>
+                      {t(`leave.${leave.status}`)}
+                    </span>
+                  </td>                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex flex-col sm:flex-row gap-2">                      {(user?.role === UserRole.MANAGER || user?.role === UserRole.ADMIN) && 
+                       leave.status === LeaveStatus.PENDING && (
+                        <>
+                          <button
+                            onClick={() => handleStatusUpdate(leave._id, { status: 'approved' })}
+                            disabled={loadingLeaveIds.has(leave._id)}
+                            className="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 transition-colors duration-150 px-2 py-1 rounded hover:bg-green-50 dark:hover:bg-green-900/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                          >
+                            {loadingLeaveIds.has(leave._id) && <LoadingSpinner />}
+                            {t('leave.approve')}
+                          </button>
+                          <button
+                            onClick={() => handleStatusUpdate(leave._id, { status: 'rejected' })}
+                            disabled={loadingLeaveIds.has(leave._id)}
+                            className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition-colors duration-150 px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                          >
+                            {loadingLeaveIds.has(leave._id) && <LoadingSpinner />}
+                            {t('leave.reject')}
+                          </button>
+                        </>
+                      )}
+                      {user?.role === UserRole.EMPLOYEE && 
+                       leave.status === LeaveStatus.PENDING && (
                         <button
-                          onClick={() => handleStatusUpdate(leave._id, { status: LeaveStatus.APPROVED })}                          className="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 transition-colors duration-150 px-2 py-1 rounded hover:bg-green-50 dark:hover:bg-green-900/20"
+                          onClick={() => handleCancel(leave._id)}
+                          disabled={loadingLeaveIds.has(leave._id)}
+                          className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition-colors duration-150 px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                         >
-                          {t('leave.approve')}
+                          {loadingLeaveIds.has(leave._id) && <LoadingSpinner />}
+                          Cancel
                         </button>
-                        <button
-                          onClick={() => handleStatusUpdate(leave._id, { status: LeaveStatus.REJECTED })}
-                          className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition-colors duration-150 px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20"
-                        >
-                          {t('leave.reject')}
-                        </button>
-                      </>
-                    )}
-                    {user?.role === UserRole.EMPLOYEE && 
-                     leave.status === LeaveStatus.PENDING && (
-                      <button
-                        onClick={() => handleCancel(leave._id)}
-                        className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition-colors duration-150 px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20"
-                      >
-                        Cancel
-                      </button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {filteredLeaves.length === 0 && (
-              <tr>
-                <td 
-                  colSpan={user?.role === UserRole.EMPLOYEE ? 5 : 6} 
-                  className="px-6 py-12 text-center text-sm text-gray-500 dark:text-gray-400"
-                >
-                  <div className="flex flex-col items-center space-y-2">
-                    <svg className="w-12 h-12 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>                    <p>
-                      {activeFilter === 'pending' && t('leave.emptyStates.noPendingRequests')}
-                      {activeFilter === 'older' && t('leave.emptyStates.noHistoricalRequests')}
-                      {activeFilter === 'all' && t('leave.emptyStates.noRequests')}
-                    </p>
-                    {activeFilter !== 'all' && leaves.length > 0 && (
-                      <p className="text-xs text-gray-400 dark:text-gray-500">
-                        {t('leave.emptyStates.tryAllFilter')}
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {filteredLeaves.length === 0 && (
+                <tr>
+                  <td 
+                    colSpan={user?.role === UserRole.EMPLOYEE ? 5 : 6} 
+                    className="px-6 py-12 text-center text-sm text-gray-500 dark:text-gray-400"
+                  >
+                    <div className="flex flex-col items-center space-y-2">
+                      <svg className="w-12 h-12 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>                    <p>
+                        {activeFilter === 'pending' && t('leave.emptyStates.noPendingRequests')}
+                        {activeFilter === 'older' && t('leave.emptyStates.noHistoricalRequests')}
+                        {activeFilter === 'all' && t('leave.emptyStates.noRequests')}
                       </p>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            )}
+                      {activeFilter !== 'all' && leaves.length > 0 && (
+                        <p className="text-xs text-gray-400 dark:text-gray-500">
+                          {t('leave.emptyStates.tryAllFilter')}
+                        </p>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
       </div>
-    </div>
-  );
+    </div>  );
 }

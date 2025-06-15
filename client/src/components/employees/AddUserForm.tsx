@@ -134,7 +134,7 @@ const AddUserForm: React.FC<AddUserFormProps> = ({ onSuccess, onCancel }) => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
           </div>
-          <h2 className="text-xl font-bold text-white">{t('employee.addNewUser')}</h2>
+          <h2 className="text-xl font-bold px-2 text-white">{t('employee.addNewUser')}</h2>
         </div>
       </div>
 

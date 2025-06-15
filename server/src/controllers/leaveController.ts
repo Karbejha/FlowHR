@@ -150,6 +150,22 @@ export const updateLeaveStatus = async (req: Request, res: Response): Promise<vo
   try {
     const { leaveId } = req.params;
     const { status, approvalNotes } = req.body;
+      // Debug logs
+    console.log('Update leave status request:', { 
+      leaveId, 
+      body: req.body,
+      userRole: req.user.role,
+      statusReceived: status,
+      statusType: typeof status,
+      validStatuses: Object.values(LeaveStatus)
+    });
+    
+    // Validate input
+    if (!status || !Object.values(LeaveStatus).includes(status as LeaveStatus)) {
+      console.error('Invalid status value:', status, 'Valid values:', Object.values(LeaveStatus));
+      res.status(400).json({ error: `Invalid status value: ${status}. Valid values are: ${Object.values(LeaveStatus).join(', ')}` });
+      return;
+    }
 
     const leave = await Leave.findById(leaveId)
       .populate('employee', 'firstName lastName email leaveBalance');
@@ -188,7 +204,8 @@ export const updateLeaveStatus = async (req: Request, res: Response): Promise<vo
           paternity: 0,
           other: 0
         };
-        await user.save();
+        // Use findByIdAndUpdate to bypass validation for this specific update
+        await User.findByIdAndUpdate(user._id, { leaveBalance: user.leaveBalance }, { runValidators: false });
       }
 
       const balanceType = leave.leaveType.toLowerCase() as keyof typeof user.leaveBalance;
@@ -200,7 +217,8 @@ export const updateLeaveStatus = async (req: Request, res: Response): Promise<vo
 
       // Deduct the leave balance
       user.leaveBalance[balanceType] = currentBalance - leave.totalDays;
-      await user.save();
+      // Use findByIdAndUpdate to bypass validation when only updating leave balance
+      await User.findByIdAndUpdate(user._id, { leaveBalance: user.leaveBalance }, { runValidators: false });
     }    // Restore balance if previously approved leave is now rejected/cancelled
     if (leave.status === LeaveStatus.APPROVED && 
         (status === LeaveStatus.REJECTED || status === LeaveStatus.CANCELLED)) {
@@ -209,15 +227,17 @@ export const updateLeaveStatus = async (req: Request, res: Response): Promise<vo
         const balanceType = leave.leaveType.toLowerCase() as keyof typeof user.leaveBalance;
         const currentBalance = user.leaveBalance[balanceType] || 0;
         user.leaveBalance[balanceType] = currentBalance + leave.totalDays;
-        await user.save();
+        // Use findByIdAndUpdate to bypass validation when only updating leave balance
+        await User.findByIdAndUpdate(user._id, { leaveBalance: user.leaveBalance }, { runValidators: false });
       }
-    }leave.status = status;
+    }
+
+    leave.status = status;
     leave.approvalNotes = approvalNotes;
     leave.approvedBy = req.user._id;
-    leave.approvalDate = new Date();
-
-    await leave.save();
-      // Send email notification for status update
+    leave.approvalDate = new Date();    await leave.save();
+    
+    // Send email notification for status update
     const employee = leave.employee as any;
     try {
       await sendLeaveStatusUpdateNotification(
@@ -226,10 +246,11 @@ export const updateLeaveStatus = async (req: Request, res: Response): Promise<vo
         leave.leaveType,
         formatDate(leave.startDate),
         formatDate(leave.endDate),
-        leave.totalDays,
-        status,
+        leave.totalDays,        status,
         `${req.user.firstName} ${req.user.lastName}`,
-        approvalNotes      );    } catch (emailError) {
+        approvalNotes
+      );
+    } catch (emailError) {
       logError('Error sending leave status update email notification', {
         employeeId: leave.employee,
         leaveId: leave._id,
@@ -253,9 +274,10 @@ export const updateLeaveStatus = async (req: Request, res: Response): Promise<vo
           employee._id.toString(),
           leave.leaveType,
           formatDate(leave.startDate),
-          formatDate(leave.endDate),
-          approvalNotes
-        );      }    } catch (notificationError) {
+          formatDate(leave.endDate),          approvalNotes
+        );
+      }
+    } catch (notificationError) {
       logError('Error creating leave status notification', {
         employeeId: leave.employee,
         leaveId: leave._id,
@@ -264,10 +286,18 @@ export const updateLeaveStatus = async (req: Request, res: Response): Promise<vo
       });
       // Don't fail the request if notification creation fails
     }
-    
-    res.json(leave);
+      res.json(leave);
   } catch (error) {
-    res.status(400).json({ error: 'Error updating leave status' });
+    console.error('Error in updateLeaveStatus:', error);
+    logError('Leave status update error', {
+      leaveId: req.params.leaveId,
+      requestBody: req.body,
+      userId: req.user._id,
+      error: error instanceof Error ? error.message : error
+    });
+    res.status(400).json({ 
+      error: error instanceof Error ? error.message : 'Error updating leave status' 
+    });
   }
 };
 
