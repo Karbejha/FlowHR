@@ -240,11 +240,25 @@ export default function DemographicsDashboard({ data }: DemographicsDataProps) {
         <h2 className="text-2xl font-bold">{t('reports.employeeDemographics')}</h2>
         <div className="text-sm bg-blue-100 dark:bg-blue-900 px-3 py-1 rounded-full">
           {t('reports.totalEmployees')}: <span className="font-bold">{data.totalEmployees}</span>
-        </div>
+        </div>      </div>
+
+      {/* Mobile Dropdown Navigation */}
+      <div className="block sm:hidden mb-6">
+        <select 
+          value={activeTab} 
+          onChange={(e) => setActiveTab(e.target.value as 'department' | 'role' | 'age' | 'tenure')}
+          className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+          aria-label={t('reports.selectCategory')}
+        >
+          <option value="department">{t('reports.byDepartment')}</option>
+          <option value="role">{t('reports.byRole')}</option>
+          <option value="age">{t('reports.byAge')}</option>
+          <option value="tenure">{t('reports.byTenure')}</option>
+        </select>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="flex border-b mb-6">
+      {/* Desktop Tab Navigation */}
+      <div className="hidden sm:flex border-b mb-6">
         <button
           className={`px-4 py-2 font-medium ${activeTab === 'department' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
           onClick={() => setActiveTab('department')}
@@ -269,12 +283,42 @@ export default function DemographicsDashboard({ data }: DemographicsDataProps) {
         >
           {t('reports.byTenure')}
         </button>
-      </div>
-
-      {/* Department Distribution */}
+      </div>      {/* Department Distribution */}
       {activeTab === 'department' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="h-80">
+          {/* Mobile chart view with less data */}
+          <div className="block sm:hidden h-72">
+            <h3 className="text-lg font-semibold mb-3">{t('reports.departmentDistribution')}</h3>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={departmentData
+                  .sort((a, b) => b.value - a.value)
+                  .slice(0, 5)
+                }
+                margin={{ top: 5, right: 5, left: 5, bottom: 60 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="name" 
+                  angle={-45}
+                  textAnchor="end"
+                  height={60}
+                  tick={{ fontSize: 10 }}
+                />
+                <YAxis tick={{ fontSize: 10 }} />
+                <Tooltip />
+                <Bar dataKey="value" fill="#8884d8" name={t('reports.employees')} />
+              </BarChart>
+            </ResponsiveContainer>
+            {departmentData.length > 5 && (
+              <div className="text-xs text-center text-gray-500 mt-2">
+                {t('reports.showingTopItems', { count: 5 })}
+              </div>
+            )}
+          </div>
+          
+          {/* Desktop chart view */}
+          <div className="hidden sm:block h-80">
             <h3 className="text-xl font-semibold mb-4">{t('reports.departmentDistribution')}</h3>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
@@ -283,7 +327,7 @@ export default function DemographicsDashboard({ data }: DemographicsDataProps) {
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis 
-                  dataKey="name" 
+                  dataKey="name"
                   angle={-45} 
                   textAnchor="end" 
                   height={70}

@@ -26,11 +26,11 @@ export async function GET(request: NextRequest, { params }: Params) {
       return NextResponse.json(
         { error: 'Invalid month parameter' },
         { status: 400 }
-      );
-    }    // Forward the request to the backend API
-    // Use hardcoded URL for testing
-    const url = `http://localhost:5000/api/users/birthdays/${month}`;
-      try {
+      );    }    // Forward the request to the backend API
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+    const url = `${API_URL}/users/birthdays/${month}`;
+    
+    try {
       const response = await fetch(url, {
         headers: {
           'Authorization': authHeader,

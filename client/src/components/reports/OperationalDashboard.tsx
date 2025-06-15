@@ -171,31 +171,29 @@ export default function OperationalDashboard({
         count,
         value: count,
         hidden: hiddenAttendanceDays.includes(day)
-      }));
-
-    return (
+      }));    return (
       <div className="space-y-8">
         {/* Summary Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-blue-50 dark:bg-blue-900 p-4 rounded-lg shadow">
-            <h4 className="text-sm font-medium text-blue-500 dark:text-blue-300">{t('reports.totalAttendance')}</h4>
-            <p className="text-2xl font-bold">{timeAttendanceData.totalRecords}</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+          <div className="bg-blue-50 dark:bg-blue-900 p-3 md:p-4 rounded-lg shadow">
+            <h4 className="text-xs md:text-sm font-medium text-blue-500 dark:text-blue-300">{t('reports.totalAttendance')}</h4>
+            <p className="text-xl md:text-2xl font-bold">{timeAttendanceData.totalRecords}</p>
           </div>
-          <div className="bg-green-50 dark:bg-green-900 p-4 rounded-lg shadow">
-            <h4 className="text-sm font-medium text-green-500 dark:text-green-300">{t('reports.onTimePercentage')}</h4>
-            <p className="text-2xl font-bold">
+          <div className="bg-green-50 dark:bg-green-900 p-3 md:p-4 rounded-lg shadow">
+            <h4 className="text-xs md:text-sm font-medium text-green-500 dark:text-green-300">{t('reports.onTimePercentage')}</h4>
+            <p className="text-xl md:text-2xl font-bold">
               {((timeAttendanceData.onTime / timeAttendanceData.totalRecords) * 100).toFixed(1)}%
             </p>
           </div>
-          <div className="bg-red-50 dark:bg-red-900 p-4 rounded-lg shadow">
-            <h4 className="text-sm font-medium text-red-500 dark:text-red-300">{t('reports.latePercentage')}</h4>
-            <p className="text-2xl font-bold">{timeAttendanceData.latePercentage.toFixed(1)}%</p>
+          <div className="bg-red-50 dark:bg-red-900 p-3 md:p-4 rounded-lg shadow">
+            <h4 className="text-xs md:text-sm font-medium text-red-500 dark:text-red-300">{t('reports.latePercentage')}</h4>
+            <p className="text-xl md:text-2xl font-bold">{timeAttendanceData.latePercentage.toFixed(1)}%</p>
           </div>
-          <div className="bg-purple-50 dark:bg-purple-900 p-4 rounded-lg shadow">
-            <h4 className="text-sm font-medium text-purple-500 dark:text-purple-300">{t('reports.averageWorkHours')}</h4>
-            <p className="text-2xl font-bold">{timeAttendanceData.averageWorkHours.toFixed(1)}</p>
+          <div className="bg-purple-50 dark:bg-purple-900 p-3 md:p-4 rounded-lg shadow">
+            <h4 className="text-xs md:text-sm font-medium text-purple-500 dark:text-purple-300">{t('reports.averageWorkHours')}</h4>
+            <p className="text-xl md:text-2xl font-bold">{timeAttendanceData.averageWorkHours.toFixed(1)}</p>
           </div>
-        </div>        {/* Attendance Status Chart */}
+        </div>{/* Attendance Status Chart */}
         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
           <h3 className="text-xl font-semibold mb-4">{t('reports.attendanceStatus')}</h3>
           {hiddenAttendanceStatus.length > 0 && (
@@ -256,9 +254,43 @@ export default function OperationalDashboard({
               >
                 {t('reports.resetFilters')}
               </button>
-            </div>
-          )}
-          <div className="h-80" dir={rtlMode ? "rtl" : "ltr"}>            <ResponsiveContainer width="100%" height="100%">
+            </div>          )}
+          {/* Mobile view with simplified chart */}
+          <div className="block sm:hidden h-60" dir={rtlMode ? "rtl" : "ltr"}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart 
+                data={workHoursByDeptData
+                  .filter(item => !item.hidden)
+                  // Limit to top 4 departments on mobile for better readability
+                  .sort((a, b) => b.hours - a.hours)
+                  .slice(0, 4)
+                }
+                margin={{ top: 5, right: 5, left: 5, bottom: 20 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 10 }} />
+                <Tooltip 
+                  formatter={(value) => [value, t('reports.hours')]}
+                  contentStyle={rtlMode ? { textAlign: 'right', direction: 'rtl' } : undefined}
+                />
+                <Bar 
+                  dataKey="hours" 
+                  fill="#00C49F" 
+                  name={t('reports.averageHours')}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+            {workHoursByDeptData.length > 4 && (
+              <div className="text-xs text-center text-gray-500 mt-2">
+                {t('reports.showingTopItems', { count: 4 })}
+              </div>
+            )}
+          </div>
+          
+          {/* Desktop view with full chart */}
+          <div className="hidden sm:block h-80" dir={rtlMode ? "rtl" : "ltr"}>            
+            <ResponsiveContainer width="100%" height="100%">
               <BarChart data={workHoursByDeptData.filter(item => !item.hidden)}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
@@ -277,7 +309,7 @@ export default function OperationalDashboard({
                 />
                 <Bar 
                   dataKey="hours" 
-                  fill="#00C49F" 
+                  fill="#00C49F"
                   name={t('reports.averageHours')}
                 />
               </BarChart>
@@ -389,22 +421,20 @@ export default function OperationalDashboard({
     };
       const handleLeaveMonthLegendClick = (id: string) => {
       toggleItemVisibility(id, hiddenLeaveMonths, setHiddenLeaveMonths);
-    };
-
-    return (
+    };    return (
       <div className="space-y-8">
         {/* Summary Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-blue-50 dark:bg-blue-900 p-4 rounded-lg shadow">
-            <h4 className="text-sm font-medium text-blue-500 dark:text-blue-300">{t('reports.totalLeaveRequests')}</h4>            <p className="text-2xl font-bold">{leaveUsageData?.totalLeaveRequests || 0}</p>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+          <div className="bg-blue-50 dark:bg-blue-900 p-3 md:p-4 rounded-lg shadow">
+            <h4 className="text-xs md:text-sm font-medium text-blue-500 dark:text-blue-300">{t('reports.totalLeaveRequests')}</h4>            <p className="text-xl md:text-2xl font-bold">{leaveUsageData?.totalLeaveRequests || 0}</p>
           </div>
-          <div className="bg-green-50 dark:bg-green-900 p-4 rounded-lg shadow">
-            <h4 className="text-sm font-medium text-green-500 dark:text-green-300">{t('reports.totalDaysTaken')}</h4>
-            <p className="text-2xl font-bold">{leaveUsageData?.totalDaysTaken || 0}</p>
+          <div className="bg-green-50 dark:bg-green-900 p-3 md:p-4 rounded-lg shadow">
+            <h4 className="text-xs md:text-sm font-medium text-green-500 dark:text-green-300">{t('reports.totalDaysTaken')}</h4>
+            <p className="text-xl md:text-2xl font-bold">{leaveUsageData?.totalDaysTaken || 0}</p>
           </div>
-          <div className="bg-yellow-50 dark:bg-yellow-900 p-4 rounded-lg shadow">
-            <h4 className="text-sm font-medium text-yellow-500 dark:text-yellow-300">{t('reports.pendingRequests')}</h4>
-            <p className="text-2xl font-bold">{leaveUsageData?.pendingRequests || 0}</p>
+          <div className="bg-yellow-50 dark:bg-yellow-900 p-3 md:p-4 rounded-lg shadow">
+            <h4 className="text-xs md:text-sm font-medium text-yellow-500 dark:text-yellow-300">{t('reports.pendingRequests')}</h4>
+            <p className="text-xl md:text-2xl font-bold">{leaveUsageData?.pendingRequests || 0}</p>
           </div>
         </div>        {/* Leave Status Distribution */}
         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
