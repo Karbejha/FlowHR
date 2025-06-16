@@ -15,10 +15,20 @@ const BirthdayCard: React.FC<BirthdayCardProps> = ({ className = '' }) => {
   const [birthdayEmployees, setBirthdayEmployees] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   // Get current month
   const currentMonth = new Date().getMonth() + 1; // JavaScript months are 0-indexed
-  const currentMonthName = new Date().toLocaleString('default', { month: 'long' });  useEffect(() => {
+  
+  // Function to get localized month name
+  const getLocalizedMonthName = (monthNumber: number) => {
+    const monthNames = [
+      'january', 'february', 'march', 'april', 'may', 'june',
+      'july', 'august', 'september', 'october', 'november', 'december'
+    ];
+    const monthKey = monthNames[monthNumber - 1];
+    return t(`employee.months.${monthKey}`) || new Date(2024, monthNumber - 1).toLocaleString('default', { month: 'long' });
+  };
+  
+  const currentMonthName = getLocalizedMonthName(currentMonth);useEffect(() => {
     const fetchBirthdayEmployees = async () => {
       if (!token) return;
       try {
@@ -58,15 +68,16 @@ const BirthdayCard: React.FC<BirthdayCardProps> = ({ className = '' }) => {
       } finally {
         setIsLoading(false);
       }
-    };
-
-    fetchBirthdayEmployees();
+    };    fetchBirthdayEmployees();
   }, [token, currentMonth]);
 
-  // Function to format date as "15 June"
+  // Function to format date as "15 June" with localized month name
   const formatBirthdayDate = (date: string) => {
     const birthday = new Date(date);
-    return birthday.toLocaleDateString('en-US', { day: 'numeric', month: 'long' });
+    const day = birthday.getDate();
+    const month = birthday.getMonth() + 1;
+    const localizedMonth = getLocalizedMonthName(month);
+    return `${day} ${localizedMonth}`;
   };
 
   // Function to get age
@@ -132,7 +143,7 @@ const BirthdayCard: React.FC<BirthdayCardProps> = ({ className = '' }) => {
             <svg className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.701 2.701 0 00-1.5-.454M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z" />
             </svg>
-            <p>{t('employee.noBirthdaysThisMonth') || `No birthdays in ${currentMonthName}`}</p>
+            <p>{t('employee.noBirthdaysInMonth', { month: currentMonthName }) || t('employee.noBirthdaysThisMonth') || `No birthdays in ${currentMonthName}`}</p>
             <p className="text-sm mt-2">Check back next month!</p>
           </div>        ) : (
           <div className={`space-y-4 ${getHeightClass(birthdayEmployees.length)}`}>

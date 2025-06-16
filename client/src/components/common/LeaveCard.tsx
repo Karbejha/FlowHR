@@ -21,7 +21,18 @@ const LeaveCard: React.FC<LeaveCardProps> = ({ className = '' }) => {
 
   // Get current month
   const currentMonth = new Date().getMonth() + 1; // JavaScript months are 0-indexed
-  const currentMonthName = new Date().toLocaleString('default', { month: 'long' });
+  
+  // Function to get localized month name
+  const getLocalizedMonthName = (monthNumber: number) => {
+    const monthNames = [
+      'january', 'february', 'march', 'april', 'may', 'june',
+      'july', 'august', 'september', 'october', 'november', 'december'
+    ];
+    const monthKey = monthNames[monthNumber - 1];
+    return t(`employee.months.${monthKey}`) || new Date(2024, monthNumber - 1).toLocaleString('default', { month: 'long' });
+  };
+  
+  const currentMonthName = getLocalizedMonthName(currentMonth);
 
   useEffect(() => {
     const fetchLeaveRequests = async () => {
@@ -77,10 +88,13 @@ const LeaveCard: React.FC<LeaveCardProps> = ({ className = '' }) => {
     fetchLeaveRequests();
   }, [token, currentMonth]);
 
-  // Function to format date as "15 June"
+  // Function to format date as "15 June" with localized month name
   const formatDate = (date: string) => {
     const d = new Date(date);
-    return d.toLocaleDateString('en-US', { day: 'numeric', month: 'long' });
+    const day = d.getDate();
+    const month = d.getMonth() + 1;
+    const localizedMonth = getLocalizedMonthName(month);
+    return `${day} ${localizedMonth}`;
   };
 
   // Function to get leave type display name
@@ -156,7 +170,7 @@ const LeaveCard: React.FC<LeaveCardProps> = ({ className = '' }) => {
             <svg className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
-            <p>{t('leave.noLeavesThisMonth') || `No leave requests in ${currentMonthName}`}</p>
+            <p>{t('leave.noLeavesInMonth', { month: currentMonthName }) || t('leave.noLeavesThisMonth') || `No leave requests in ${currentMonthName}`}</p>
             <p className="text-sm mt-2">Everyone is working hard!</p>
           </div>
         ) : (
