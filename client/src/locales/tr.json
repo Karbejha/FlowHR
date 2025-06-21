@@ -881,7 +881,16 @@
           "question": "Hangi tarayıcılar destekleniyor?",
           "answer": "İK sistemi şunları destekler:\n\n• Google Chrome (önerilen)\n• Mozilla Firefox\n• Microsoft Edge\n• Safari (Mac)\n\nEn iyi deneyim için JavaScript etkinleştirilmiş tarayıcınızın en son sürümünü kullanın. Internet Explorer desteklenmez."
         }
-      }
-    }
+      }    }
+  },
+  "chatbot": {
+    "title": "İK Asistanı",
+    "subtitle": "Bugün size nasıl yardımcı olabilirim?",
+    "openChat": "İK Asistanını Aç",
+    "closeChat": "Sohbeti Kapat",
+    "loading": "Asistan yükleniyor...",
+    "offline": "Asistan çevrimdışı",
+    "welcome": "Merhaba! Ben İK asistanınızım. Politikalar, prosedürler, izin talepleri ve daha fazlası hakkında sorularınızda size yardımcı olabilirim.",
+    "placeholder": "Mesajınızı buraya yazın..."
   }
 }

@@ -917,5 +917,15 @@
         }
       }
     }
+  },
+  "chatbot": {
+    "title": "HR Assistant",
+    "subtitle": "How can I help you today?",
+    "openChat": "Open HR Assistant",
+    "closeChat": "Close Chat",
+    "loading": "Loading assistant...",
+    "offline": "Assistant offline",
+    "welcome": "Hello! I'm your HR assistant. I can help you with questions about policies, procedures, leave requests, and more.",
+    "placeholder": "Type your message here..."
   }
 }
