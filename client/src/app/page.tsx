@@ -221,6 +221,19 @@ export default function Home() {
                 </p>
               </div>
             </div>            <div className="flex items-center space-x-4">
+              {/* Help Button */}
+              <Link
+                href="/help-center"
+                className="group relative p-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 
+                           bg-gray-100 dark:bg-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 
+                           rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                title={t('homepage.helpCenter')}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </Link>
+              
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -247,7 +260,7 @@ export default function Home() {
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
-                </button>                {/* Dropdown Menu */}
+                </button>{/* Dropdown Menu */}
                 {isDropdownOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-[99999] overflow-hidden">
                     <div className="py-1">                      <Link
@@ -259,8 +272,7 @@ export default function Home() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                         {t('homepage.myProfile')}
-                      </Link>
-                      <Link
+                      </Link>                      <Link
                         href="/settings"
                         className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
                         onClick={() => setIsDropdownOpen(false)}
@@ -271,7 +283,17 @@ export default function Home() {
                         </svg>
                         {t('homepage.settings')}
                       </Link>
-                      <hr className="my-1 border-gray-200 dark:border-gray-600" />                      <button
+                      <Link
+                        href="/help-center"
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                        onClick={() => setIsDropdownOpen(false)}
+                      >
+                        <svg className="w-4 h-4 mr-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        {t('homepage.helpCenter')}
+                      </Link>
+                      <hr className="my-1 border-gray-200 dark:border-gray-600" /><button
                         onClick={() => {
                           setIsDropdownOpen(false);
                           logout();
@@ -352,10 +374,12 @@ export default function Home() {
             <p className="text-gray-600 dark:text-gray-400 mb-4">
               {t('homepage.helpDescription')}
             </p>
-            <div className="flex justify-center space-x-4">
-              <button className="px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 border border-blue-600 dark:border-blue-400 rounded-full hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors duration-200">
+            <div className="flex justify-center space-x-4">              <Link
+                href="/help-center"
+                className="px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 border border-blue-600 dark:border-blue-400 rounded-full hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors duration-200"
+              >
                 {t('homepage.helpCenter')}
-              </button>
+              </Link>
               <button className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors duration-200">
                 {t('homepage.contactSupport')}
               </button>

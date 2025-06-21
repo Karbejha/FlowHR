@@ -127,62 +127,61 @@ export default function AttendanceList({
                   </thead>
                   <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     {records.map((record) => (
-                      <tr key={record._id}
-                        className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150 bg-white dark:bg-gray-800">
-                        {user?.role !== UserRole.EMPLOYEE && (
-                          <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                            {record.employee.firstName} {record.employee.lastName}
-                          </td>
-                        )}
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                          {new Date(record.date).toLocaleDateString()}
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap">                          <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeColor(record.status)}`}>
-                            {t(`attendance.${record.status}`)}
-                          </span>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-mono">
-                          {record.totalHours}
-                        </td>
-                        <td className="px-4 py-4">
-                          <div className="text-sm space-y-1">
-                            {record.records.map((timeRecord, index) => (
-                              <div key={index} className="text-gray-900 dark:text-gray-100 font-mono text-xs">
-                                <span className="text-green-600 dark:text-green-400">
-                                  {new Date(timeRecord.clockIn).toLocaleTimeString([], { 
-                                    hour: '2-digit', 
-                                    minute: '2-digit' 
-                                  })}
+                      <tr key={record._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150 bg-white dark:bg-gray-800">
+                            <>
+                              {user?.role !== UserRole.EMPLOYEE && (
+                                <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                                  {record.employee.firstName} {record.employee.lastName}
+                                </td>
+                              )}
+                              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                                {new Date(record.date).toLocaleDateString()}
+                              </td>
+                              <td className="px-4 py-4 whitespace-nowrap">
+                                <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeColor(record.status)}`}>
+                                  {t(`attendance.${record.status}`)}
                                 </span>
-                                {timeRecord.clockOut && (
-                                  <>
-                                    <span className="text-gray-400 dark:text-gray-500 mx-1">→</span>
-                                    <span className="text-red-600 dark:text-red-400">
-                                      {new Date(timeRecord.clockOut).toLocaleTimeString([], { 
-                                        hour: '2-digit', 
-                                        minute: '2-digit' 
-                                      })}
-                                    </span>
-                                  </>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </td>                        {(user?.role === UserRole.MANAGER || user?.role === UserRole.ADMIN) && (
-                          <td className="px-4 py-4 whitespace-nowrap">                            <select
-                              aria-label={t('attendance.updateStatusFor', { name: `${record.employee.firstName} ${record.employee.lastName}` })}
-                              onChange={(e) => handleStatusUpdate(record._id, { status: e.target.value as AttendanceStatus })}
-                              className="block w-full rounded-lg border-2 border-gray-300 dark:border-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm hover:border-gray-400 dark:hover:border-gray-400 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 focus:outline-none sm:text-sm transition-all duration-200 ease-in-out cursor-pointer"
-                              value={record.status}
-                            >
-                              <option value="present" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">{t('attendance.present')}</option>
-                              <option value="absent" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">{t('attendance.absent')}</option>
-                              <option value="late" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">{t('attendance.late')}</option>
-                              <option value="half-day" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">{t('attendance.halfDay')}</option>
-                            </select>
-                          </td>
-                        )}
-                      </tr>
+                              </td>
+                              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-mono">
+                                {record.totalHours}
+                              </td>
+                              <td className="px-4 py-4">
+                                <div className="text-sm space-y-1">
+                                  {record.records.map((timeRecord, index) => (
+                                    <div key={index} className="text-gray-900 dark:text-gray-100 font-mono text-xs">
+                                      <span className="text-green-600 dark:text-green-400">
+                                        {new Date(timeRecord.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                      </span>
+                                      {timeRecord.clockOut && (
+                                        <>
+                                          <span className="text-gray-400 dark:text-gray-500 mx-1">→</span>
+                                          <span className="text-red-600 dark:text-red-400">
+                                            {new Date(timeRecord.clockOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                          </span>
+                                        </>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              </td>
+                              {(user?.role === UserRole.MANAGER || user?.role === UserRole.ADMIN) && (
+                                <td className="px-4 py-4 whitespace-nowrap">
+                                  <select
+                                    aria-label={t('attendance.updateStatusFor', { name: `${record.employee.firstName} ${record.employee.lastName}` })}
+                                    onChange={(e) => handleStatusUpdate(record._id, { status: e.target.value as AttendanceStatus })}
+                                    className="block w-full rounded-lg border-2 border-gray-300 dark:border-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm hover:border-gray-400 dark:hover:border-gray-400 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 focus:outline-none sm:text-sm transition-all duration-200 ease-in-out cursor-pointer"
+                                    value={record.status}
+                                  >
+                                    <option value="present">{t('attendance.present')}</option>
+                                    <option value="absent">{t('attendance.absent')}</option>
+                                    <option value="late">{t('attendance.late')}</option>
+                                    <option value="half-day">{t('attendance.halfDay')}</option>
+                                  </select>
+                                </td>
+                              )}
+                            </>
+                          </tr>
+
                     ))}
                     {records.length === 0 && (
                       <tr>

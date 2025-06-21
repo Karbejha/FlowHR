@@ -737,5 +737,185 @@
     "resourceAllocationInsight": "Resource allocation data helps identify over or under-staffed areas. Consider rebalancing resources between departments based on these insights.",
     
     "noDataAvailable": "No data available"
+  },
+  "helpCenter": {
+    "title": "Help Center",
+    "subtitle": "Find answers to your questions and learn how to use the HR system effectively",
+    "backToDashboard": "Back to Dashboard",
+    "searchPlaceholder": "Search for help articles, FAQs, or topics...",
+    "quickLinksTitle": "Quick Links",
+    "faqTitle": "Frequently Asked Questions",
+    "noResults": "No results found",
+    "noResultsDescription": "Try adjusting your search terms or browse different categories",
+    "clearFilters": "Clear Filters",
+    "stillNeedHelp": "Still need help?",
+    "contactDescription": "Can't find what you're looking for? Our support team is here to help.",
+    "emailSupport": "Email Support",
+    "liveChat": "Live Chat",
+    
+    "categories": {
+      "all": "All Topics",
+      "gettingStarted": "Getting Started",
+      "attendance": "Attendance",
+      "leave": "Leave Management",
+      "employees": "Employee Management",
+      "reports": "Reports & Analytics",
+      "profile": "Profile & Settings",
+      "settings": "System Settings",
+      "troubleshooting": "Troubleshooting"
+    },
+    
+    "quickLinks": {
+      "userGuide": {
+        "title": "User Guide",
+        "description": "Complete guide to using the HR system as an employee"
+      },
+      "adminGuide": {
+        "title": "Administrator Guide",
+        "description": "Comprehensive administration and management documentation"
+      },
+      "managerGuide": {
+        "title": "Manager Guide",
+        "description": "Guide for managers on team and leave management"
+      },
+      "videoTutorials": {
+        "title": "Video Tutorials",
+        "description": "Step-by-step video guides for common tasks"
+      },
+      "keyboardShortcuts": {
+        "title": "Keyboard Shortcuts",
+        "description": "Boost your productivity with keyboard shortcuts"
+      },
+      "apiDocs": {
+        "title": "API Documentation",
+        "description": "Technical documentation for system integration"
+      }
+    },
+    
+    "faq": {
+      "gettingStarted": {
+        "login": {
+          "question": "How do I log into the HR system?",
+          "answer": "Use your company email address and the password provided by your administrator. If you're logging in for the first time, you may need to set up your password using the reset link sent to your email.\n\nIf you're having trouble logging in, make sure:\n• You're using the correct email address\n• Your caps lock is not on\n• You're entering the password correctly\n• Contact your administrator if you still can't access your account"
+        },
+        "dashboard": {
+          "question": "What can I see on my dashboard?",
+          "answer": "Your dashboard shows different information based on your role:\n\n• Employees: Profile access, leave requests, attendance tracking\n• Managers: Team management, leave approvals, team attendance\n• Administrators: Full system access, employee management, reports\n\nThe dashboard also displays upcoming birthdays, leave notifications, and quick access to commonly used features."
+        },
+        "roles": {
+          "question": "What are the different user roles in the system?",
+          "answer": "The HR system has three main roles:\n\n• Employee: Can manage their own profile, submit leave requests, and track attendance\n• Manager: Can manage team members, approve leave requests, and view team reports\n• Administrator: Has full system access including employee management, system settings, and all reports\n\nYour role determines what features and data you can access in the system."
+        }
+      },
+      
+      "attendance": {
+        "clockIn": {
+          "question": "How do I clock in and out for attendance?",
+          "answer": "To clock in/out:\n\n1. Go to the Attendance page from your dashboard\n2. Click the 'Clock In' button when you arrive at work\n3. Click 'Clock Out' when you're leaving\n4. The system automatically tracks your hours\n\nYou can also view your attendance history and see if you're currently clocked in or out. Make sure to clock out before leaving to ensure accurate time tracking."
+        },
+        "viewRecords": {
+          "question": "How can I view my attendance records?",
+          "answer": "To view your attendance records:\n\n1. Navigate to the Attendance page\n2. Your recent clock-in/out times are displayed in a list\n3. Use the date filters to view records for specific periods\n4. You can see total hours worked, late arrivals, and early departures\n\nManagers and administrators can view attendance records for their team members or all employees respectively."
+        },
+        "corrections": {
+          "question": "How do I correct attendance records?",
+          "answer": "If you need to correct an attendance record:\n\n1. Contact your manager or HR administrator\n2. Provide the correct clock-in/out times\n3. Explain the reason for the correction\n4. Administrators can edit attendance records through the employee management section\n\nOnly managers and administrators can modify attendance records to maintain data integrity."
+        }
+      },
+      
+      "leave": {
+        "submit": {
+          "question": "How do I submit a leave request?",
+          "answer": "To submit a leave request:\n\n1. Go to the Leave Management page\n2. Click 'Submit Leave Request'\n3. Select the leave type (Annual, Sick, Casual, etc.)\n4. Choose your start and end dates\n5. Add a reason for your leave\n6. Submit the request for approval\n\nYour manager will be notified and can approve or reject the request. You'll receive an email notification with the decision."
+        },
+        "approve": {
+          "question": "How do I approve or reject leave requests?",
+          "answer": "As a manager or administrator:\n\n1. Go to the Leave Management page\n2. You'll see pending requests from your team\n3. Click on a request to view details\n4. Review the dates, reason, and employee's leave balance\n5. Click 'Approve' or 'Reject' with optional comments\n\nThe employee will be notified automatically of your decision via email and system notification."
+        },
+        "balance": {
+          "question": "How do I check my leave balance?",
+          "answer": "To check your leave balance:\n\n1. Go to your Profile page or Leave Management page\n2. Your current leave balances are displayed by type:\n   • Annual Leave\n   • Sick Leave\n   • Casual Leave\n   • Other leave types as applicable\n\nThe system automatically updates your balance when leave is approved and taken. Contact HR if you believe there's an error in your balance."
+        },
+        "types": {
+          "question": "What types of leave are available?",
+          "answer": "Common leave types in the system include:\n\n• Annual Leave: Vacation days for rest and recreation\n• Sick Leave: For illness or medical appointments\n• Casual Leave: For personal matters and short-term needs\n• Maternity/Paternity Leave: For new parents\n• Unpaid Leave: Extended leave without pay\n• Other: Custom leave types as defined by your organization\n\nYour available leave types and balances depend on your employment terms and company policies."
+        }
+      },
+      
+      "employees": {
+        "add": {
+          "question": "How do I add a new employee to the system?",
+          "answer": "To add a new employee (Admin only):\n\n1. Go to Employee Management\n2. Click 'Add New Employee'\n3. Fill in personal information (name, email, phone)\n4. Set employment details (department, job title, role)\n5. Assign a manager if applicable\n6. Set initial leave balances\n7. Save the employee record\n\nThe new employee will receive an email with login instructions and a temporary password."
+        },
+        "edit": {
+          "question": "How do I edit employee information?",
+          "answer": "To edit employee information:\n\n1. Go to Employee Management\n2. Find the employee in the list\n3. Click the 'Edit' button\n4. Update the necessary information\n5. Save the changes\n\nManagers can edit basic information for their team members. Administrators have full editing access for all employees."
+        },
+        "deactivate": {
+          "question": "How do I deactivate an employee account?",
+          "answer": "To deactivate an employee (Admin only):\n\n1. Go to Employee Management\n2. Find the employee in the list\n3. Click the 'Deactivate' button\n4. Confirm the action\n\nDeactivated employees cannot log in but their records are preserved for reporting purposes. You can reactivate accounts if needed."
+        }
+      },
+      
+      "reports": {
+        "attendance": {
+          "question": "How do I view attendance reports?",
+          "answer": "To view attendance reports:\n\n1. Go to Reports > Attendance\n2. Select the date range you want to analyze\n3. Choose filters (department, employee, etc.)\n4. View metrics like:\n   • Total hours worked\n   • Late arrivals\n   • Early departures\n   • Attendance patterns\n\nYou can export reports as PDF or Excel files for further analysis."
+        },
+        "leave": {
+          "question": "How do I generate leave reports?",
+          "answer": "To generate leave reports:\n\n1. Go to Reports > Leave Usage\n2. Select the time period\n3. Filter by department or employee if needed\n4. View analytics including:\n   • Leave requests by type\n   • Approval rates\n   • Leave balances\n   • Usage trends\n\nReports help identify patterns and ensure adequate staffing coverage."
+        },
+        "demographics": {
+          "question": "What information is in the demographics report?",
+          "answer": "The demographics report (Admin only) shows:\n\n• Employee distribution by department\n• Role distribution across the organization\n• Age demographics and experience levels\n• Gender distribution\n• Hiring trends over time\n• Employee retention metrics\n\nThis data helps with workforce planning and diversity initiatives."
+        }
+      },
+      
+      "profile": {
+        "update": {
+          "question": "How do I update my profile information?",
+          "answer": "To update your profile:\n\n1. Go to Profile from the main menu\n2. Click 'Edit Profile'\n3. Update your information:\n   • Personal details (name, phone, address)\n   • Contact information\n   • Profile picture\n4. Save your changes\n\nSome fields may require administrator approval for security reasons."
+        },
+        "avatar": {
+          "question": "How do I change my profile picture?",
+          "answer": "To change your profile picture:\n\n1. Go to your Profile page\n2. Click on your current avatar or 'Upload Photo'\n3. Select an image file from your computer\n4. Crop the image if needed\n5. Save the changes\n\nRecommended image formats are JPG or PNG, with a maximum size of 5MB."
+        },
+        "password": {
+          "question": "How do I change my password?",
+          "answer": "To change your password:\n\n1. Go to Profile > Security Settings\n2. Enter your current password\n3. Enter your new password\n4. Confirm the new password\n5. Save the changes\n\nFor security, use a strong password with at least 8 characters including letters, numbers, and special characters."
+        }
+      },
+      
+      "settings": {
+        "language": {
+          "question": "How do I change the language?",
+          "answer": "To change the system language:\n\n1. Go to Settings\n2. Find the Language section\n3. Select your preferred language from the dropdown\n4. The interface will update immediately\n\nAvailable languages include English, Arabic, and Turkish. More languages may be added based on organizational needs."
+        },
+        "notifications": {
+          "question": "How do I manage my notification preferences?",
+          "answer": "To manage notifications:\n\n1. Go to Settings > Notifications\n2. Toggle different notification types:\n   • Email notifications\n   • System notifications\n   • Leave request updates\n   • Attendance reminders\n3. Save your preferences\n\nYou can customize which events trigger notifications and how you receive them."
+        },
+        "theme": {
+          "question": "How do I switch between light and dark themes?",
+          "answer": "To change the theme:\n\n1. Go to Settings > Appearance\n2. Select Light, Dark, or System theme\n3. The interface will update immediately\n\nSystem theme automatically matches your device's theme preference."
+        }
+      },
+      
+      "troubleshooting": {
+        "login": {
+          "question": "I can't log into my account. What should I do?",
+          "answer": "If you can't log in, try these steps:\n\n1. Check your email address is correct\n2. Ensure caps lock is off\n3. Try resetting your password\n4. Clear your browser cache and cookies\n5. Try a different browser or incognito mode\n6. Contact your administrator if the problem persists\n\nCommon issues include expired passwords, deactivated accounts, or browser compatibility problems."
+        },
+        "performance": {
+          "question": "The system is running slowly. How can I improve performance?",
+          "answer": "To improve system performance:\n\n1. Clear your browser cache and cookies\n2. Close unnecessary browser tabs\n3. Check your internet connection speed\n4. Try using a different browser\n5. Disable browser extensions temporarily\n6. Restart your browser or computer\n\nIf problems persist, contact IT support as there may be server-side issues."
+        },
+        "browser": {
+          "question": "Which browsers are supported?",
+          "answer": "The HR system supports:\n\n• Google Chrome (recommended)\n• Mozilla Firefox\n• Microsoft Edge\n• Safari (Mac)\n\nFor the best experience, use the latest version of your browser with JavaScript enabled. Internet Explorer is not supported."
+        }
+      }
+    }
   }
 }

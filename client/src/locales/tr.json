@@ -17,7 +17,7 @@
     "dashboard": "Pano",
     "welcomeBack": "Hoş geldiniz, haydi işleri halledelin",
     "goodMorning": "Günaydın",
-    "goodAfternoon": "Tünaydin", 
+    "goodAfternoon": "Tünaydın", 
     "goodEvening": "İyi akşamlar",
     "welcomeUser": "{{greeting}}, {{name}}!",
     "roleAccessMessage": "{{role}} erişiminizle bugün yapabilecekleriniz",
@@ -28,7 +28,7 @@
     "needHelp": "Yardıma mı ihtiyacınız var?",
     "helpDescription": "Yardım merkezimizi kontrol edin veya destek için bizimle iletişime geçin.",
     "helpCenter": "Yardım Merkezi",
-    "contactSupport": "Destek İletişim",
+    "contactSupport": "Desteğe Ulaş",
     "cards": {
       "employeeManagement": {
         "title": "Çalışan Yönetimi",
@@ -701,9 +701,187 @@
     "departmentAllocation": "Departman Tahsisi",
     "projectAllocation": "Proje Tahsisi",
     "employeesAssigned": "Atanan Çalışanlar",
-    "allocationPercentage": "Tahsis %",
-    "resourceAllocationInsight": "Kaynak tahsisi verileri, aşırı veya yetersiz personelli alanları belirlemeye yardımcı olur. Bu içgörülere dayanarak departmanlar arasında kaynakları yeniden dengelemeyi düşünün.",
+    "allocationPercentage": "Tahsis %",    "resourceAllocationInsight": "Kaynak tahsisi verileri, aşırı veya yetersiz personelli alanları belirlemeye yardımcı olur. Bu içgörülere dayanarak departmanlar arasında kaynakları yeniden dengelemeyi düşünün.",
     
     "noDataAvailable": "Veri bulunmamaktadır"
+  },
+  "helpCenter": {
+    "title": "Yardım Merkezi",
+    "subtitle": "Sorularınızın cevaplarını bulun ve İK sistemini etkili bir şekilde nasıl kullanacağınızı öğrenin",
+    "backToDashboard": "Panoya Dön",
+    "searchPlaceholder": "Yardım makaleleri, SSS veya konular ara...",
+    "quickLinksTitle": "Hızlı Bağlantılar",
+    "faqTitle": "Sık Sorulan Sorular",
+    "noResults": "Sonuç bulunamadı",
+    "noResultsDescription": "Arama terimlerinizi ayarlamayı deneyin veya farklı kategorilere göz atın",
+    "clearFilters": "Filtreleri Temizle",
+    "stillNeedHelp": "Hala yardıma mı ihtiyacınız var?",
+    "contactDescription": "Aradığınızı bulamıyor musunuz? Destek ekibimiz yardımcı olmak için burada.",
+    "emailSupport": "E-posta Desteği",
+    "liveChat": "Canlı Sohbet",
+    
+    "categories": {
+      "all": "Tüm Konular",
+      "gettingStarted": "Başlarken",
+      "attendance": "Devam",
+      "leave": "İzin Yönetimi",
+      "employees": "Çalışan Yönetimi",
+      "reports": "Raporlar ve Analitik",
+      "profile": "Profil ve Ayarlar",
+      "settings": "Sistem Ayarları",
+      "troubleshooting": "Sorun Giderme"
+    },
+    
+    "quickLinks": {
+      "userGuide": {
+        "title": "Kullanıcı Kılavuzu",
+        "description": "İK sistemini çalışan olarak kullanmak için kapsamlı kılavuz"
+      },      "adminGuide": {
+        "title": "İdari Kılavuz",
+        "description": "Kapsamlı yönetim ve idare dokümantasyonu"
+      },
+      "managerGuide": {
+        "title": "Yönetici Kılavuzu",
+        "description": "Yöneticiler için takım ve izin yönetimi kılavuzu"
+      },
+      "videoTutorials": {
+        "title": "Video Eğitimleri",
+        "description": "Yaygın görevler için adım adım video kılavuzları"
+      },
+      "keyboardShortcuts": {
+        "title": "Klavye Kısayolları",
+        "description": "Klavye kısayolları ile verimliliğinizi artırın"
+      },
+      "apiDocs": {
+        "title": "API Dokümantasyonu",
+        "description": "Sistem entegrasyonu için teknik dokümantasyon"
+      }
+    },
+    
+    "faq": {
+      "gettingStarted": {
+        "login": {
+          "question": "İK sistemine nasıl giriş yaparım?",
+          "answer": "Şirket e-posta adresinizi ve yöneticiniz tarafından sağlanan şifreyi kullanın. İlk kez giriş yapıyorsanız, e-postanıza gönderilen sıfırlama bağlantısını kullanarak şifrenizi ayarlamanız gerekebilir.\n\nGiriş yapmakta sorun yaşıyorsanız, şunları kontrol edin:\n• Doğru e-posta adresini kullandığınızdan emin olun\n• Caps lock açık değil\n• Şifreyi doğru girdiğinizden emin olun\n• Hala hesabınıza erişemiyorsanız yöneticinizle iletişime geçin"
+        },
+        "dashboard": {
+          "question": "Panomda neleri görebilirim?",
+          "answer": "Panonuz rolünüze göre farklı bilgiler gösterir:\n\n• Çalışanlar: Profil erişimi, izin talepleri, devam takibi\n• Yöneticiler: Takım yönetimi, izin onayları, takım devamı\n• Yöneticiler: Tam sistem erişimi, çalışan yönetimi, raporlar\n\nPano ayrıca yaklaşan doğum günlerini, izin bildirimlerini ve yaygın kullanılan özelliklere hızlı erişimi gösterir."
+        },
+        "roles": {
+          "question": "Sistemdeki farklı kullanıcı rolleri nelerdir?",
+          "answer": "İK sisteminde üç ana rol vardır:\n\n• Çalışan: Kendi profilini yönetebilir, izin talepleri gönderebilir ve devam takibi yapabilir\n• Yönetici: Takım üyelerini yönetebilir, izin taleplerini onaylayabilir ve takım raporlarını görüntüleyebilir\n• İdari: Çalışan yönetimi, sistem ayarları ve tüm raporlar dahil tam sistem erişimi vardır\n\nRolünüz sistemde erişebileceğiniz özellikleri ve verileri belirler."
+        }
+      },
+      
+      "attendance": {
+        "clockIn": {
+          "question": "Devam için nasıl giriş/çıkış yaparım?",
+          "answer": "Giriş/çıkış yapmak için:\n\n1. Panonuzdan Devam sayfasına gidin\n2. İşe geldiğinizde 'Giriş Yap' düğmesine tıklayın\n3. İşten ayrılırken 'Çıkış Yap' düğmesine tıklayın\n4. Sistem saatlerinizi otomatik olarak takip eder\n\nAyrıca son devam geçmişinizi görüntüleyebilir ve şu anda giriş mi çıkış mı yaptığınızı görebilirsiniz. Doğru zaman takibi için ayrılmadan önce çıkış yapmayı unutmayın."
+        },
+        "viewRecords": {
+          "question": "Devam kayıtlarımı nasıl görüntüleyebilirim?",
+          "answer": "Devam kayıtlarınızı görüntülemek için:\n\n1. Devam sayfasına gidin\n2. Son giriş/çıkış zamanlarınız bir listede görüntülenir\n3. Belirli dönemler için kayıtları görüntülemek üzere tarih filtrelerini kullanın\n4. Toplam çalışılan saatleri, geç varışları ve erken ayrılışları görebilirsiniz\n\nYöneticiler ve müdürler sırasıyla takım üyelerinin veya tüm çalışanların devam kayıtlarını görüntüleyebilir."
+        },
+        "corrections": {
+          "question": "Devam kayıtlarını nasıl düzeltirim?",
+          "answer": "Bir devam kaydını düzeltmeniz gerekiyorsa:\n\n1. Yöneticiniz veya İK yöneticinizle iletişime geçin\n2. Doğru giriş/çıkış zamanlarını sağlayın\n3. Düzeltme sebebini açıklayın\n4. Yöneticiler çalışan yönetimi bölümünden devam kayıtlarını düzenleyebilir\n\nVeri bütünlüğünü korumak için sadece yöneticiler ve müdürler devam kayıtlarını değiştirebilir."
+        }
+      },
+      
+      "leave": {
+        "submit": {
+          "question": "İzin talebi nasıl gönderilir?",
+          "answer": "İzin talebi göndermek için:\n\n1. İzin Yönetimi sayfasına gidin\n2. 'İzin Talebi Gönder'e tıklayın\n3. İzin türünü seçin (Yıllık, Hastalık, Günlük vb.)\n4. Başlangıç ve bitiş tarihlerinizi seçin\n5. İzniniz için bir sebep ekleyin\n6. Yönetici onayı için talebi gönderin\n\nYöneticiniz bilgilendirilecek ve talebi onaylayabilir veya reddedebilir. Karar hakkında e-posta bildirimi alacaksınız."
+        },
+        "approve": {
+          "question": "İzin taleplerini nasıl onaylar veya reddederim?",
+          "answer": "Yönetici veya müdür olarak:\n\n1. İzin Yönetimi sayfasına gidin\n2. Takımınızdan bekleyen talepleri göreceksiniz\n3. Detayları görüntülemek için bir talebe tıklayın\n4. Tarihleri, sebebi ve çalışanın izin bakiyesini inceleyin\n5. İsteğe bağlı yorumlarla 'Onayla' veya 'Reddet'e tıklayın\n\nÇalışan kararınız hakkında e-posta ve sistem bildirimi ile otomatik olarak bilgilendirilecektir."
+        },
+        "balance": {
+          "question": "İzin bakiyemi nasıl kontrol ederim?",
+          "answer": "İzin bakiyenizi kontrol etmek için:\n\n1. Profil sayfanız veya İzin Yönetimi sayfasına gidin\n2. Mevcut izin bakiyeleriniz türe göre gösterilir:\n   • Yıllık İzin\n   • Hastalık İzni\n   • Günlük İzin\n   • Uygulanabilir diğer izin türleri\n\nSistem izin onaylandığında ve alındığında bakiyenizi otomatik olarak günceller. Bakiyenizde hata olduğunu düşünüyorsanız İK ile iletişime geçin."
+        },
+        "types": {
+          "question": "Hangi izin türleri mevcut?",
+          "answer": "Sistemdeki yaygın izin türleri şunları içerir:\n\n• Yıllık İzin: Dinlenme ve eğlence için tatil günleri\n• Hastalık İzni: Hastalık veya tıbbi randevular için\n• Günlük İzin: Kişisel işler ve kısa vadeli ihtiyaçlar için\n• Annelik/Babalık İzni: Yeni ebeveynler için\n• Ücretsiz İzin: Maaş olmadan uzatılmış izin\n• Diğer: Organizasyonunuz tarafından tanımlanan özel izin türleri\n\nMevcut izin türleriniz ve bakiyeleriniz istihdam şartlarınıza ve şirket politikalarına bağlıdır."
+        }
+      },
+      
+      "employees": {
+        "add": {
+          "question": "Sisteme yeni çalışan nasıl eklerim?",
+          "answer": "Yeni çalışan eklemek için (Sadece Yönetici):\n\n1. Çalışan Yönetimi'ne gidin\n2. 'Yeni Çalışan Ekle'ye tıklayın\n3. Kişisel bilgileri doldurun (ad, e-posta, telefon)\n4. İstihdam detaylarını ayarlayın (departman, iş unvanı, rol)\n5. Uygunsa bir yönetici atayın\n6. İlk izin bakiyelerini ayarlayın\n7. Çalışan kaydını kaydedin\n\nYeni çalışan giriş talimatları ve geçici şifre ile e-posta alacaktır."
+        },
+        "edit": {
+          "question": "Çalışan bilgilerini nasıl düzenlerim?",
+          "answer": "Çalışan bilgilerini düzenlemek için:\n\n1. Çalışan Yönetimi'ne gidin\n2. Listede çalışanı bulun\n3. 'Düzenle' düğmesine tıklayın\n4. Gerekli bilgileri güncelleyin\n5. Değişiklikleri kaydedin\n\nYöneticiler takım üyeleri için temel bilgileri düzenleyebilir. Müdürler tüm çalışanlar için tam düzenleme erişimine sahiptir."
+        },
+        "deactivate": {
+          "question": "Çalışan hesabını nasıl devre dışı bırakırım?",
+          "answer": "Çalışanı devre dışı bırakmak için (Sadece Yönetici):\n\n1. Çalışan Yönetimi'ne gidin\n2. Listede çalışanı bulun\n3. 'Devre Dışı Bırak' düğmesine tıklayın\n4. İşlemi onaylayın\n\nDevre dışı bırakılan çalışanlar giriş yapamaz ancak kayıtları raporlama amaçları için korunur. Gerekirse hesapları yeniden etkinleştirebilirsiniz."
+        }
+      },
+      
+      "reports": {
+        "attendance": {
+          "question": "Devam raporlarını nasıl görüntülerim?",
+          "answer": "Devam raporlarını görüntülemek için:\n\n1. Raporlar > Devam'a gidin\n2. Analiz etmek istediğiniz tarih aralığını seçin\n3. Filtreleri seçin (departman, çalışan vb.)\n4. Şu gibi metrikleri görüntüleyin:\n   • Toplam çalışılan saatler\n   • Geç varışlar\n   • Erken ayrılışlar\n   • Devam desenleri\n\nDaha fazla analiz için raporları PDF veya Excel dosyaları olarak dışa aktarabilirsiniz."
+        },
+        "leave": {
+          "question": "İzin raporları nasıl oluşturulur?",
+          "answer": "İzin raporları oluşturmak için:\n\n1. Raporlar > İzin Kullanımı'na gidin\n2. Zaman dilimini seçin\n3. Gerekirse departman veya çalışana göre filtreleyin\n4. Şunları içeren analitiği görüntüleyin:\n   • Türe göre izin talepleri\n   • Onay oranları\n   • İzin bakiyeleri\n   • Kullanım eğilimleri\n\nRaporlar desenleri belirlemeye ve yeterli personel kapsaması sağlamaya yardımcı olur."
+        },
+        "demographics": {
+          "question": "Demografik raporda hangi bilgiler var?",
+          "answer": "Demografik rapor (Sadece Yönetici) şunları gösterir:\n\n• Departmana göre çalışan dağılımı\n• Organizasyon genelinde rol dağılımı\n• Yaş demografisi ve deneyim seviyeleri\n• Cinsiyet dağılımı\n• Zaman içinde işe alım eğilimleri\n• Çalışan tutma metrikleri\n\nBu veriler işgücü planlaması ve çeşitlilik girişimleri ile yardımcı olur."
+        }
+      },
+      
+      "profile": {
+        "update": {
+          "question": "Profil bilgilerimi nasıl güncellerim?",
+          "answer": "Profilinizi güncellemek için:\n\n1. Ana menüden Profil'e gidin\n2. 'Profili Düzenle'ye tıklayın\n3. Bilgilerinizi güncelleyin:\n   • Kişisel detaylar (ad, telefon, adres)\n   • İletişim bilgileri\n   • Profil resmi\n4. Değişikliklerinizi kaydedin\n\nBazı alanlar güvenlik nedenleriyle yönetici onayı gerektirebilir."
+        },
+        "avatar": {
+          "question": "Profil resmimi nasıl değiştiririm?",
+          "answer": "Profil resminizi değiştirmek için:\n\n1. Profil sayfanıza gidin\n2. Mevcut avatarınıza veya 'Fotoğraf Yükle'ye tıklayın\n3. Bilgisayarınızdan bir resim dosyası seçin\n4. Gerekirse resmi kırpın\n5. Değişiklikleri kaydedin\n\nÖnerilen resim formatları JPG veya PNG'dir, maksimum 5MB boyutunda."
+        },
+        "password": {
+          "question": "Şifremi nasıl değiştiririm?",
+          "answer": "Şifrenizi değiştirmek için:\n\n1. Profil > Güvenlik Ayarları'na gidin\n2. Mevcut şifrenizi girin\n3. Yeni şifrenizi girin\n4. Yeni şifreyi onaylayın\n5. Değişiklikleri kaydedin\n\nGüvenlik için harf, rakam ve özel karakterler içeren en az 8 karakterli güçlü bir şifre kullanın."
+        }
+      },
+      
+      "settings": {
+        "language": {
+          "question": "Dili nasıl değiştiririm?",
+          "answer": "Sistem dilini değiştirmek için:\n\n1. Ayarlar'a gidin\n2. Dil bölümünü bulun\n3. Açılır menüden tercih ettiğiniz dili seçin\n4. Arayüz hemen güncellenecektir\n\nMevcut diller İngilizce, Arapça ve Türkçe'yi içerir. Organizasyonel ihtiyaçlara göre daha fazla dil eklenebilir."
+        },
+        "notifications": {
+          "question": "Bildirim tercihlerimi nasıl yönetirim?",
+          "answer": "Bildirimleri yönetmek için:\n\n1. Ayarlar > Bildirimler'e gidin\n2. Farklı bildirim türlerini değiştirin:\n   • E-posta bildirimleri\n   • Sistem bildirimleri\n   • İzin talebi güncellemeleri\n   • Devam hatırlatıcıları\n3. Tercihlerinizi kaydedin\n\nHangi olayların bildirim tetiklediğini ve bunları nasıl aldığınızı özelleştirebilirsiniz."
+        },
+        "theme": {
+          "question": "Açık ve koyu temalar arasında nasıl geçiş yaparım?",
+          "answer": "Temayı değiştirmek için:\n\n1. Ayarlar > Görünüm'e gidin\n2. Açık, Koyu veya Sistem temasını seçin\n3. Arayüz hemen güncellenecektir\n\nSistem teması otomatik olarak cihazınızın tema tercihini eşleştirir."
+        }
+      },
+      
+      "troubleshooting": {
+        "login": {
+          "question": "Hesabıma giriş yapamıyorum. Ne yapmalıyım?",
+          "answer": "Giriş yapamıyorsanız, şu adımları deneyin:\n\n1. E-posta adresinizin doğru olduğunu kontrol edin\n2. Caps lock'un kapalı olduğundan emin olun\n3. Şifrenizi sıfırlamayı deneyin\n4. Tarayıcı önbelleğinizi ve çerezlerinizi temizleyin\n5. Farklı bir tarayıcı veya gizli mod deneyin\n6. Sorun devam ederse yöneticinizle iletişime geçin\n\nYaygın sorunlar süresi dolmuş şifreler, devre dışı hesaplar veya tarayıcı uyumluluk sorunları içerir."
+        },
+        "performance": {
+          "question": "Sistem yavaş çalışıyor. Performansı nasıl iyileştirebilirim?",
+          "answer": "Sistem performansını iyileştirmek için:\n\n1. Tarayıcı önbelleğinizi ve çerezlerinizi temizleyin\n2. Gereksiz tarayıcı sekmelerini kapatın\n3. İnternet bağlantı hızınızı kontrol edin\n4. Farklı bir tarayıcı kullanmayı deneyin\n5. Tarayıcı uzantılarını geçici olarak devre dışı bırakın\n6. Tarayıcınızı veya bilgisayarınızı yeniden başlatın\n\nSorunlar devam ederse, sunucu tarafı sorunlar olabileceği için BT desteği ile iletişime geçin."
+        },
+        "browser": {
+          "question": "Hangi tarayıcılar destekleniyor?",
+          "answer": "İK sistemi şunları destekler:\n\n• Google Chrome (önerilen)\n• Mozilla Firefox\n• Microsoft Edge\n• Safari (Mac)\n\nEn iyi deneyim için JavaScript etkinleştirilmiş tarayıcınızın en son sürümünü kullanın. Internet Explorer desteklenmez."
+        }
+      }
+    }
   }
 }
