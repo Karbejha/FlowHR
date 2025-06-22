@@ -76,6 +76,41 @@ export const getEmployees = async (req: Request, res: Response): Promise<void> =
   }
 };
 
+// Get team members for employees - shows basic info of all active employees
+export const getTeamMembers = async (req: Request, res: Response): Promise<void> => {
+  try {
+    let query: any = { isActive: true }; // Only show active employees
+    
+    // Handle search parameter if provided
+    if (req.query.search) {
+      const searchTerm = req.query.search as string;
+      const searchRegex = new RegExp(searchTerm, 'i');
+      query = {
+        ...query,
+        $or: [
+          { firstName: searchRegex },
+          { lastName: searchRegex },
+          { email: searchRegex },
+          { jobTitle: searchRegex },
+          { department: searchRegex }
+        ]
+      };
+    }
+      // Get all active employees with limited fields for privacy
+    const teamMembers = await User.find(query)
+      .select('firstName lastName email jobTitle department avatar dateOfBirth hireDate')
+      .sort({ firstName: 1, lastName: 1 });
+    
+    res.json({
+      employees: teamMembers,
+      total: teamMembers.length
+    });
+  } catch (error) {
+    logError('Error fetching team members', { error });
+    res.status(500).json({ error: 'Error fetching team members' });
+  }
+};
+
 export const updateEmployeeStatus = async (req: Request, res: Response): Promise<void> => {
   try {
     const { userId } = req.params;

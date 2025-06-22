@@ -5,6 +5,7 @@ import { userActionLogger } from '../middleware/errorHandler';
 import { UserRole } from '../models/User';
 import { 
   getEmployees, 
+  getTeamMembers,
   getManagers,
   updateEmployeeStatus, 
   createUser,
@@ -23,6 +24,7 @@ const router = express.Router();
 router.get('/birthdays/:month', authenticate, getUsersByBirthMonth);
 
 router.get('/employees', authenticate, authorize(UserRole.ADMIN, UserRole.MANAGER), getEmployees);
+router.get('/team-members', authenticate, getTeamMembers);
 router.get('/managers', authenticate, authorize(UserRole.ADMIN, UserRole.MANAGER), getManagers);
 router.patch('/:userId/status', authenticate, authorize(UserRole.ADMIN), updateEmployeeStatus);
 router.post('/create', authenticate, authorize(UserRole.ADMIN, UserRole.MANAGER), createUser);

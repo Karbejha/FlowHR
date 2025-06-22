@@ -4,6 +4,7 @@
     "leaveManagement": "Leave Management",
     "attendance": "Attendance",
     "employees": "Employees",
+    "team": "Team",
     "leaveRequests": "Leave Requests",
     "teamAttendance": "Team Attendance",
     "reports": "Reports",
@@ -95,7 +96,10 @@
     "showPassword": "Show password",
     "hidePassword": "Hide password",
     "emailAddress": "Email Address",
-    "systemDescription": "Streamline HR operations with our comprehensive management system"
+    "systemDescription": "Streamline HR operations with our comprehensive management system",
+    "needHelp": "Need help?",
+    "getHelp": "Get Help",
+    "helpDescription": "Access our help center for login assistance and tutorials"
   },
   "common": {
     "save": "Save",
@@ -274,18 +278,16 @@
     "selectManagerOptional": "Select manager (optional)",
     "enterDepartment": "E.g. Engineering, Marketing",
     "enterJobTitle": "E.g. Software Engineer, Designer",
-    "profilePictureNote": "Upload a new profile picture (optional). Max size: 5MB. Supported formats: JPG, PNG, GIF.",
-    "profilePictureNoteAdd": "Upload a profile picture (optional). Max size: 5MB. Supported formats: JPG, PNG, GIF.",
-    "maxFileSize": "File size must be less than 5MB",
-    "pleaseSelectImage": "Please select an image file",
-    "roles": {
-      "admin": "Administrator",
-      "manager": "Manager",
-      "employee": "Employee"
-    },
-    "allStatus": "All Statuses",
-    "allRoles": "All Roles",
-    "allDepartments": "All Departments"
+    "teamDirectory": "Team Directory",
+    "teamMembers": "team members",
+    "searchTeam": "Search team members...",
+    "sendEmail": "Send Email",
+    "call": "Call",
+    "noSearchResults": "No search results found",
+    "noTeamMembers": "No team members found",
+    "noTeamMembersDescription": "Team directory is empty",
+    "fetchError": "Failed to fetch team members",
+    "accessDenied": "Access denied. You don't have permission to view this information"
   },
   "leave": {
     "leaveBalance": "Leave Balance",

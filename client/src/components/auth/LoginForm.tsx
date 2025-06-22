@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import { LoginCredentials } from '@/types/auth';
 import LanguageSwitcher from '@/components/common/LanguageSwitcher';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
+import Link from 'next/link';
 
 interface ApiError {
   response?: {
@@ -87,7 +88,7 @@ export default function LoginForm() {
         <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-20 translate-x-20"></div>
         <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full translate-y-16 -translate-x-16"></div>
       </div>      {/* Right side - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50 dark:bg-gray-900 relative">        {/* Language Switcher and Theme Toggle - Top Right */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50 dark:bg-gray-900 relative">        {/* Language Switcher, Theme Toggle, and Help - Top Right */}
         <div className={`absolute top-4 ${isRTL ? 'left-4' : 'right-4'} z-10 flex items-center ${isRTL ? 'space-x-reverse space-x-2' : 'space-x-2'}`}>
           <ThemeToggle />
           <LanguageSwitcher variant="compact" />
@@ -224,9 +225,7 @@ export default function LoginForm() {
               >
                 {t('auth.forgotPassword')}
               </a>
-            </div>
-
-            <button
+            </div>            <button
               type="submit"
               disabled={isLoading}
               className="w-full flex justify-center items-center px-4 py-3 text-white font-medium
@@ -247,8 +246,57 @@ export default function LoginForm() {
                 t('auth.signIn')
               )}
             </button>
-          </form>
+
+            {/* Help Section */}
+            <div className="mt-6 text-center">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                    {t('auth.needHelp')}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="mt-4">
+                <Link
+                  href="/help-center"
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 
+                           rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 
+                           hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 
+                           focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 shadow-sm"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                          d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {t('auth.getHelp')}
+                </Link>
+              </div>
+              
+              <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
+                {t('auth.helpDescription')}
+              </div>
+            </div>          </form>
         </div>
+        
+        {/* Floating Help Button */}
+        <Link
+          href="/help-center"
+          className="fixed bottom-6 right-6 inline-flex items-center justify-center w-14 h-14 
+                   bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg hover:shadow-xl
+                   focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 
+                   transition-all duration-200 z-50 group"
+          title={t('auth.getHelp')}
+        >
+          <svg className="w-6 h-6 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                  d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span className="sr-only">{t('auth.getHelp')}</span>
+        </Link>
       </div>
     </div>
     </div>
