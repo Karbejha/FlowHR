@@ -12,7 +12,8 @@
     "settings": "Settings",
     "notifications": "Notifications",
     "dashboard": "Dashboard",
-    "home": "Home"
+    "home": "Home",
+    "calendar": "Calendar"
   },
   "homepage": {
     "loading": "Loading...",
@@ -922,12 +923,22 @@
   },
   "chatbot": {
     "title": "HR Assistant",
-    "subtitle": "How can I help you today?",
-    "openChat": "Open HR Assistant",
-    "closeChat": "Close Chat",
-    "loading": "Loading assistant...",
+    "helpText": "I can help you with HR-related questions and tasks.",
     "offline": "Assistant offline",
     "welcome": "Hello! I'm your HR assistant. I can help you with questions about policies, procedures, leave requests, and more.",
     "placeholder": "Type your message here..."
+  },
+  "calendar": {
+    "title": "Calendar",
+    "subtitle": "View holidays and important dates",
+    "nationalHolidays": "National Holidays",
+    "religiousHolidays": "Religious Holidays",
+    "today": "Today",
+    "legend": "Legend",
+    "holidaysThisMonth": "Holidays This Month",
+    "selectedDate": "Selected Date",
+    "holiday": "Holiday",
+    "previousMonth": "Previous Month",
+    "nextMonth": "Next Month"
   }
 }

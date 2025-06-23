@@ -11,7 +11,8 @@
     "settings": "Ayarlar",
     "notifications": "Bildirimler",
     "dashboard": "Pano",
-    "home": "Ana Sayfa"
+    "home": "Ana Sayfa",
+    "calendar": "Takvim"
   },
   "homepage": {
     "loading": "Yükleniyor...",
@@ -885,21 +886,30 @@
         "performance": {
           "question": "Sistem yavaş çalışıyor. Performansı nasıl iyileştirebilirim?",
           "answer": "Sistem performansını iyileştirmek için:\n\n1. Tarayıcı önbelleğinizi ve çerezlerinizi temizleyin\n2. Gereksiz tarayıcı sekmelerini kapatın\n3. İnternet bağlantı hızınızı kontrol edin\n4. Farklı bir tarayıcı kullanmayı deneyin\n5. Tarayıcı uzantılarını geçici olarak devre dışı bırakın\n6. Tarayıcınızı veya bilgisayarınızı yeniden başlatın\n\nSorunlar devam ederse, sunucu tarafı sorunlar olabileceği için BT desteği ile iletişime geçin."
-        },
-        "browser": {
+        },        "browser": {
           "question": "Hangi tarayıcılar destekleniyor?",
           "answer": "İK sistemi şunları destekler:\n\n• Google Chrome (önerilen)\n• Mozilla Firefox\n• Microsoft Edge\n• Safari (Mac)\n\nEn iyi deneyim için JavaScript etkinleştirilmiş tarayıcınızın en son sürümünü kullanın. Internet Explorer desteklenmez."
         }
-      }    }
+      }
+    }
   },
   "chatbot": {
     "title": "İK Asistanı",
-    "subtitle": "Bugün size nasıl yardımcı olabilirim?",
-    "openChat": "İK Asistanını Aç",
+    "helpText": "İK ile ilgili sorular ve görevlerde size yardımcı olabilirim.",
     "closeChat": "Sohbeti Kapat",
-    "loading": "Asistan yükleniyor...",
-    "offline": "Asistan çevrimdışı",
+    "loading": "Asistan yükleniyor...",    "offline": "Asistan çevrimdışı",
     "welcome": "Merhaba! Ben İK asistanınızım. Politikalar, prosedürler, izin talepleri ve daha fazlası hakkında sorularınızda size yardımcı olabilirim.",
     "placeholder": "Mesajınızı buraya yazın..."
+  },
+  "calendar": {
+    "title": "Takvim",
+    "subtitle": "Tatiller ve önemli tarihleri görüntüleyin",
+    "nationalHolidays": "Ulusal Tatiller",
+    "religiousHolidays": "Dini Tatiller",
+    "today": "Bugün",    "legend": "Açıklama",    "holidaysThisMonth": "Bu Ay Tatiller",
+    "selectedDate": "Seçili Tarih",
+    "holiday": "Tatil",
+    "previousMonth": "Önceki Ay",
+    "nextMonth": "Sonraki Ay"
   }
 }
