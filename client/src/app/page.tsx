@@ -7,7 +7,6 @@ import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
 import BirthdayCard from '@/components/common/BirthdayCard';
 import LeaveCard from '@/components/common/LeaveCard';
-import ChatBot from '@/components/common/ChatBot';
 
 export default function Home() {
   const { isAuthenticated, user, logout, isLoading } = useAuth();
@@ -375,8 +374,6 @@ export default function Home() {
           </div>
         </div>
       </main>
-      {/* ChatBot component - only show when authenticated */}
-      <ChatBot />
     </div>
   );
 }

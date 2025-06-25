@@ -4,6 +4,7 @@ import { ReactNode, useEffect } from 'react';
 import Navigation from './Navigation';
 import { Toaster } from 'react-hot-toast';
 import { useTranslation } from '@/contexts/I18nContext';
+import ChatBot from './ChatBot';
 
 interface ClientLayoutProps {
   children: ReactNode;
@@ -78,6 +79,10 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
           },
         }}
       />
+      
+      {/* ChatBot component - available on all pages */}
+      <ChatBot />
+      
       <script
         dangerouslySetInnerHTML={{
           __html: `
