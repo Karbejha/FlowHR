@@ -415,7 +415,7 @@ export default function EmployeeList() {
                 aria-label={t('common.filterByDepartment')}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
               >
-                <option value="">{t('employee.allDepartments')}</option>
+                <option value="">{t('employee.department')}</option>
                 {DEPARTMENTS.map((dept) => (
                   <option key={dept} value={dept}>
                     {dept}
@@ -434,7 +434,7 @@ export default function EmployeeList() {
                 onChange={(e) => handleFilterChange('role', e.target.value)}
                 aria-label={t('common.filterByRole')}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
-              >                <option value="">{t('employee.allRoles')}</option>
+              >                <option value="">{t('employee.role')}</option>
                 {Object.values(UserRole).map((role) => (
                   <option key={role} value={role}>
                     {t(`employee.roles.${role}`)}
@@ -454,7 +454,7 @@ export default function EmployeeList() {
                 aria-label={t('common.filterByStatus')}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
               >
-                <option value="">{t('employee.allStatus')}</option>
+                <option value="">{t('employee.status')}</option>
                 <option value="active">{t('employee.active')}</option>
                 <option value="inactive">{t('employee.inactive')}</option>
               </select>

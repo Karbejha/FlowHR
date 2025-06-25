@@ -12,7 +12,8 @@
     "notifications": "Bildirimler",
     "dashboard": "Pano",
     "home": "Ana Sayfa",
-    "calendar": "Takvim"
+    "calendar": "Takvim",
+    "help": "Yardım"
   },
   "homepage": {
     "loading": "Yükleniyor...",
@@ -289,6 +290,7 @@
     "endDate": "Bitiş Tarihi",
     "reason": "Sebep",
     "submitRequest": "Talep Gönder",
+    "status": "Durum",
     "approve": "Onayla",
     "reject": "Reddet",
     "cancel": "Talebi İptal Et",
@@ -899,7 +901,8 @@
     "closeChat": "Sohbeti Kapat",
     "loading": "Asistan yükleniyor...",    "offline": "Asistan çevrimdışı",
     "welcome": "Merhaba! Ben İK asistanınızım. Politikalar, prosedürler, izin talepleri ve daha fazlası hakkında sorularınızda size yardımcı olabilirim.",
-    "placeholder": "Mesajınızı buraya yazın..."
+    "placeholder": "Mesajınızı buraya yazın...",
+    "openChat": "Yardım Asistanını Aç"
   },
   "calendar": {
     "title": "Takvim",

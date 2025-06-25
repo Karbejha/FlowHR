@@ -13,7 +13,8 @@
     "notifications": "Notifications",
     "dashboard": "Dashboard",
     "home": "Home",
-    "calendar": "Calendar"
+    "calendar": "Calendar",
+    "help": "Help"
   },
   "homepage": {
     "loading": "Loading...",
@@ -288,7 +289,12 @@
     "noTeamMembers": "No team members found",
     "noTeamMembersDescription": "Team directory is empty",
     "fetchError": "Failed to fetch team members",
-    "accessDenied": "Access denied. You don't have permission to view this information"
+    "accessDenied": "Access denied. You don't have permission to view this information",
+    "roles": {
+      "admin": "Administrator",
+      "manager": "Manager", 
+      "employee": "Employee"
+    }
   },
   "leave": {
     "leaveBalance": "Leave Balance",
@@ -302,6 +308,7 @@
     "endDate": "End Date",
     "reason": "Reason",
     "submitRequest": "Submit Request",
+    "status": "Status",
     "approve": "Approve",
     "reject": "Reject",
     "cancel": "Cancel Request",
@@ -926,7 +933,8 @@
     "helpText": "I can help you with HR-related questions and tasks.",
     "offline": "Assistant offline",
     "welcome": "Hello! I'm your HR assistant. I can help you with questions about policies, procedures, leave requests, and more.",
-    "placeholder": "Type your message here..."
+    "placeholder": "Type your message here...",
+    "openChat": "FlowHR AI Chat"
   },
   "calendar": {
     "title": "Calendar",

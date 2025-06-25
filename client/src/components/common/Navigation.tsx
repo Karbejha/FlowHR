@@ -92,6 +92,17 @@ export default function Navigation() {
                     >
                       {t('navigation.attendance')}
                     </Link>
+
+                    <Link
+                      href="/help-center"
+                      className={`${
+                        isActive('/help-center')
+                          ? 'bg-gray-900 dark:bg-gray-800 text-white'
+                          : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                      } px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200`}
+                    >
+                      {t('navigation.help')}
+                    </Link>
                   </>
                 )}
                 

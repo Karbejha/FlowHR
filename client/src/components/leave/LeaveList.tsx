@@ -72,9 +72,10 @@ export default function LeaveList() {
       const { data } = await axios.get(`${API_URL}/users/employees`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setEmployees(data);
+      setEmployees(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Error fetching employees:', err);
+      setEmployees([]); // Ensure employees is always an array
     }
   }, [token, user?.role]);
 
@@ -306,53 +307,54 @@ export default function LeaveList() {
       <div className="px-4 py-5 sm:p-6">
         <div className="flex flex-col gap-4 mb-6">
           {/* Header with Filter Tabs and Advanced Filter Toggle */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">            <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">
+          <div className="flex flex-col space-y-4 lg:flex-row lg:justify-between lg:items-center lg:space-y-0">
+            <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">
               {t('leave.leaveRequests')}
             </h3>
             
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-3">
               {/* Filter Tabs */}
-              <div className="flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1 max-w-fit">
+              <div className="flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1 w-full sm:w-auto">
                 {(() => {
                   const counts = getCounts();
                   return (
                     <>
                       <button
                         onClick={() => setActiveFilter('all')}
-                        className={`px-2 sm:px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors duration-150 flex items-center space-x-1 ${
+                        className={`flex-1 sm:flex-none px-2 sm:px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors duration-150 flex items-center justify-center space-x-1 ${
                           activeFilter === 'all'
                             ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm'
                             : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                         }`}
                       >
-                        <span>{t('common.all')}</span>
-                        <span className="ml-1 px-1.5 py-0.5 text-xs bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 rounded">
+                        <span className="truncate">{t('common.all')}</span>
+                        <span className="ml-1 px-1.5 py-0.5 text-xs bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 rounded flex-shrink-0">
                           {counts.all}
                         </span>
                       </button>
                       <button
                         onClick={() => setActiveFilter('pending')}
-                        className={`px-2 sm:px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors duration-150 flex items-center space-x-1 ${
+                        className={`flex-1 sm:flex-none px-2 sm:px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors duration-150 flex items-center justify-center space-x-1 ${
                           activeFilter === 'pending'
                             ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm'
                             : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                         }`}
                       >
-                        <span>{t('leave.pending')}</span>
-                        <span className="ml-1 px-1.5 py-0.5 text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 rounded">
+                        <span className="truncate">{t('leave.pending')}</span>
+                        <span className="ml-1 px-1.5 py-0.5 text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 rounded flex-shrink-0">
                           {counts.pending}
                         </span>
                       </button>
                       <button
                         onClick={() => setActiveFilter('older')}
-                        className={`px-2 sm:px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors duration-150 flex items-center space-x-1 ${
+                        className={`flex-1 sm:flex-none px-2 sm:px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors duration-150 flex items-center justify-center space-x-1 ${
                           activeFilter === 'older'
                             ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm'
                             : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                         }`}
                       >
-                        <span>{t('leave.history')}</span>
-                        <span className="ml-1 px-1.5 py-0.5 text-xs bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 rounded">
+                        <span className="truncate">{t('leave.history')}</span>
+                        <span className="ml-1 px-1.5 py-0.5 text-xs bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 rounded flex-shrink-0">
                           {counts.older}
                         </span>
                       </button>
@@ -364,18 +366,18 @@ export default function LeaveList() {
               {/* Advanced Filter Toggle */}
               <button
                 onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors duration-150 flex items-center space-x-1 ${
+                className={`w-full sm:w-auto px-2 sm:px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors duration-150 flex items-center justify-center space-x-1 ${
                   showAdvancedFilters || hasAdvancedFilters()
                     ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700'
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.707V4z" />
                 </svg>
-                <span>{t('common.filter')}</span>
+                <span className="truncate">{t('common.filter')}</span>
                 {hasAdvancedFilters() && (
-                  <span className="ml-1 px-1.5 py-0.5 text-xs bg-blue-200 dark:bg-blue-800 text-blue-700 dark:text-blue-300 rounded-full">
+                  <span className="ml-1 px-1.5 py-0.5 text-xs bg-blue-200 dark:bg-blue-800 text-blue-700 dark:text-blue-300 rounded-full flex-shrink-0">
                     •
                   </span>
                 )}
@@ -399,7 +401,7 @@ export default function LeaveList() {
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
                     >
                       <option value="">{t('employee.allEmployees')}</option>
-                      {employees.map((emp) => (
+                      {employees && Array.isArray(employees) && employees.map((emp) => (
                         <option key={emp._id} value={emp._id}>
                           {emp.firstName} {emp.lastName}
                         </option>
