@@ -15,12 +15,16 @@ import { requestIdMiddleware, responseTimeMiddleware } from './middleware/reques
 import errorHandler from './middleware/errorHandler';
 import { captureAuthAttempt } from './middleware/captureAuthAttempt';
 import { userActivityTracker } from './middleware/userActivityTracker';
+import { addSecurityHeaders, sanitizeRequest, sanitizeErrorResponse } from './middleware/security';
 import { seedTestUser } from './utils/seedTestUser';
 
 const app = express();
 
 // Trust proxy - Important for getting real client IPs behind reverse proxies
 app.set('trust proxy', true);
+
+// Security headers middleware - should be first
+app.use(addSecurityHeaders);
 
 // CORS Configuration
 const corsOptions = {
@@ -36,6 +40,9 @@ const corsOptions = {
 // Middleware
 app.use(cors(corsOptions));
 app.use(express.json());
+
+// Request sanitization middleware
+app.use(sanitizeRequest);
 
 // Request tracking middleware
 app.use(requestIdMiddleware);
@@ -62,6 +69,7 @@ app.use('/api/notifications', userActivityTracker, notificationRoutes);
 app.use('/api/reports', userActivityTracker, reportsRoutes);
 
 // Error handling middleware (must be after routes)
+app.use(sanitizeErrorResponse);
 app.use(errorHandler);
 
 // Connect to MongoDB
