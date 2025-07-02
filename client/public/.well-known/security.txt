@@ -1,0 +1,18 @@
+# Security.txt for FlowHR
+# https://flow-hr-seven.vercel.app/.well-known/security.txt
+
+Contact: mailto:security@flowhr.com
+Expires: 2025-12-31T23:59:59.000Z
+Preferred-Languages: en, ar, tr
+Canonical: https://flow-hr-seven.vercel.app/.well-known/security.txt
+
+# Our security policy
+Policy: https://flow-hr-seven.vercel.app/security-policy
+
+# Acknowledgments page
+Acknowledgments: https://flow-hr-seven.vercel.app/security-acknowledgments
+
+# Hiring security researchers
+Hiring: https://flow-hr-seven.vercel.app/careers
+
+# Please report security vulnerabilities responsibly

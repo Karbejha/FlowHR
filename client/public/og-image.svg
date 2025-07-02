@@ -1,0 +1,36 @@
+<!-- OG Image placeholder - Replace with actual image -->
+<!-- This is a placeholder SVG that can be converted to PNG -->
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  
+  <!-- Logo/Brand Area -->
+  <rect x="60" y="60" width="100" height="100" fill="white" rx="20"/>
+  <text x="110" y="125" text-anchor="middle" fill="#3b82f6" font-size="48" font-weight="bold" font-family="Arial, sans-serif">HR</text>
+  
+  <!-- Main Title -->
+  <text x="200" y="140" fill="white" font-size="72" font-weight="bold" font-family="Arial, sans-serif">FlowHR</text>
+  <text x="200" y="200" fill="white" font-size="36" font-family="Arial, sans-serif">Comprehensive HR Management System</text>
+  
+  <!-- Features -->
+  <text x="200" y="280" fill="white" font-size="24" font-family="Arial, sans-serif">✓ Employee Management</text>
+  <text x="200" y="320" fill="white" font-size="24" font-family="Arial, sans-serif">✓ Leave Tracking</text>
+  <text x="200" y="360" fill="white" font-size="24" font-family="Arial, sans-serif">✓ Attendance System</text>
+  <text x="200" y="400" fill="white" font-size="24" font-family="Arial, sans-serif">✓ HR Analytics</text>
+  
+  <!-- CTA -->
+  <rect x="200" y="450" width="300" height="60" fill="white" rx="30"/>
+  <text x="350" y="490" text-anchor="middle" fill="#3b82f6" font-size="24" font-weight="bold" font-family="Arial, sans-serif">Get Started Today</text>
+  
+  <!-- Decorative elements -->
+  <circle cx="900" cy="150" r="80" fill="rgba(255,255,255,0.1)"/>
+  <circle cx="1000" cy="300" r="120" fill="rgba(255,255,255,0.05)"/>
+  <circle cx="950" cy="500" r="60" fill="rgba(255,255,255,0.1)"/>
+</svg>

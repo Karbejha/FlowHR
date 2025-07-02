@@ -1,0 +1,36 @@
+# Humans.txt for FlowHR
+# https://flow-hr-seven.vercel.app/humans.txt
+
+/* TEAM */
+Developer: FlowHR Development Team
+Contact: dev@flowhr.com
+Twitter: @flowhr
+From: Global
+
+/* THANKS */
+Special thanks to all the contributors who helped make FlowHR possible.
+
+/* SITE */
+Last update: 2025/01/02
+Language: English / العربية / Türkçe
+Doctype: HTML5
+IDE: Visual Studio Code
+Components: Next.js, React, TypeScript, TailwindCSS
+Server: Node.js, Express.js, MongoDB
+
+/* TECHNOLOGIES */
+Frontend: Next.js 13+, TypeScript, TailwindCSS, React Context API
+Backend: Node.js, Express.js, MongoDB, JWT Authentication
+Deployment: Vercel (Frontend), Railway/Render (Backend)
+Version Control: Git
+Package Manager: npm
+
+/* VALUES */
+Accessibility: WCAG 2.1 AA compliant
+Performance: Core Web Vitals optimized
+Security: OWASP security practices
+Privacy: GDPR compliant
+Responsive: Mobile-first design
+
+Standards: HTML5, CSS3, ECMAScript 2020+
+Software: VS Code, Git, npm, MongoDB Compass
