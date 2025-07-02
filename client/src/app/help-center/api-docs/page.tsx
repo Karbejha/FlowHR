@@ -121,7 +121,7 @@ export default function APIDocs() {
                 Browse Other Help Topics
               </Link>
               <a
-                href="mailto:dev@hrvsystem.com?subject=API Documentation Request"
+                href="mailto:mohamad.karbjeha@gmail.com?subject=API Documentation Request"
                 className="inline-flex items-center px-6 py-3 border border-gray-300 dark:border-gray-600 text-base font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-200"
               >
                 Request Early Access
