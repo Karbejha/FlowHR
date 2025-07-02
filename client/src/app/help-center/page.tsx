@@ -1,8 +1,18 @@
 'use client';
+import { Metadata } from 'next'
+import { generateSEOMetadata, pageMetadata } from '@/utils/seo'
 import { useState } from 'react';
 import { useTranslation } from '@/contexts/I18nContext';
 import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
+
+export const metadata: Metadata = generateSEOMetadata({
+  title: pageMetadata.helpCenter.title,
+  description: pageMetadata.helpCenter.description,
+  keywords: pageMetadata.helpCenter.keywords,
+  canonical: '/help-center',
+  ogType: 'website'
+})
 
 export default function HelpCenter() {
   const { t } = useTranslation();
