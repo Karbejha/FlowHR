@@ -934,7 +934,8 @@
     "offline": "Assistant offline",
     "welcome": "Hello! I'm your HR assistant. I can help you with questions about policies, procedures, leave requests, and more.",
     "placeholder": "Type your message here...",
-    "openChat": "FlowHR AI Chat"
+    "openChat": "FlowHR AI Chat",
+    "closeChat": "Close Chat"
   },
   "calendar": {
     "title": "Calendar",

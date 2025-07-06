@@ -106,7 +106,7 @@ export default function RootLayout({
             gtag('js', new Date());
             gtag('config', 'G-25HRKDMTH9');
           `}
-        </Script>/
+        </Script>
       </head>
       <body className={`${inter.variable} font-sans antialiased`} suppressHydrationWarning>
         <StructuredData data={organizationSchema} />

@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useTranslation } from '@/contexts/I18nContext';
+import SimpleChatBot from './SimpleChatBot';
 
 declare global {
   interface Window {
@@ -17,37 +18,119 @@ export default function ChatBot() {
   const { t } = useTranslation();
   const [isWebchatOpen, setIsWebchatOpen] = useState(false);
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
+
+  useEffect(() => {
+    // Set a timeout to show fallback if scripts don't load within 10 seconds
+    const timeout = setTimeout(() => {
+      if (!isScriptLoaded) {
+        console.warn('Botpress scripts taking too long to load, enabling fallback');
+        setLoadingTimeout(true);
+      }
+    }, 10000);
+
+    return () => clearTimeout(timeout);
+  }, [isScriptLoaded]);
 
   useEffect(() => {
     // Load Botpress scripts
     const loadBotpressScript = () => {
-      // Load main Botpress webchat script
+      // Load main Botpress webchat script first
       const script1 = document.createElement('script');
       script1.src = 'https://cdn.botpress.cloud/webchat/v3.0/inject.js';
       script1.async = true;
-      document.head.appendChild(script1);
-
-      // Load custom configuration script
-      const script2 = document.createElement('script');
-      script2.src = 'https://files.bpcontent.cloud/2025/06/17/20/20250617205019-NMPGM146.js';
-      script2.async = true;
-      document.head.appendChild(script2);
-
-      // Initialize when ready
-      script2.onload = () => {
-        setTimeout(() => {
-          if (window.botpress) {
-            setIsScriptLoaded(true);
-          }
-        }, 1000);
+      
+      script1.onload = () => {
+        console.log('Botpress inject script loaded');
+        
+        // Load custom configuration script after the first one loads
+        const script2 = document.createElement('script');
+        script2.src = 'https://files.bpcontent.cloud/2025/06/17/20/20250617205019-NMPGM146.js';
+        script2.async = true;
+        
+        script2.onload = () => {
+          console.log('Botpress config script loaded');
+          
+          // Check for window.botpress with retries
+          let attempts = 0;
+          const maxAttempts = 20; // Increased attempts
+          
+          const checkBotpress = () => {
+            attempts++;
+            console.log(`Checking for window.botpress (attempt ${attempts}/${maxAttempts})`);
+            
+            if (window.botpress) {
+              console.log('✅ Botpress is ready!');
+              setIsScriptLoaded(true);
+              
+              // Listen for botpress events
+              try {
+                // Check if botpress has event listeners
+                if (window.botpress.isOpened) {
+                  setIsWebchatOpen(window.botpress.isOpened());
+                }
+              } catch (error) {
+                console.warn('Error checking botpress state:', error);
+              }
+            } else if (attempts < maxAttempts) {
+              setTimeout(checkBotpress, 250); // Reduced timeout for faster checking
+            } else {
+              console.error('❌ Botpress failed to initialize after maximum attempts');
+            }
+          };
+          
+          // Start checking immediately, then with delay
+          setTimeout(checkBotpress, 100);
+        };
+        
+        script2.onerror = (error) => {
+          console.error('Failed to load Botpress config script:', error);
+          setHasError(true);
+        };
+        
+        document.head.appendChild(script2);
       };
+      
+      script1.onerror = (error) => {
+        console.error('Failed to load Botpress inject script:', error);
+        setHasError(true);
+      };
+      
+      document.head.appendChild(script1);
     };
 
     // Only load scripts once
     if (!document.querySelector('script[src*="botpress"]')) {
       loadBotpressScript();
     } else if (window.botpress) {
+      console.log('Botpress already available');
       setIsScriptLoaded(true);
+      if (window.botpress.isOpened) {
+        setIsWebchatOpen(window.botpress.isOpened());
+      }
+    } else {
+      // Scripts exist but botpress not ready, wait for it
+      console.log('Scripts exist, waiting for botpress...');
+      let attempts = 0;
+      const maxAttempts = 20;
+      
+      const checkExistingBotpress = () => {
+        attempts++;
+        if (window.botpress) {
+          console.log('✅ Existing botpress is ready!');
+          setIsScriptLoaded(true);
+          if (window.botpress.isOpened) {
+            setIsWebchatOpen(window.botpress.isOpened());
+          }
+        } else if (attempts < maxAttempts) {
+          setTimeout(checkExistingBotpress, 250);
+        } else {
+          console.error('❌ Existing botpress never became available');
+        }
+      };
+      
+      setTimeout(checkExistingBotpress, 100);
     }
 
     return () => {
@@ -57,12 +140,32 @@ export default function ChatBot() {
 
   const toggleWebchat = () => {
     if (isScriptLoaded && window.botpress) {
-      if (isWebchatOpen) {
-        window.botpress.close();
-      } else {
-        window.botpress.open();
+      try {
+        const currentState = window.botpress.isOpened ? window.botpress.isOpened() : false;
+        
+        if (currentState) {
+          console.log('Closing chatbot...');
+          window.botpress.close();
+          setIsWebchatOpen(false);
+        } else {
+          console.log('Opening chatbot...');
+          window.botpress.open();
+          setIsWebchatOpen(true);
+        }
+      } catch (error) {
+        console.error('Error toggling chatbot:', error);
+        // Fallback: try basic toggle
+        try {
+          if (window.botpress.toggle) {
+            window.botpress.toggle();
+            setIsWebchatOpen(!isWebchatOpen);
+          }
+        } catch (fallbackError) {
+          console.error('Fallback toggle also failed:', fallbackError);
+        }
       }
-      setIsWebchatOpen(!isWebchatOpen);
+    } else {
+      console.warn('Chatbot not ready:', { isScriptLoaded, botpress: !!window.botpress });
     }
   };
 
@@ -72,6 +175,11 @@ export default function ChatBot() {
       toggleWebchat();
     }
   };
+
+  // Show fallback chatbot if scripts fail to load or take too long
+  if (hasError || loadingTimeout) {
+    return <SimpleChatBot />;
+  }
 
   return (
     <>
