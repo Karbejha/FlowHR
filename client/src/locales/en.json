@@ -167,6 +167,7 @@
     "perWorkingDay": "per working day",
     "select": "Select",
     "active": "Active",
+    "currentlyShowing": "Currently showing",
     "currentlyWorking": "Currently Working",
     "inProgress": "In Progress",
     "understand": "I understand",
@@ -462,7 +463,11 @@
     "employee": "Employee",
     "noAttendanceRecords": "No attendance records found",
     "noRecordsAvailable": "No records available for the selected period",
-    "updateStatusFor": "Update status for"
+    "updateStatusFor": "Update status for",
+    "fromDate": "From Date",
+    "toDate": "To Date",
+    "filterByDate": "Filter by Date",
+    "applyDateFilter": "Apply Filter"
   },
   "notifications": {
     "notifications": "Notifications",
