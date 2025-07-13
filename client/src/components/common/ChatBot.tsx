@@ -204,12 +204,6 @@ export default function ChatBot() {
           } catch (domError) {
             console.error('DOM fallback also failed:', domError);
           }
-        if (currentState) {
-          window.botpress.close();
-          setIsWebchatOpen(false);
-        } else {
-          window.botpress.open();
-          setIsWebchatOpen(true);
         }
         // Force state update regardless of API success
         setIsWebchatOpen(false);
