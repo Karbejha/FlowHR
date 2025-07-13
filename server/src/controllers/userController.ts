@@ -610,17 +610,8 @@ export const getUsersByBirthMonth = async (req: Request, res: Response): Promise
       res.status(400).json({ error: 'Invalid month parameter' });
       return;
     }
-
-    console.log(`Finding users with birthdays in month: ${month}`);
-
     // Debug: Log all users with their birth months
     const allUsers = await User.find({}).select('firstName lastName dateOfBirth');
-    console.log('All users:', allUsers.map(u => ({
-      name: `${u.firstName} ${u.lastName}`,
-      dateOfBirth: u.dateOfBirth,
-      month: u.dateOfBirth ? new Date(u.dateOfBirth).getMonth() + 1 : 'no date'
-    })));
-
     // Create a MongoDB aggregation to find users with birthdays in the specified month
     const users = await User.aggregate([
       {
@@ -654,8 +645,6 @@ export const getUsersByBirthMonth = async (req: Request, res: Response): Promise
         }
       }
     ]);
-
-    console.log(`Found ${users.length} users with birthdays in month ${month}`);
     res.json(users);
   } catch (error) {
     console.error('Error in getUsersByBirthMonth:', error);
