@@ -85,7 +85,6 @@ const transports: winston.transport[] = [
 // Add MongoDB transport if MongoDB is configured
 if (config.mongoUri) {
   try {
-    console.log('Attempting to initialize MongoDB transport with URI:', config.mongoUri.replace(/\/\/[^:]+:[^@]+@/, '//***:***@'));
       const mongoTransport = new winston.transports.MongoDB({
       db: config.mongoUri,
       collection: 'logs',
@@ -111,21 +110,11 @@ if (config.mongoUri) {
       console.error('MongoDB transport error:', error);
     });
 
-    mongoTransport.on('open', () => {
-      console.log('MongoDB transport connection opened successfully');
-    });
-
-    mongoTransport.on('close', () => {
-      console.log('MongoDB transport connection closed');
-    });
-
+    mongoTransport.on('open', () => {});
+    mongoTransport.on('close', () => {});
     transports.push(mongoTransport);
-    console.log('MongoDB transport initialized for logging');
-  } catch (error) {
-    console.error('Failed to initialize MongoDB transport:', error);
-  }
+  } catch (error) {}
 }
-
 // Create the logger
 const logger = winston.createLogger({
   level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
@@ -138,15 +127,6 @@ const logger = winston.createLogger({
   transports: transports,
   exitOnError: false,
 });
-
-// Log configuration details for debugging
-console.log('Logger Configuration:', {
-  environment: process.env.NODE_ENV,
-  mongoUri: config.mongoUri ? 'configured' : 'not configured',
-  transportsCount: transports.length,
-  logLevel: logger.level
-});
-
 // Handle uncaught exceptions and rejections safely
 process.on('uncaughtException', (error) => {
   console.error('Uncaught Exception:', error);
@@ -349,10 +329,8 @@ export const shutdownLogger = () => {
 
 // Handle process termination gracefully
 process.on('SIGINT', async () => {
-  console.log('Received SIGINT, shutting down gracefully...');
   try {
     await shutdownLogger();
-    console.log('Logger shutdown complete');
   } catch (error) {
     console.error('Error shutting down logger:', error);
   }
@@ -360,10 +338,8 @@ process.on('SIGINT', async () => {
 });
 
 process.on('SIGTERM', async () => {
-  console.log('Received SIGTERM, shutting down gracefully...');
   try {
     await shutdownLogger();
-    console.log('Logger shutdown complete');
   } catch (error) {
     console.error('Error shutting down logger:', error);
   }

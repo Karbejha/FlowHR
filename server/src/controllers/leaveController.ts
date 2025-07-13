@@ -150,23 +150,12 @@ export const updateLeaveStatus = async (req: Request, res: Response): Promise<vo
   try {
     const { leaveId } = req.params;
     const { status, approvalNotes } = req.body;
-      // Debug logs
-    console.log('Update leave status request:', { 
-      leaveId, 
-      body: req.body,
-      userRole: req.user.role,
-      statusReceived: status,
-      statusType: typeof status,
-      validStatuses: Object.values(LeaveStatus)
-    });
-    
     // Validate input
     if (!status || !Object.values(LeaveStatus).includes(status as LeaveStatus)) {
       console.error('Invalid status value:', status, 'Valid values:', Object.values(LeaveStatus));
       res.status(400).json({ error: `Invalid status value: ${status}. Valid values are: ${Object.values(LeaveStatus).join(', ')}` });
       return;
     }
-
     const leave = await Leave.findById(leaveId)
       .populate('employee', 'firstName lastName email leaveBalance');
 
@@ -380,10 +369,7 @@ export const getMonthlyLeaveRequests = async (req: Request, res: Response): Prom
     
     // Create start and end dates for the month
     const startDate = new Date(currentYear, monthNum - 1, 1);
-    const endDate = new Date(currentYear, monthNum, 0); // Last day of the month
-    
-    console.log(`Fetching leave requests between ${startDate.toISOString()} and ${endDate.toISOString()}`);
-    
+    const endDate = new Date(currentYear, monthNum, 0); // Last day of the month    
     // Find leaves that overlap with the month
     // A leave request overlaps with the month if:
     // - The start date is within the month, OR
@@ -419,8 +405,6 @@ export const getMonthlyLeaveRequests = async (req: Request, res: Response): Prom
     })
     .populate('employee', 'firstName lastName avatar dateOfBirth')
     .sort({ startDate: 1 });
-    
-    console.log(`Found ${leaves.length} leave requests for month ${monthNum}`);
     res.json(leaves);
   } catch (error) {
     console.error('Error fetching monthly leave requests:', error);
