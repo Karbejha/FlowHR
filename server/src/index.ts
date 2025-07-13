@@ -82,10 +82,8 @@ mongoose.connect(config.mongoUri)
     await seedTestUser();
     
     // Test MongoDB logging after connection
-    console.log('Testing MongoDB logging setup...');
     const mongoLogTest = await testMongoDBLogging();
     if (mongoLogTest.success) {
-      console.log('✅ MongoDB logging test successful:', mongoLogTest.details);
       logInfo('MongoDB logging test successful', mongoLogTest.details);
     } else {
       console.error('❌ MongoDB logging test failed:', mongoLogTest.error);
@@ -170,7 +168,6 @@ app.get('/health/detailed', async (req, res) => {
 // Diagnostic endpoint to test MongoDB logging
 app.get('/test-logging', async (req, res) => {
   try {
-    console.log('🔍 Starting comprehensive logging diagnostic...');
       // Test 1: Basic winston logging
     logInfo('Test logging endpoint called', { 
       testType: 'manual_test',
@@ -248,8 +245,6 @@ app.get('/test-logging', async (req, res) => {
       environment: process.env.NODE_ENV || 'development',
       clientIp: (req as any).clientIp || req.ip || 'unknown'
     };
-
-    console.log('✅ Diagnostic completed:', JSON.stringify(result, null, 2));
     res.json(result);
     
   } catch (error) {

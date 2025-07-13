@@ -42,28 +42,20 @@ export default function ChatBot() {
       script1.async = true;
       
       script1.onload = () => {
-        console.log('Botpress inject script loaded');
-        
         // Load custom configuration script after the first one loads
         const script2 = document.createElement('script');
         script2.src = 'https://files.bpcontent.cloud/2025/06/17/20/20250617205019-NMPGM146.js';
         script2.async = true;
         
         script2.onload = () => {
-          console.log('Botpress config script loaded');
-          
           // Check for window.botpress with retries
           let attempts = 0;
           const maxAttempts = 20; // Increased attempts
           
           const checkBotpress = () => {
             attempts++;
-            console.log(`Checking for window.botpress (attempt ${attempts}/${maxAttempts})`);
-            
             if (window.botpress) {
-              console.log('✅ Botpress is ready!');
               setIsScriptLoaded(true);
-              
               // Listen for botpress events
               try {
                 // Check if botpress has event listeners
@@ -104,21 +96,18 @@ export default function ChatBot() {
     if (!document.querySelector('script[src*="botpress"]')) {
       loadBotpressScript();
     } else if (window.botpress) {
-      console.log('Botpress already available');
       setIsScriptLoaded(true);
       if (window.botpress.isOpened) {
         setIsWebchatOpen(window.botpress.isOpened());
       }
     } else {
       // Scripts exist but botpress not ready, wait for it
-      console.log('Scripts exist, waiting for botpress...');
       let attempts = 0;
       const maxAttempts = 20;
       
       const checkExistingBotpress = () => {
         attempts++;
         if (window.botpress) {
-          console.log('✅ Existing botpress is ready!');
           setIsScriptLoaded(true);
           if (window.botpress.isOpened) {
             setIsWebchatOpen(window.botpress.isOpened());
@@ -144,11 +133,9 @@ export default function ChatBot() {
         const currentState = window.botpress.isOpened ? window.botpress.isOpened() : false;
         
         if (currentState) {
-          console.log('Closing chatbot...');
           window.botpress.close();
           setIsWebchatOpen(false);
         } else {
-          console.log('Opening chatbot...');
           window.botpress.open();
           setIsWebchatOpen(true);
         }
