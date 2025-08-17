@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import path from 'path';
 import fs from 'fs';
 import { User, UserRole } from '../models/User';
-import { uploadToS3, deleteFromS3, getS3KeyFromUrl } from '../utils/s3Service';
+import { uploadToCloudinary, deleteFromCloudinary, getCloudinaryIdFromUrl } from '../utils/cloudinaryService';
 import { logError, logWarn } from '../utils/logger';
 
 export const getEmployees = async (req: Request, res: Response): Promise<void> => {
@@ -494,38 +494,38 @@ export const uploadAvatar = async (req: Request, res: Response): Promise<void> =
     }
 
     try {
-      // Delete old avatar from S3 if it exists
+      // Delete old avatar from Cloudinary if it exists
       if (user.avatar) {
         try {
-          const oldS3Key = getS3KeyFromUrl(user.avatar);          await deleteFromS3(oldS3Key);
+          const oldCloudinaryId = getCloudinaryIdFromUrl(user.avatar);
+          await deleteFromCloudinary(oldCloudinaryId);
         } catch (deleteError) {
-          logWarn('Failed to delete old avatar from S3', {
+          logWarn('Failed to delete old avatar from Cloudinary', {
             userId: user._id,
-            oldS3Key: getS3KeyFromUrl(user.avatar),
+            oldCloudinaryId: getCloudinaryIdFromUrl(user.avatar),
             error: deleteError instanceof Error ? deleteError.message : deleteError
           });
           // Continue with upload even if deletion fails
         }
       }
 
-      // Upload new avatar to S3
-      const s3Key = `avatars/${req.file.filename}`;
-      const contentType = req.file.mimetype || 'image/jpeg';
-      
-      const s3Result = await uploadToS3(req.file.path, s3Key, contentType);
+      // Upload new avatar to Cloudinary
+      const fileName = req.file.filename.split('.')[0]; // Remove extension
+      const cloudinaryResult = await uploadToCloudinary(req.file.path, 'avatars', fileName);
 
-      // Update user with new avatar S3 URL
-      user.avatar = s3Result.Location;
+      // Update user with new avatar Cloudinary URL
+      user.avatar = cloudinaryResult.Location;
       await user.save();
 
       res.json({ 
         message: 'Avatar uploaded successfully',
-        avatar: s3Result.Location      });
-    } catch (s3Error) {
-      logError('S3 upload error', {
+        avatar: cloudinaryResult.Location
+      });
+    } catch (cloudinaryError) {
+      logError('Cloudinary upload error', {
         userId: user._id,
         filename: req.file.filename,
-        error: s3Error instanceof Error ? s3Error.message : s3Error
+        error: cloudinaryError instanceof Error ? cloudinaryError.message : cloudinaryError
       });
       
       // Clean up temporary file
@@ -577,17 +577,18 @@ export const deleteAvatar = async (req: Request, res: Response): Promise<void> =
       }
     }
 
-    // Delete avatar from S3 if it exists
+    // Delete avatar from Cloudinary if it exists
     if (user.avatar) {
       try {
-        const s3Key = getS3KeyFromUrl(user.avatar);        await deleteFromS3(s3Key);
+        const cloudinaryId = getCloudinaryIdFromUrl(user.avatar);
+        await deleteFromCloudinary(cloudinaryId);
       } catch (deleteError) {
-        logWarn('Failed to delete avatar from S3', {
+        logWarn('Failed to delete avatar from Cloudinary', {
           userId: user._id,
-          s3Key: getS3KeyFromUrl(user.avatar),
+          cloudinaryId: getCloudinaryIdFromUrl(user.avatar),
           error: deleteError instanceof Error ? deleteError.message : deleteError
         });
-        // Continue with database update even if S3 deletion fails
+        // Continue with database update even if Cloudinary deletion fails
       }
     }
 
