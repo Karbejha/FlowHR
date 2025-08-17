@@ -220,7 +220,7 @@ export default function LeaveList() {
     setLoadingLeaveIds(prev => new Set(prev).add(leaveId));
     
     try {      
-      const response = await axios.post(`${API_URL}/leave/${leaveId}/status`, {
+      await axios.post(`${API_URL}/leave/${leaveId}/status`, {
         status: update.status,
         approvalNotes: update.approvalNotes || ''
       }, {
@@ -229,8 +229,6 @@ export default function LeaveList() {
           'Content-Type': 'application/json'
         }
       });
-      
-      console.log('Leave status updated successfully:', response.data);
       toast.success('Leave request updated successfully');
       fetchLeaves(); // Refresh the list
     } catch (err) {

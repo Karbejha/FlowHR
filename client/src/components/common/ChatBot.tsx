@@ -42,28 +42,20 @@ export default function ChatBot() {
       script1.async = true;
       
       script1.onload = () => {
-        console.log('Botpress inject script loaded');
-        
         // Load custom configuration script after the first one loads
         const script2 = document.createElement('script');
         script2.src = 'https://files.bpcontent.cloud/2025/06/17/20/20250617205019-NMPGM146.js';
         script2.async = true;
         
         script2.onload = () => {
-          console.log('Botpress config script loaded');
-          
           // Check for window.botpress with retries
           let attempts = 0;
           const maxAttempts = 20; // Increased attempts
           
           const checkBotpress = () => {
             attempts++;
-            console.log(`Checking for window.botpress (attempt ${attempts}/${maxAttempts})`);
-            
             if (window.botpress) {
-              console.log('✅ Botpress is ready!');
               setIsScriptLoaded(true);
-              
               // Listen for botpress events
               try {
                 // Check if botpress has event listeners
@@ -104,21 +96,18 @@ export default function ChatBot() {
     if (!document.querySelector('script[src*="botpress"]')) {
       loadBotpressScript();
     } else if (window.botpress) {
-      console.log('Botpress already available');
       setIsScriptLoaded(true);
       if (window.botpress.isOpened) {
         setIsWebchatOpen(window.botpress.isOpened());
       }
     } else {
       // Scripts exist but botpress not ready, wait for it
-      console.log('Scripts exist, waiting for botpress...');
       let attempts = 0;
       const maxAttempts = 20;
       
       const checkExistingBotpress = () => {
         attempts++;
         if (window.botpress) {
-          console.log('✅ Existing botpress is ready!');
           setIsScriptLoaded(true);
           if (window.botpress.isOpened) {
             setIsWebchatOpen(window.botpress.isOpened());
@@ -138,31 +127,105 @@ export default function ChatBot() {
     };
   }, []);
 
+  // Add effect to listen for chatbot state changes
+  useEffect(() => {
+    if (!isScriptLoaded || !window.botpress || !window.botpress.isOpened) {
+      return;
+    }
+    
+    // Initial state check
+    try {
+      // Try API check first
+      const currentState = window.botpress.isOpened();
+      setIsWebchatOpen(currentState);
+      
+      // Also check DOM for visibility as a backup
+      const chatbotElement = document.querySelector('.bpWidget .bpWebchat');
+      if (chatbotElement) {
+        const style = window.getComputedStyle(chatbotElement);
+        const isVisible = style.display !== 'none' && style.visibility !== 'hidden';
+        if (isVisible !== currentState) {
+          // DOM state differs from API state, prefer DOM state
+          setIsWebchatOpen(isVisible);
+        }
+      }
+    } catch {
+      // Silent catch
+    }
+    
+    // Set up event listener for chatbot state changes
+    const stateCheckInterval = setInterval(() => {
+      try {
+        // Try API check
+        let currentState = false;
+        if (window.botpress && window.botpress.isOpened) {
+          currentState = window.botpress.isOpened();
+        }
+        
+        // Also check DOM for visibility as a backup
+        const chatbotElement = document.querySelector('.bpWidget .bpWebchat');
+        if (chatbotElement) {
+          const style = window.getComputedStyle(chatbotElement);
+          const isVisible = style.display !== 'none' && style.visibility !== 'hidden';
+          // Prefer DOM state over API state
+          currentState = isVisible;
+        }
+        
+        setIsWebchatOpen(prevState => {
+          if (prevState !== currentState) {
+            return currentState;
+          }
+          return prevState;
+        });
+      } catch {
+        // Silent catch - don't log to avoid console spam
+      }
+    }, 300);
+    
+    return () => clearInterval(stateCheckInterval);
+  }, [isScriptLoaded]); // Only depend on isScriptLoaded, not isWebchatOpen
+
   const toggleWebchat = () => {
     if (isScriptLoaded && window.botpress) {
-      try {
-        const currentState = window.botpress.isOpened ? window.botpress.isOpened() : false;
-        
-        if (currentState) {
-          console.log('Closing chatbot...');
-          window.botpress.close();
-          setIsWebchatOpen(false);
-        } else {
-          console.log('Opening chatbot...');
-          window.botpress.open();
-          setIsWebchatOpen(true);
-        }
-      } catch (error) {
-        console.error('Error toggling chatbot:', error);
-        // Fallback: try basic toggle
+      // Force a direct state change regardless of current state
+      if (isWebchatOpen) {
+        // If we think it's open, force close it
         try {
-          if (window.botpress.toggle) {
-            window.botpress.toggle();
-            setIsWebchatOpen(!isWebchatOpen);
+          window.botpress.close();
+        } catch {
+          console.error('Error closing chatbot');
+          
+          // Try direct DOM manipulation as fallback
+          try {
+            const chatbotElement = document.querySelector('.bpWidget .bpWebchat');
+            if (chatbotElement && chatbotElement instanceof HTMLElement) {
+              chatbotElement.style.display = 'none';
+            }
+          } catch (domError) {
+            console.error('DOM fallback also failed:', domError);
           }
-        } catch (fallbackError) {
-          console.error('Fallback toggle also failed:', fallbackError);
         }
+        // Force state update regardless of API success
+        setIsWebchatOpen(false);
+      } else {
+        // If we think it's closed, force open it
+        try {
+          window.botpress.open();
+        } catch {
+          console.error('Error opening chatbot');
+          
+          // Try direct DOM manipulation as fallback
+          try {
+            const chatbotElement = document.querySelector('.bpWidget .bpWebchat');
+            if (chatbotElement && chatbotElement instanceof HTMLElement) {
+              chatbotElement.style.display = 'block';
+            }
+          } catch (domError) {
+            console.error('DOM fallback also failed:', domError);
+          }
+        }
+        // Force state update regardless of API success
+        setIsWebchatOpen(true);
       }
     } else {
       console.warn('Chatbot not ready:', { isScriptLoaded, botpress: !!window.botpress });
@@ -186,7 +249,11 @@ export default function ChatBot() {
       {/* Custom FAB Button */}
       <div className="fixed bottom-6 right-6 z-50">
         <button
-          onClick={toggleWebchat}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleWebchat();
+          }}
           onKeyDown={handleKeyDown}
           disabled={!isScriptLoaded}
           className={`group relative p-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-blue-500/30 ${
@@ -194,6 +261,7 @@ export default function ChatBot() {
           }`}
           title={t('chatbot.openChat') || 'Open Chat Assistant'}
           aria-label={t('chatbot.openChat') || 'Open Chat Assistant'}
+          type="button"
         >
           {/* Loading indicator */}
           {!isScriptLoaded && (
@@ -206,7 +274,7 @@ export default function ChatBot() {
           <svg 
             className={`w-6 h-6 transition-all duration-300 ${
               !isScriptLoaded ? 'opacity-0' : 
-              isWebchatOpen ? 'rotate-180 opacity-0 absolute' : 'opacity-100'
+              isWebchatOpen ? 'rotate-180 scale-0 opacity-0 absolute' : 'scale-100 opacity-100'
             }`}
             fill="none" 
             stroke="currentColor" 
@@ -219,7 +287,7 @@ export default function ChatBot() {
           <svg 
             className={`w-6 h-6 transition-all duration-300 ${
               !isScriptLoaded ? 'opacity-0' :
-              isWebchatOpen ? 'opacity-100' : 'rotate-180 opacity-0 absolute'
+              isWebchatOpen ? 'scale-100 opacity-100' : 'rotate-180 scale-0 opacity-0 absolute'
             }`}
             fill="none" 
             stroke="currentColor" 

@@ -2,15 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // For Next.js 15.3.2 app router pattern
 interface Params {
-  params: {
+  params: Promise<{
     month: string;
-  };
+  }>;
 }
 
 export async function GET(request: NextRequest, { params }: Params) {
   try {
-    // Get params in an async-safe way
-    const monthParam = params.month;
+    // Get params in an async-safe way for Next.js 15
+    const resolvedParams = await params;
+    const monthParam = resolvedParams.month;
     
     // Get the authorization header from the request
     const authHeader = request.headers.get('authorization');

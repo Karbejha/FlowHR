@@ -9,26 +9,16 @@ const nextConfig: NextConfig = {
   publicRuntimeConfig: {
     apiUrl: process.env.NEXT_PUBLIC_API_URL,
   },
-  // Configure external image domains for S3
+  // Configure external image domains for Cloudinary
   images: {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'flowhr.s3.eu-north-1.amazonaws.com',
-        port: '',
-        pathname: '/avatars/**',
+        hostname: 'res.cloudinary.com'
       },
       {
         protocol: 'https',
-        hostname: '*.s3.amazonaws.com',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: '*.s3.*.amazonaws.com',
-        port: '',
-        pathname: '/**',
+        hostname: 'cloudinary.com'
       }
     ],
     formats: ['image/avif', 'image/webp'],
@@ -42,10 +32,6 @@ const nextConfig: NextConfig = {
   },
   // Compression
   compress: true,
-  // Optimize builds
-  swcMinify: true,
-  // Generate ETags for better caching
-  generateEtags: true,
   // Enable strict mode for better performance
   eslint: {
     ignoreDuringBuilds: false,
