@@ -32,10 +32,6 @@ const nextConfig: NextConfig = {
   },
   // Compression
   compress: true,
-  // Optimize builds
-  swcMinify: true,
-  // Generate ETags for better caching
-  generateEtags: true,
   // Enable strict mode for better performance
   eslint: {
     ignoreDuringBuilds: false,
