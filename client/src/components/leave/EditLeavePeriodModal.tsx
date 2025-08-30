@@ -70,8 +70,15 @@ export default function EditLeavePeriodModal({ leave, isOpen, onClose, onSuccess
 
       onSuccess();
       onClose();
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to update leave period');
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else if (err && typeof err === 'object' && 'response' in err) {
+        const axiosError = err as { response?: { data?: { error?: string } } };
+        setError(axiosError.response?.data?.error || 'Failed to update leave period');
+      } else {
+        setError('Failed to update leave period');
+      }
     } finally {
       setIsSubmitting(false);
     }
