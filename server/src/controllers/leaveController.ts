@@ -414,3 +414,127 @@ export const getMonthlyLeaveRequests = async (req: Request, res: Response): Prom
     });
   }
 };
+
+export const updateLeavePeriod = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { leaveId } = req.params;
+    const { startDate, endDate } = req.body;
+
+    // Validate input
+    if (!startDate || !endDate) {
+      res.status(400).json({ error: 'Start date and end date are required' });
+      return;
+    }
+
+    const newStartDate = new Date(startDate);
+    const newEndDate = new Date(endDate);
+
+    if (newStartDate >= newEndDate) {
+      res.status(400).json({ error: 'End date must be after start date' });
+      return;
+    }
+
+    const leave = await Leave.findById(leaveId)
+      .populate('employee', 'firstName lastName email leaveBalance');
+
+    if (!leave) {
+      res.status(404).json({ error: 'Leave request not found' });
+      return;
+    }
+
+    // Check if user has permission to edit
+    if (req.user.role === UserRole.MANAGER) {
+      const teamMembers = await getTeamMembers(req.user._id);
+      const teamMemberIds = teamMembers.map(member => (member as unknown as Document).id);
+      const employeeId = (leave.employee as any)._id.toString();
+      
+      if (!teamMemberIds.includes(employeeId)) {
+        res.status(403).json({ error: 'Not authorized to edit this leave request' });
+        return;
+      }
+    }
+
+    // Only allow editing of pending or approved requests
+    if (leave.status !== LeaveStatus.PENDING && leave.status !== LeaveStatus.APPROVED) {
+      res.status(400).json({ error: 'Can only edit pending or approved leave requests' });
+      return;
+    }
+
+    // Store original values for balance calculation
+    const originalTotalDays = leave.totalDays;
+    const originalStatus = leave.status;
+
+    // Update dates and recalculate total days
+    leave.startDate = newStartDate;
+    leave.endDate = newEndDate;
+    const newTotalDays = leave.calculateTotalDays();
+
+    // Validate new leave balance if status is approved or pending
+    if (leave.status === LeaveStatus.APPROVED || leave.status === LeaveStatus.PENDING) {
+      const user = await User.findById((leave.employee as any)._id);
+      if (user?.leaveBalance) {
+        const balanceType = leave.leaveType.toLowerCase() as keyof typeof user.leaveBalance;
+        const currentBalance = user.leaveBalance[balanceType] || 0;
+        
+        // Calculate what the balance would be after the change
+        let adjustedBalance = currentBalance;
+        if (originalStatus === LeaveStatus.APPROVED) {
+          // Restore original days first
+          adjustedBalance += originalTotalDays;
+        }
+        
+        // Check if new period is valid
+        if (adjustedBalance < newTotalDays) {
+          res.status(400).json({ 
+            error: `Insufficient leave balance. Available: ${adjustedBalance} days, Requested: ${newTotalDays} days` 
+          });
+          return;
+        }
+
+        // Update balance if leave was already approved
+        if (originalStatus === LeaveStatus.APPROVED) {
+          // Adjust balance: restore original days and deduct new days
+          user.leaveBalance[balanceType] = adjustedBalance - newTotalDays;
+          await User.findByIdAndUpdate(user._id, { leaveBalance: user.leaveBalance }, { runValidators: false });
+        }
+      }
+    }
+
+    await leave.save();
+
+    // Send email notification about period change
+    const employee = leave.employee as any;
+    try {
+      await sendLeaveStatusUpdateNotification(
+        employee.email,
+        `${employee.firstName} ${employee.lastName}`,
+        leave.leaveType,
+        formatDate(leave.startDate),
+        formatDate(leave.endDate),
+        leave.totalDays,
+        leave.status,
+        `${req.user.firstName} ${req.user.lastName}`,
+        `Leave period updated from ${originalTotalDays} days to ${newTotalDays} days`
+      );
+    } catch (emailError) {
+      logError('Error sending leave period update email notification', {
+        employeeId: leave.employee,
+        leaveId: leave._id,
+        error: emailError instanceof Error ? emailError.message : emailError
+      });
+      // Don't fail the request if email fails
+    }
+
+    res.json(leave);
+  } catch (error) {
+    logError('Leave period update error', {
+      leaveId: req.params.leaveId,
+      requestBody: req.body,
+      userId: req.user._id,
+      error: error instanceof Error ? error.message : error
+    });
+    res.status(400).json({ 
+      error: error instanceof Error ? error.message : 'Error updating leave period' 
+    });
+  }
+};

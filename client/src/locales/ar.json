@@ -100,7 +100,8 @@
     "needHelp": "هل تحتاج مساعدة؟",
     "getHelp": "احصل على مساعدة",
     "helpDescription": "الوصول إلى مركز المساعدة للحصول على مساعدة في تسجيل الدخول والدروس التعليمية"
-  },  "common": {
+  },  
+  "common": {
     "save": "حفظ",
     "cancel": "إلغاء",
     "delete": "حذف",
@@ -660,7 +661,8 @@
     "updateEmployee": "تحديث الموظف",
     "emailPlaceholder": "email@example.com",
     "lastNamePlaceholder": "الاسم الأخير",
-    "firstNamePlaceholder": "الاسم الأول"
+    "firstNamePlaceholder": "الاسم الأول",
+    "updating":"جاري التحديث"
   },
   "reports": {
     "demographicsTitle": "لوحة تحكم ديموغرافيا الموظفين",
