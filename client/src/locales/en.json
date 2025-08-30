@@ -422,7 +422,14 @@
       "duration": "Duration:",
       "dates": "Dates:",
       "reason": "Reason:"
-    }
+    },
+    "editPeriod": "Edit Period",
+    "updatePeriod": "Update Period",
+    "originalDays": "Original Days",
+    "newDays": "New Days",
+    "periodUpdatedSuccessfully": "Leave period updated successfully",
+    "startDateBeforeEndDate": "Start date must be before end date",
+    "endDateAfterStartDate": "End date must be after start date"
   },
   "attendance": {
     "attendanceTracker": "Attendance Tracker",
@@ -676,7 +683,8 @@
     "updateEmployee": "Update Employee",
     "emailPlaceholder": "email@example.com",
     "lastNamePlaceholder": "Last Name",
-    "firstNamePlaceholder": "First Name"
+    "firstNamePlaceholder": "First Name",
+    "updating":"Updating"
   },
   "reports": {
     "demographicsTitle": "Employee Demographics Dashboard",
