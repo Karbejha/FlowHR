@@ -10,7 +10,8 @@ import {
   updateLeaveStatus,
   cancelLeaveRequest,
   getLeaveBalance,
-  getMonthlyLeaveRequests
+  getMonthlyLeaveRequests,
+  updateLeavePeriod
 } from '../controllers/leaveController';
 
 const router = express.Router();
@@ -46,6 +47,13 @@ router.post(
   authenticate,
   authorize(UserRole.MANAGER, UserRole.ADMIN),
   asyncMiddleware(updateLeaveStatus)
+);
+
+router.post(
+  '/:leaveId/period',
+  authenticate,
+  authorize(UserRole.MANAGER, UserRole.ADMIN),
+  asyncMiddleware(updateLeavePeriod)
 );
 
 export default router;

@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/contexts/I18nContext';
 import { UserRole, User } from '@/types/auth';
 import toast from 'react-hot-toast';
+import EditLeavePeriodModal from './EditLeavePeriodModal';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -45,6 +46,8 @@ export default function LeaveList() {
   const [loadingLeaveIds, setLoadingLeaveIds] = useState<Set<string>>(new Set());
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [editPeriodModalOpen, setEditPeriodModalOpen] = useState(false);
+  const [selectedLeaveForEdit, setSelectedLeaveForEdit] = useState<Leave | null>(null);
   const [employees, setEmployees] = useState<User[]>([]);
   const [advancedFilters, setAdvancedFilters] = useState<LeaveFilters>({
     employee: '',
@@ -249,6 +252,17 @@ export default function LeaveList() {
       });
     }
   };
+
+  const handleEditPeriod = (leave: Leave) => {
+    setSelectedLeaveForEdit(leave);
+    setEditPeriodModalOpen(true);
+  };
+
+  const handleEditPeriodSuccess = () => {
+    fetchLeaves(); // Refresh the list
+    toast.success(t('leave.periodUpdatedSuccessfully'));
+  };
+
   const handleCancel = async (leaveId: string) => {
     if (!token) {
       toast.error(t('messages.authenticationRequired'));
@@ -659,6 +673,19 @@ export default function LeaveList() {
                           </button>
                         </>
                       )}
+                      {/* Edit Period button for admins and managers */}
+                      {(user?.role === UserRole.MANAGER || user?.role === UserRole.ADMIN) && 
+                       (leave.status === LeaveStatus.PENDING || leave.status === LeaveStatus.APPROVED) && (
+                        <button
+                          onClick={() => handleEditPeriod(leave)}
+                          className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-150 px-2 py-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 flex items-center gap-1"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                          {t('leave.editPeriod')}
+                        </button>
+                      )}
                       {user?.role === UserRole.EMPLOYEE && 
                        leave.status === LeaveStatus.PENDING && (
                         <button
@@ -701,5 +728,19 @@ export default function LeaveList() {
           </table>
         </div>
       </div>
-    </div>  );
+
+      {/* Edit Period Modal */}
+      {selectedLeaveForEdit && (
+        <EditLeavePeriodModal
+          leave={selectedLeaveForEdit}
+          isOpen={editPeriodModalOpen}
+          onClose={() => {
+            setEditPeriodModalOpen(false);
+            setSelectedLeaveForEdit(null);
+          }}
+          onSuccess={handleEditPeriodSuccess}
+        />
+      )}
+    </div>
+  );
 }

@@ -105,8 +105,11 @@
     "cancel": "İptal",
     "delete": "Sil",
     "edit": "Düzenle",
-    "loading": "Yükleniyor...",    "search": "Ara",
-    "filter": "Filtrele",    "clearFilters": "Filtreleri Temizle",
+    "update": "Güncelle",
+    "loading": "Yükleniyor...",
+    "search": "Ara",
+    "filter": "Filtrele",
+    "clearFilters": "Filtreleri Temizle",
     "filterByDepartment": "Departmana Göre Filtrele",
     "filterByRole": "Rolüne Göre Filtrele",
     "filterByStatus": "Duruma Göre Filtrele",
@@ -399,7 +402,14 @@
       "duration": "Süre:",
       "dates": "Tarihler:",
       "reason": "Sebep:"
-    }
+    },
+    "editPeriod": "Süreyi Düzenle",
+    "updatePeriod": "Süreyi Güncelle",
+    "originalDays": "Orijinal Günler",
+    "newDays": "Yeni Günler",
+    "periodUpdatedSuccessfully": "İzin süresi başarıyla güncellendi",
+    "startDateBeforeEndDate": "Başlangıç tarihi bitiş tarihinden önce olmalı",
+    "endDateAfterStartDate": "Bitiş tarihi başlangıç tarihinden sonra olmalı"
   },
   "attendance": {
     "attendanceTracker": "Devam Takipçisi",
@@ -648,7 +658,8 @@
     "updateEmployee": "Çalışanı Güncelle",
     "emailPlaceholder": "email@example.com",
     "lastNamePlaceholder": "Soyad",
-    "firstNamePlaceholder": "Ad"
+    "firstNamePlaceholder": "Ad",
+    "updating":"Güncellıyor"
   },
   "reports": {
     "demographicsTitle": "Çalışan Demografik Panosu",
