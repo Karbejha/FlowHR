@@ -190,7 +190,9 @@
     "phoneNumber": "Telefon Numarası",
     "address": "Adres",    "dateOfBirth": "Doğum Tarihi",
     "dateOfBirthNote": "Lütfen çalışanın doğum tarihini girin",
-    "hireDate": "İşe Alım Tarihi",    "birthdays": "Doğum Günleri",
+    "hireDate": "İşe Alım Tarihi",
+    "hireDateNote": "Çalışanın şirkete katıldığı tarih",
+    "birthdays": "Doğum Günleri",
     "noBirthdaysThisMonth": "Bu ay doğum günü yok",
     "noBirthdaysInMonth": "{{month}} ayında doğum günü yok",
     "turningAge": "{{age}} yaşına giriyor",
@@ -409,7 +411,9 @@
     "newDays": "Yeni Günler",
     "periodUpdatedSuccessfully": "İzin süresi başarıyla güncellendi",
     "startDateBeforeEndDate": "Başlangıç tarihi bitiş tarihinden önce olmalı",
-    "endDateAfterStartDate": "Bitiş tarihi başlangıç tarihinden sonra olmalı"
+    "endDateAfterStartDate": "Bitiş tarihi başlangıç tarihinden sonra olmalı",
+    "tenureRequirement": "İstihdam Süresi Gereksinimi Karşılanmadı",
+    "tenureRequirementMessage": "İzin talep edebilmek için şirkette en az 3 ay çalışmış olmanız gerekmektedir. Sorularınız varsa lütfen İK ile iletişime geçin."
   },
   "attendance": {
     "attendanceTracker": "Devam Takipçisi",

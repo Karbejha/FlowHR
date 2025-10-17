@@ -30,8 +30,10 @@ export default function LeaveRequestForm({ onSubmitSuccess }: { onSubmitSuccess?
     requestedDays: number;
     availableDays: number;
   } | null>(null);
+  const [showTenureModal, setShowTenureModal] = useState(false);
+  const [userHireDate, setUserHireDate] = useState<Date | null>(null);
   
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const { register, handleSubmit, reset, formState: { errors } } = useForm<LeaveRequest>();
 
   // Fetch leave balance
@@ -50,7 +52,11 @@ export default function LeaveRequestForm({ onSubmitSuccess }: { onSubmitSuccess?
 
   useEffect(() => {
     fetchLeaveBalance();
-  }, [fetchLeaveBalance]);
+    // Set user hire date from auth context
+    if (user?.hireDate) {
+      setUserHireDate(new Date(user.hireDate));
+    }
+  }, [fetchLeaveBalance, user]);
 
   // Calculate requested days
   const calculateDays = (startDate: string, endDate: string): number => {
@@ -59,6 +65,21 @@ export default function LeaveRequestForm({ onSubmitSuccess }: { onSubmitSuccess?
     const end = new Date(endDate);
     const diffTime = Math.abs(end.getTime() - start.getTime());
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+  };
+
+  // Check if user has been employed for at least 3 months
+  const checkEmploymentTenure = (): boolean => {
+    if (!userHireDate) return true; // If no hire date, allow request (backward compatibility)
+    
+    const today = new Date();
+    const threeMonthsAgo = new Date(today);
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+    
+    if (userHireDate > threeMonthsAgo) {
+      setShowTenureModal(true);
+      return false;
+    }
+    return true;
   };
 
   // Check leave balance
@@ -85,6 +106,11 @@ export default function LeaveRequestForm({ onSubmitSuccess }: { onSubmitSuccess?
       return;
     }
 
+    // Check employment tenure (3 months minimum)
+    if (!checkEmploymentTenure()) {
+      return; // Modal will be shown by checkEmploymentTenure
+    }
+
     // Check leave balance before submitting
     if (!checkLeaveBalance(data.leaveType, data.startDate, data.endDate)) {
       return; // Modal will be shown by checkLeaveBalance
@@ -104,7 +130,13 @@ export default function LeaveRequestForm({ onSubmitSuccess }: { onSubmitSuccess?
     } catch (err: unknown) {      if (err && typeof err === 'object' && 'response' in err) {
         const axiosErr = err as { response?: { data?: { error?: string }; status?: number } };
         const errorMessage = axiosErr.response?.data?.error || t('messages.failedToSubmitLeaveRequest');
-        toast.error(errorMessage);
+        
+        // Check if error is about tenure requirement
+        if (errorMessage.includes('3 months') || errorMessage.includes('at least 3 months')) {
+          setShowTenureModal(true);
+        } else {
+          toast.error(errorMessage);
+        }
       } else {
         toast.error(t('messages.failedToSubmitLeaveRequest'));
       }
@@ -165,11 +197,6 @@ export default function LeaveRequestForm({ onSubmitSuccess }: { onSubmitSuccess?
                 {...register('startDate', { required: t('leave.startDateRequired') })}
                 className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-3 px-4 text-gray-900 dark:text-gray-100 shadow-sm focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all duration-200"
               />
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <svg className="w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
             </div>
             {errors.startDate && (
               <p className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center">
@@ -190,11 +217,6 @@ export default function LeaveRequestForm({ onSubmitSuccess }: { onSubmitSuccess?
                 {...register('endDate', { required: t('leave.endDateRequired') })}
                 className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-3 px-4 text-gray-900 dark:text-gray-100 shadow-sm focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all duration-200"
               />
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <svg className="w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
             </div>
             {errors.endDate && (
               <p className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center">
@@ -304,6 +326,52 @@ export default function LeaveRequestForm({ onSubmitSuccess }: { onSubmitSuccess?
                   type="button" 
                   className="py-2 px-4 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-900"
                   onClick={() => setShowInsufficientBalanceModal(false)}
+                >
+                  {t('common.understand')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Employment Tenure Modal */}
+      {showTenureModal && (
+        <div 
+          className="fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black bg-opacity-50"
+          onClick={() => setShowTenureModal(false)}
+        >
+          <div 
+            className="relative p-4 w-full max-w-md h-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal content */}
+            <div className="relative p-4 text-center bg-white rounded-lg shadow dark:bg-gray-800 sm:p-5">
+              <button 
+                type="button" 
+                className="text-gray-400 absolute top-2.5 right-2.5 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                onClick={() => setShowTenureModal(false)}
+              >
+                <svg aria-hidden="true" className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"></path>
+                </svg>
+                <span className="sr-only">Close modal</span>
+              </button>
+              
+              <svg className="text-amber-400 dark:text-amber-500 w-11 h-11 mb-3.5 mx-auto" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd"></path>
+              </svg>
+                <p className="mb-4 text-gray-500 dark:text-gray-300">
+                <span className="font-semibold text-amber-600 dark:text-amber-400">{t('leave.tenureRequirement')}</span>
+                <br />
+                {t('leave.tenureRequirementMessage')}
+              </p>
+              
+              <div className="flex justify-center items-center">
+                <button 
+                  type="button" 
+                  className="py-2 px-4 text-sm font-medium text-white bg-amber-600 rounded-lg hover:bg-amber-700 focus:ring-4 focus:outline-none focus:ring-amber-300 dark:bg-amber-500 dark:hover:bg-amber-600 dark:focus:ring-amber-900"
+                  onClick={() => setShowTenureModal(false)}
                 >
                   {t('common.understand')}
                 </button>
