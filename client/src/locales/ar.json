@@ -201,7 +201,9 @@
     "phoneNumber": "رقم الهاتف",
     "address": "العنوان",    "dateOfBirth": "تاريخ الميلاد",
     "dateOfBirthNote": "الرجاء إدخال تاريخ ميلاد الموظف",
-    "hireDate": "تاريخ التوظيف",    "birthdays": "أعياد الميلاد",
+    "hireDate": "تاريخ التوظيف",
+    "hireDateNote": "التاريخ الذي انضم فيه الموظف إلى الشركة",
+    "birthdays": "أعياد الميلاد",
     "noBirthdaysThisMonth": "لا توجد أعياد ميلاد هذا الشهر",
     "noBirthdaysInMonth": "لا توجد أعياد ميلاد في {{month}}",
     "turningAge": "يبلغ {{age}} عام",
@@ -413,7 +415,9 @@
       "duration": "المدة:",
       "dates": "التواريخ:",
       "reason": "السبب:"
-    }
+    },
+    "tenureRequirement": "متطلبات مدة الخدمة غير مستوفاة",
+    "tenureRequirementMessage": "يجب أن تكون موظفًا في الشركة لمدة 3 أشهر على الأقل قبل أن تتمكن من طلب إجازة. يرجى الاتصال بالموارد البشرية إذا كانت لديك أي أسئلة."
   },
   "attendance": {
     "attendanceTracker": "متتبع الحضور",

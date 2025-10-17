@@ -15,6 +15,19 @@ export const submitLeaveRequest = async (req: Request, res: Response): Promise<v
   try {
     const { leaveType, startDate, endDate, reason } = req.body;
     
+    // Check if employee has been with company for at least 3 months
+    const currentUser = await User.findById(req.user._id);
+    if (currentUser?.hireDate) {
+      const today = new Date();
+      const threeMonthsAgo = new Date(today);
+      threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+      
+      if (new Date(currentUser.hireDate) > threeMonthsAgo) {
+        res.status(400).json({ error: 'Employees must be with the company for at least 3 months before requesting leave' });
+        return;
+      }
+    }
+    
     // Convert leaveType to enum value
     const leave = new Leave({
       employee: req.user._id,
