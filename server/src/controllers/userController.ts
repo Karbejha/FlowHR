@@ -139,11 +139,11 @@ export const updateEmployeeStatus = async (req: Request, res: Response): Promise
 
 export const createUser = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { email, password, firstName, lastName, role, department, jobTitle, managerId, dateOfBirth } = req.body;
+    const { email, password, firstName, lastName, role, department, jobTitle, managerId, dateOfBirth, hireDate } = req.body;
 
     // Validate required fields
-    if (!email || !password || !firstName || !lastName || !role || !department || !jobTitle || !dateOfBirth) {
-      res.status(400).json({ error: 'Required fields: email, password, firstName, lastName, role, department, jobTitle, dateOfBirth' });
+    if (!email || !password || !firstName || !lastName || !role || !department || !jobTitle || !dateOfBirth || !hireDate) {
+      res.status(400).json({ error: 'Required fields: email, password, firstName, lastName, role, department, jobTitle, dateOfBirth, hireDate' });
       return;
     }
 
@@ -181,7 +181,8 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
       department,
       jobTitle,
       managerId: effectiveManagerId,
-      dateOfBirth: new Date(dateOfBirth)
+      dateOfBirth: new Date(dateOfBirth),
+      hireDate: new Date(hireDate)
     });
 
     await user.save();
@@ -288,7 +289,7 @@ export const getManagers = async (req: Request, res: Response): Promise<void> =>
 export const updateUser = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const { email, firstName, lastName, role, department, jobTitle, managerId, dateOfBirth } = req.body;
+    const { email, firstName, lastName, role, department, jobTitle, managerId, dateOfBirth, hireDate } = req.body;
 
     // Only admins can update other users
     if (req.user.role !== UserRole.ADMIN) {
@@ -341,6 +342,7 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
         jobTitle: jobTitle || user.jobTitle,
         managerId: role === UserRole.EMPLOYEE ? managerId : undefined,
         dateOfBirth: dateOfBirth || user.dateOfBirth,
+        hireDate: hireDate || user.hireDate,
       },
       { new: true }
     ).select('-password');

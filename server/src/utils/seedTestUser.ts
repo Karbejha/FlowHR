@@ -22,6 +22,12 @@ export const seedTestUser = async () => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash('password123', salt);
     
+    // Find an admin or manager to assign as manager
+    const manager = await User.findOne({ 
+      role: { $in: [UserRole.ADMIN, UserRole.MANAGER] },
+      isActive: true 
+    });
+    
     // Create test user
     const testUser = new User({
       email: 'test.june@example.com',
@@ -31,6 +37,7 @@ export const seedTestUser = async () => {
       role: UserRole.EMPLOYEE,
       department: 'Testing',
       jobTitle: 'Test Engineer',
+      managerId: manager?._id, // Assign to first available manager/admin
       dateOfBirth: birthdayDate,
       hireDate: new Date(),
       isActive: true,

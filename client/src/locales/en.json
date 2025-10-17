@@ -207,6 +207,7 @@
     "dateOfBirth": "Date of Birth",
     "dateOfBirthNote": "Please enter the employee's date of birth",
     "hireDate": "Hire Date",
+    "hireDateNote": "The date when the employee joined the company",
     "birthdays": "Birthdays",
     "noBirthdaysThisMonth": "No birthdays this month",
     "noBirthdaysInMonth": "No birthdays in {{month}}",
@@ -429,7 +430,9 @@
     "newDays": "New Days",
     "periodUpdatedSuccessfully": "Leave period updated successfully",
     "startDateBeforeEndDate": "Start date must be before end date",
-    "endDateAfterStartDate": "End date must be after start date"
+    "endDateAfterStartDate": "End date must be after start date",
+    "tenureRequirement": "Employment Tenure Requirement Not Met",
+    "tenureRequirementMessage": "You must be employed with the company for at least 3 months before you can request leave. Please contact HR if you have any questions."
   },
   "attendance": {
     "attendanceTracker": "Attendance Tracker",
