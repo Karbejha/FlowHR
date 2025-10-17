@@ -68,7 +68,13 @@ export const sanitizeRequest = (req: Request, res: Response, next: NextFunction)
     
     // For user updates, ensure password isn't accidentally included
     if (req.path.includes('/users/') && req.method === 'PUT') {
-      delete req.body.password; // Password should be updated through dedicated endpoint
+      const isPasswordChangeEndpoint =
+        req.path.includes('/users/change-password') ||
+        req.path.includes('/users/admin-change-password');
+      // Only strip password on non-password endpoints
+      if (!isPasswordChangeEndpoint) {
+        delete req.body.password; // Password should be updated through dedicated endpoint
+      }
     }
   }
   

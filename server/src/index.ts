@@ -31,7 +31,9 @@ const corsOptions = {
   origin: [
     'http://localhost:3000', // Local development
     'https://flow-hr-seven.vercel.app', // Production client
-    'https://flow-hr-seven.vercel.app/' // Production client with trailing slash
+    'https://flow-hr-seven.vercel.app/',
+    'https://login.karbejha.site/',
+    'https://login.karbejha.site'
   ],
   credentials: true,
   optionsSuccessStatus: 200
