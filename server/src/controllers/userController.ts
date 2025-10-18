@@ -139,7 +139,7 @@ export const updateEmployeeStatus = async (req: Request, res: Response): Promise
 
 export const createUser = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { email, password, firstName, lastName, role, department, jobTitle, managerId, dateOfBirth, hireDate } = req.body;
+    const { email, password, firstName, lastName, role, department, jobTitle, managerId, dateOfBirth, hireDate, salaryInfo } = req.body;
 
     // Validate required fields
     if (!email || !password || !firstName || !lastName || !role || !department || !jobTitle || !dateOfBirth || !hireDate) {
@@ -182,7 +182,8 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
       jobTitle,
       managerId: effectiveManagerId,
       dateOfBirth: new Date(dateOfBirth),
-      hireDate: new Date(hireDate)
+      hireDate: new Date(hireDate),
+      ...(salaryInfo && { salaryInfo })
     });
 
     await user.save();
@@ -289,7 +290,7 @@ export const getManagers = async (req: Request, res: Response): Promise<void> =>
 export const updateUser = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const { email, firstName, lastName, role, department, jobTitle, managerId, dateOfBirth, hireDate } = req.body;
+    const { email, firstName, lastName, role, department, jobTitle, managerId, dateOfBirth, hireDate, salaryInfo } = req.body;
 
     // Only admins can update other users
     if (req.user.role !== UserRole.ADMIN) {
@@ -343,6 +344,7 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
         managerId: role === UserRole.EMPLOYEE ? managerId : undefined,
         dateOfBirth: dateOfBirth || user.dateOfBirth,
         hireDate: hireDate || user.hireDate,
+        ...(salaryInfo && { salaryInfo })
       },
       { new: true }
     ).select('-password');

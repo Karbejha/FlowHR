@@ -92,6 +92,16 @@ export default function Navigation() {
                     >
                       {t('navigation.attendance')}
                     </Link>
+                    <Link
+                      href="/payroll/my-payslips"
+                      className={`${
+                        pathname.startsWith('/payroll')
+                          ? 'bg-gray-900 dark:bg-gray-800 text-white'
+                          : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                      } px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200`}
+                    >
+                      {t('payroll.myPayslips')}
+                    </Link>
 
                     <Link
                       href="/help-center"
@@ -136,6 +146,16 @@ export default function Navigation() {
                       } px-3 py-2 rounded-md text-sm font-bold transition-colors duration-200`}
                     >
                       {t('navigation.teamAttendance')}
+                    </Link>
+                    <Link
+                      href="/payroll"
+                      className={`${
+                        pathname.startsWith('/payroll')
+                          ? 'bg-gray-900 dark:bg-gray-800 text-white'
+                          : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                      } px-3 py-2 rounded-md text-sm font-bold transition-colors duration-200`}
+                    >
+                      {t('payroll.title')}
                     </Link>
                     {user?.role === UserRole.ADMIN && (
                       <Link
@@ -194,6 +214,7 @@ export default function Navigation() {
                 <NavigationLink href="/employees">{t('navigation.team')}</NavigationLink>
                 <NavigationLink href="/leave">{t('navigation.leaveManagement')}</NavigationLink>
                 <NavigationLink href="/attendance">{t('navigation.attendance')}</NavigationLink>
+                <NavigationLink href="/payroll/my-payslips">{t('payroll.myPayslips')}</NavigationLink>
               </>
             )}
             
@@ -202,6 +223,7 @@ export default function Navigation() {
                 <NavigationLink href="/employees">{t('navigation.employees')}</NavigationLink>
                 <NavigationLink href="/leave">{t('navigation.leaveRequests')}</NavigationLink>
                 <NavigationLink href="/attendance">{t('navigation.teamAttendance')}</NavigationLink>
+                <NavigationLink href="/payroll">{t('payroll.title')}</NavigationLink>
                 {user?.role === UserRole.ADMIN && (
                   <NavigationLink href="/reports">{t('navigation.reports')}</NavigationLink>
                 )}

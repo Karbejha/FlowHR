@@ -9,6 +9,7 @@ import attendanceRoutes from './routes/attendance';
 import userRoutes from './routes/users';
 import notificationRoutes from './routes/notifications';
 import reportsRoutes from './routes/reports';
+import payrollRoutes from './routes/payroll';
 import logger, { setupLogCleanup, logInfo, logError, logUserAction, testMongoDBLogging } from './utils/logger';
 import { morganMiddleware, morganErrorMiddleware } from './middleware/morganLogger';
 import { requestIdMiddleware, responseTimeMiddleware } from './middleware/requestTracking';
@@ -69,6 +70,7 @@ app.use('/api/attendance', userActivityTracker, attendanceRoutes);
 app.use('/api/users', userActivityTracker, userRoutes);
 app.use('/api/notifications', userActivityTracker, notificationRoutes);
 app.use('/api/reports', userActivityTracker, reportsRoutes);
+app.use('/api/payroll', userActivityTracker, payrollRoutes);
 
 // Error handling middleware (must be after routes)
 app.use(sanitizeErrorResponse);

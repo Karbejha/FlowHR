@@ -19,6 +19,20 @@ export interface User {
   createdAt?: Date;
   updatedAt?: Date;
   dateOfBirth: Date;
+  salaryInfo?: {
+    basicSalary: number;
+    allowances: {
+      transportation: number;
+      housing: number;
+      food: number;
+      mobile: number;
+      other: number;
+    };
+    taxRate: number;
+    socialInsuranceRate: number;
+    healthInsuranceRate: number;
+    overtimeRate: number;
+  };
 }
 
 export interface AuthState {
