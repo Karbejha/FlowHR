@@ -1,4 +1,9 @@
-{  "navigation": {
+{
+  "draft": "Taslak",
+  "pending": "Beklemede",
+  "approved": "Onaylandı",
+  "paid": "Ödendi",
+  "navigation": {
     "hrSystem": "İK Sistemi",
     "leaveManagement": "İzin Yönetimi",
     "attendance": "Devam",

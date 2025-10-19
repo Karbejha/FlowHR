@@ -1,4 +1,8 @@
 {
+  "draft": "Draft",
+  "pending": "Pending",
+  "approved": "Approved",
+  "paid": "Paid",
   "navigation": {
     "hrSystem": "HR System",
     "leaveManagement": "Leave Management",

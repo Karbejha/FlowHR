@@ -1,4 +1,9 @@
-{  "navigation": {
+{
+  "draft": "مسودة",
+  "pending": "قيد الانتظار",
+  "approved": "معتمد",
+  "paid": "مدفوع",
+  "navigation": {
     "hrSystem": "نظام الموارد البشرية",
     "leaveManagement": "إدارة الإجازات",
     "attendance": "الحضور",

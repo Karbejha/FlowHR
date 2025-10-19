@@ -128,3 +128,26 @@
 .language-code {
   @apply text-xs text-gray-500 dark:text-gray-400 capitalize mt-1;
 }
+
+/* Print tweaks */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 10mm;
+  }
+
+  html, body {
+    width: 210mm;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Optional helper for components that want explicit scaling */
+  .print-scale-90 {
+    transform: scale(0.9);
+    transform-origin: top left;
+  }
+}

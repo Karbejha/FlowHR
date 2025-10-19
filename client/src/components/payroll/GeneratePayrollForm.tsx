@@ -147,6 +147,7 @@ export default function GeneratePayrollForm({ onSuccess, onCancel }: GeneratePay
         </label>
         <select
           value={formData.employeeId}
+          title='id'
           onChange={(e) => setFormData({ ...formData, employeeId: e.target.value })}
           required
           className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
@@ -168,6 +169,7 @@ export default function GeneratePayrollForm({ onSuccess, onCancel }: GeneratePay
           </label>
           <select
             value={formData.month}
+            title='month'
             onChange={(e) => setFormData({ ...formData, month: parseInt(e.target.value) })}
             required
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
@@ -187,6 +189,7 @@ export default function GeneratePayrollForm({ onSuccess, onCancel }: GeneratePay
           <input
             type="number"
             value={formData.year}
+            title='year'
             onChange={(e) => setFormData({ ...formData, year: parseInt(e.target.value) })}
             required
             min="2020"
@@ -209,6 +212,7 @@ export default function GeneratePayrollForm({ onSuccess, onCancel }: GeneratePay
             </label>
             <input
               type="number"
+              title='performance'
               value={formData.bonuses.performance}
               onChange={(e) => handleBonusChange('performance', e.target.value)}
               min="0"
@@ -223,6 +227,7 @@ export default function GeneratePayrollForm({ onSuccess, onCancel }: GeneratePay
             </label>
             <input
               type="number"
+              title='project'
               value={formData.bonuses.project}
               onChange={(e) => handleBonusChange('project', e.target.value)}
               min="0"
@@ -237,6 +242,7 @@ export default function GeneratePayrollForm({ onSuccess, onCancel }: GeneratePay
             </label>
             <input
               type="number"
+              title='other'
               value={formData.bonuses.other}
               onChange={(e) => handleBonusChange('other', e.target.value)}
               min="0"
