@@ -461,6 +461,46 @@ export const sendAdminLeaveRequestNotification = async (
   }
 };
 
+// Generic email sending function for reports and other purposes
+export const sendEmail = async (
+  to: string,
+  subject: string,
+  html: string,
+  attachments?: Array<{
+    filename: string;
+    content?: Buffer;
+    path?: string;
+  }>
+): Promise<void> => {
+  if (!transporter) {
+    logWarn('Email transporter not configured. Skipping email notification.', {
+      operation: 'sendEmail',
+      to,
+      subject
+    });
+    return;
+  }
+
+  try {
+    await transporter.sendMail({
+      from: config.email.from,
+      to,
+      subject,
+      html,
+      attachments
+    });
+
+    logInfo('Email sent successfully', { to, subject });
+  } catch (error) {
+    logError('Error sending email', {
+      to,
+      subject,
+      error: error instanceof Error ? error.message : error
+    });
+    throw error;
+  }
+};
+
 // Utility function to format date
 export const formatDate = (date: Date): string => {
   return date.toLocaleDateString('en-US', {

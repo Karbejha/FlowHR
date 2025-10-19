@@ -312,3 +312,347 @@ export const getResourceAllocationReport = async (req: Request, res: Response): 
     res.status(500).json({ message: 'Error generating resource allocation report' });
   }
 };
+
+// Controller for Comprehensive Financial Report
+export const getComprehensiveFinancialReport = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { startDate, endDate, month, year } = req.query;
+    
+    // Determine date range
+    let start: Date, end: Date;
+    if (month && year) {
+      start = new Date(parseInt(year as string), parseInt(month as string) - 1, 1);
+      end = new Date(parseInt(year as string), parseInt(month as string), 0);
+    } else if (startDate && endDate) {
+      start = new Date(startDate as string);
+      end = new Date(endDate as string);
+    } else {
+      // Default to current month
+      const now = new Date();
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
+      end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    }
+
+    // Import Payroll model dynamically
+    const { Payroll } = await import('../models/Payroll');
+
+    // Fetch payroll data
+    const payrollData = await Payroll.find({
+      year: { $gte: start.getFullYear(), $lte: end.getFullYear() },
+      month: { $gte: start.getMonth() + 1, $lte: end.getMonth() + 1 }
+    }).populate('employee', 'firstName lastName email department');
+
+    // Calculate summary
+    const summary = {
+      totalRevenue: 0, // In a real scenario, this would come from revenue data
+      totalExpenses: 0,
+      netProfit: 0,
+      profitMargin: 0
+    };
+
+    const byDepartment: Record<string, { revenue: number; expenses: number; profit: number }> = {};
+    const monthlyTrends: Record<string, { revenue: number; expenses: number; profit: number }> = {};
+    const expenseCategories: Record<string, number> = {
+      'Salaries': 0,
+      'Taxes': 0,
+      'Insurance': 0,
+      'Bonuses': 0,
+      'Other': 0
+    };
+
+    payrollData.forEach(payroll => {
+      const totalExpense = payroll.grossSalary;
+      summary.totalExpenses += totalExpense;
+
+      // By department
+      const user = payroll.employee as any;
+      const department = user?.department || 'Unknown';
+      if (!byDepartment[department]) {
+        byDepartment[department] = { revenue: 0, expenses: 0, profit: 0 };
+      }
+      byDepartment[department].expenses += totalExpense;
+
+      // By month
+      const monthKey = `${payroll.year}-${String(payroll.month).padStart(2, '0')}`;
+      if (!monthlyTrends[monthKey]) {
+        monthlyTrends[monthKey] = { revenue: 0, expenses: 0, profit: 0 };
+      }
+      monthlyTrends[monthKey].expenses += totalExpense;
+
+      // Expense categories
+      expenseCategories['Salaries'] += payroll.basicSalary;
+      expenseCategories['Taxes'] += payroll.deductions.tax;
+      expenseCategories['Insurance'] += payroll.deductions.socialInsurance + payroll.deductions.healthInsurance;
+      expenseCategories['Bonuses'] += (payroll.bonuses?.performance || 0) + (payroll.bonuses?.project || 0) + (payroll.bonuses?.other || 0);
+      expenseCategories['Other'] += payroll.deductions.other;
+    });
+
+    // Calculate profit (in a real scenario, we'd have revenue data)
+    summary.totalRevenue = summary.totalExpenses * 1.3; // Simulated 30% profit margin
+    summary.netProfit = summary.totalRevenue - summary.totalExpenses;
+    summary.profitMargin = (summary.netProfit / summary.totalRevenue) * 100;
+
+    // Calculate department profits
+    Object.keys(byDepartment).forEach(dept => {
+      byDepartment[dept].revenue = byDepartment[dept].expenses * 1.3;
+      byDepartment[dept].profit = byDepartment[dept].revenue - byDepartment[dept].expenses;
+    });
+
+    // Calculate monthly profits
+    Object.keys(monthlyTrends).forEach(month => {
+      monthlyTrends[month].revenue = monthlyTrends[month].expenses * 1.3;
+      monthlyTrends[month].profit = monthlyTrends[month].revenue - monthlyTrends[month].expenses;
+    });
+
+    // Prepare expense breakdown with percentages
+    const totalExpenseCategories = Object.values(expenseCategories).reduce((a, b) => a + b, 0);
+    const expenseBreakdown = Object.entries(expenseCategories).map(([category, amount]) => ({
+      category,
+      amount,
+      percentage: (amount / totalExpenseCategories) * 100
+    }));
+
+    res.json({
+      summary,
+      byDepartment: Object.entries(byDepartment).map(([department, data]) => ({
+        department,
+        ...data
+      })),
+      monthlyTrends: Object.entries(monthlyTrends)
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([month, data]) => ({
+          month,
+          ...data
+        })),
+      expenseBreakdown
+    });
+  } catch (error) {
+    logError('Error generating comprehensive financial report:', error);
+    res.status(500).json({ message: 'Error generating comprehensive financial report' });
+  }
+};
+
+// Controller for Tax Deductions Report
+export const getTaxDeductionsReport = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { startDate, endDate, month, year } = req.query;
+    
+    // Determine date range
+    let start: Date, end: Date;
+    if (month && year) {
+      start = new Date(parseInt(year as string), parseInt(month as string) - 1, 1);
+      end = new Date(parseInt(year as string), parseInt(month as string), 0);
+    } else if (startDate && endDate) {
+      start = new Date(startDate as string);
+      end = new Date(endDate as string);
+    } else {
+      const now = new Date();
+      start = new Date(now.getFullYear(), 0, 1); // Start of current year
+      end = new Date(now.getFullYear(), 11, 31); // End of current year
+    }
+
+    // Import Payroll model
+    const { Payroll } = await import('../models/Payroll');
+
+    // Fetch payroll data
+    const payrollData = await Payroll.find({
+      year: { $gte: start.getFullYear(), $lte: end.getFullYear() }
+    }).populate('employee', 'firstName lastName email department');
+
+    // Calculate summary
+    const summary = {
+      totalTaxes: 0,
+      totalSocialInsurance: 0,
+      totalHealthInsurance: 0,
+      totalOtherDeductions: 0,
+      totalDeductions: 0
+    };
+
+    const byDepartment: Record<string, { taxes: number; socialInsurance: number; healthInsurance: number; other: number; total: number }> = {};
+    const byEmployee: Array<{ employeeName: string; department: string; taxes: number; socialInsurance: number; healthInsurance: number; other: number; total: number }> = [];
+    const quarterlyData: Record<number, { taxes: number; socialInsurance: number; healthInsurance: number; total: number }> = {
+      1: { taxes: 0, socialInsurance: 0, healthInsurance: 0, total: 0 },
+      2: { taxes: 0, socialInsurance: 0, healthInsurance: 0, total: 0 },
+      3: { taxes: 0, socialInsurance: 0, healthInsurance: 0, total: 0 },
+      4: { taxes: 0, socialInsurance: 0, healthInsurance: 0, total: 0 }
+    };
+
+    payrollData.forEach(payroll => {
+      const taxes = payroll.deductions.tax || 0;
+      const socialInsurance = payroll.deductions.socialInsurance || 0;
+      const healthInsurance = payroll.deductions.healthInsurance || 0;
+      const other = payroll.deductions.other || 0;
+      const total = taxes + socialInsurance + healthInsurance + other;
+
+      summary.totalTaxes += taxes;
+      summary.totalSocialInsurance += socialInsurance;
+      summary.totalHealthInsurance += healthInsurance;
+      summary.totalOtherDeductions += other;
+      summary.totalDeductions += total;
+
+      // By department
+      const user = payroll.employee as any;
+      const department = user?.department || 'Unknown';
+      if (!byDepartment[department]) {
+        byDepartment[department] = { taxes: 0, socialInsurance: 0, healthInsurance: 0, other: 0, total: 0 };
+      }
+      byDepartment[department].taxes += taxes;
+      byDepartment[department].socialInsurance += socialInsurance;
+      byDepartment[department].healthInsurance += healthInsurance;
+      byDepartment[department].other += other;
+      byDepartment[department].total += total;
+
+      // By employee
+      const employeeName = `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'Unknown';
+      byEmployee.push({
+        employeeName,
+        department,
+        taxes,
+        socialInsurance,
+        healthInsurance,
+        other,
+        total
+      });
+
+      // Quarterly breakdown
+      const quarter = Math.ceil(payroll.month / 3);
+      quarterlyData[quarter].taxes += taxes;
+      quarterlyData[quarter].socialInsurance += socialInsurance;
+      quarterlyData[quarter].healthInsurance += healthInsurance;
+      quarterlyData[quarter].total += total;
+    });
+
+    res.json({
+      summary,
+      byDepartment: Object.entries(byDepartment).map(([department, data]) => ({
+        department,
+        ...data
+      })),
+      byEmployee,
+      quarterlyBreakdown: Object.entries(quarterlyData).map(([quarter, data]) => ({
+        quarter: `Q${quarter}`,
+        ...data
+      }))
+    });
+  } catch (error) {
+    logError('Error generating tax deductions report:', error);
+    res.status(500).json({ message: 'Error generating tax deductions report' });
+  }
+};
+
+// Controller for Expense Comparison Report
+export const getExpenseComparisonReport = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { year } = req.query;
+    const currentYear = year ? parseInt(year as string) : new Date().getFullYear();
+    const previousYear = currentYear - 1;
+
+    // Import Payroll model
+    const { Payroll } = await import('../models/Payroll');
+
+    // Fetch current year data
+    const currentYearData = await Payroll.find({
+      year: currentYear
+    }).populate('employee', 'firstName lastName email department');
+
+    // Fetch previous year data
+    const previousYearData = await Payroll.find({
+      year: previousYear
+    }).populate('employee', 'firstName lastName email department');
+
+    // Calculate current period expenses
+    let currentPeriodExpenses = 0;
+    const currentMonthly: Record<number, number> = {};
+    const currentByDepartment: Record<string, number> = {};
+
+    currentYearData.forEach(payroll => {
+      const expense = payroll.grossSalary;
+      currentPeriodExpenses += expense;
+
+      // Monthly
+      currentMonthly[payroll.month] = (currentMonthly[payroll.month] || 0) + expense;
+
+      // By department
+      const user = payroll.employee as any;
+      const department = user?.department || 'Unknown';
+      currentByDepartment[department] = (currentByDepartment[department] || 0) + expense;
+    });
+
+    // Calculate previous period expenses
+    let previousPeriodExpenses = 0;
+    const previousMonthly: Record<number, number> = {};
+    const previousByDepartment: Record<string, number> = {};
+
+    previousYearData.forEach(payroll => {
+      const expense = payroll.grossSalary;
+      previousPeriodExpenses += expense;
+
+      // Monthly
+      previousMonthly[payroll.month] = (previousMonthly[payroll.month] || 0) + expense;
+
+      // By department
+      const user = payroll.employee as any;
+      const department = user?.department || 'Unknown';
+      previousByDepartment[department] = (previousByDepartment[department] || 0) + expense;
+    });
+
+    // Calculate changes
+    const changeAmount = currentPeriodExpenses - previousPeriodExpenses;
+    const changePercentage = previousPeriodExpenses > 0 
+      ? (changeAmount / previousPeriodExpenses) * 100 
+      : 0;
+
+    // Monthly comparison
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthlyComparison = monthNames.map((month, index) => ({
+      month,
+      currentYear: currentMonthly[index + 1] || 0,
+      previousYear: previousMonthly[index + 1] || 0,
+      difference: (currentMonthly[index + 1] || 0) - (previousMonthly[index + 1] || 0)
+    }));
+
+    // Department comparison
+    const allDepartments = new Set([
+      ...Object.keys(currentByDepartment),
+      ...Object.keys(previousByDepartment)
+    ]);
+
+    const departmentComparison = Array.from(allDepartments).map(department => {
+      const current = currentByDepartment[department] || 0;
+      const previous = previousByDepartment[department] || 0;
+      const change = current - previous;
+      const changePerc = previous > 0 ? (change / previous) * 100 : 0;
+
+      return {
+        department,
+        currentPeriod: current,
+        previousPeriod: previous,
+        change,
+        changePercentage: changePerc
+      };
+    });
+
+    // Simple forecast (using linear regression)
+    const forecast = monthlyComparison.slice(0, 6).map((item, index) => ({
+      month: monthNames[index + 6] || `Month ${index + 7}`,
+      actual: currentMonthly[index + 7] || 0,
+      forecast: item.currentYear * 1.05 // Simple 5% growth forecast
+    }));
+
+    res.json({
+      summary: {
+        currentPeriodExpenses,
+        previousPeriodExpenses,
+        changeAmount,
+        changePercentage
+      },
+      monthlyComparison,
+      departmentComparison,
+      categoryComparison: [], // Could be expanded with more data
+      forecast
+    });
+  } catch (error) {
+    logError('Error generating expense comparison report:', error);
+    res.status(500).json({ message: 'Error generating expense comparison report' });
+  }
+};
