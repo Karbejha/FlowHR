@@ -992,6 +992,8 @@
     "employeeName": "اسم الموظف",
     "selectEmployee": "اختر موظف",
     "selectAnEmployee": "اختر موظفاً",
+    "searchEmployee": "البحث عن موظف...",
+    "noEmployeesFound": "لم يتم العثور على موظفين",
     "month": "الشهر",
     "year": "السنة",
     "selectYear": "اختر السنة",

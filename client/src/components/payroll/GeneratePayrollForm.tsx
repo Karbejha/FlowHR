@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/contexts/I18nContext';
 import axios from 'axios';
@@ -36,6 +36,9 @@ export default function GeneratePayrollForm({ onSuccess, onCancel }: GeneratePay
   const [loading, setLoading] = useState(false);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [error, setError] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const currentDate = new Date();
   const [formData, setFormData] = useState({
@@ -56,6 +59,24 @@ export default function GeneratePayrollForm({ onSuccess, onCancel }: GeneratePay
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+        setSearchTerm('');
+      }
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isDropdownOpen]);
 
   const fetchEmployees = async () => {
     if (!token) {
@@ -123,13 +144,31 @@ export default function GeneratePayrollForm({ onSuccess, onCancel }: GeneratePay
   };
 
   const handleBonusChange = (type: 'performance' | 'project' | 'other', value: string) => {
+    const numValue = value === '' ? 0 : parseFloat(value);
     setFormData(prev => ({
       ...prev,
       bonuses: {
         ...prev.bonuses,
-        [type]: parseFloat(value) || 0
+        [type]: isNaN(numValue) ? 0 : numValue
       }
     }));
+  };
+
+  // Filter employees based on search term
+  const filteredEmployees = employees.filter(emp => {
+    const fullName = `${emp.firstName} ${emp.lastName}`.toLowerCase();
+    const department = emp.department.toLowerCase();
+    const search = searchTerm.toLowerCase();
+    return fullName.includes(search) || department.includes(search);
+  });
+
+  // Get selected employee for display
+  const selectedEmployee = employees.find(emp => emp._id === formData.employeeId);
+
+  const handleEmployeeSelect = (employeeId: string) => {
+    setFormData({ ...formData, employeeId });
+    setIsDropdownOpen(false);
+    setSearchTerm('');
   };
 
   return (
@@ -140,25 +179,87 @@ export default function GeneratePayrollForm({ onSuccess, onCancel }: GeneratePay
         </div>
       )}
 
-      {/* Employee Selection */}
-      <div>
+      {/* Employee Selection with Search */}
+      <div className="relative" ref={dropdownRef}>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           {t('payroll.selectEmployee')}
         </label>
-        <select
+        
+        {/* Selected Employee Display / Search Input */}
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100 text-left flex items-center justify-between"
+          >
+            <span className={selectedEmployee ? 'text-gray-900 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'}>
+              {selectedEmployee 
+                ? `${selectedEmployee.firstName} ${selectedEmployee.lastName} - ${selectedEmployee.department}`
+                : t('payroll.selectAnEmployee')
+              }
+            </span>
+            <svg 
+              className={`w-5 h-5 transition-transform ${isDropdownOpen ? 'transform rotate-180' : ''}`} 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {/* Dropdown Menu */}
+          {isDropdownOpen && (
+            <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-80 overflow-hidden">
+              {/* Search Input */}
+              <div className="p-2 border-b border-gray-200 dark:border-gray-700">
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder={t('payroll.searchEmployee') || 'Search employee...'}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
+                  onClick={(e) => e.stopPropagation()}
+                  autoFocus
+                />
+              </div>
+
+              {/* Employee List */}
+              <div className="overflow-y-auto max-h-60">
+                {filteredEmployees.length > 0 ? (
+                  filteredEmployees.map(emp => (
+                    <button
+                      key={emp._id}
+                      type="button"
+                      onClick={() => handleEmployeeSelect(emp._id)}
+                      className={`w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
+                        formData.employeeId === emp._id ? 'bg-blue-50 dark:bg-blue-900' : ''
+                      }`}
+                    >
+                      <div className="font-medium text-gray-900 dark:text-gray-100">
+                        {emp.firstName} {emp.lastName}
+                      </div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        {emp.department}
+                      </div>
+                    </button>
+                  ))
+                ) : (
+                  <div className="px-4 py-3 text-center text-gray-500 dark:text-gray-400">
+                    {t('payroll.noEmployeesFound') || 'No employees found'}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Hidden input for form validation */}
+        <input
+          type="hidden"
           value={formData.employeeId}
-          title='id'
-          onChange={(e) => setFormData({ ...formData, employeeId: e.target.value })}
           required
-          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
-        >
-          <option value="">{t('payroll.selectAnEmployee')}</option>
-          {employees.map(emp => (
-            <option key={emp._id} value={emp._id}>
-              {emp.firstName} {emp.lastName} - {emp.department}
-            </option>
-          ))}
-        </select>
+        />
       </div>
 
       {/* Month & Year */}
@@ -213,8 +314,9 @@ export default function GeneratePayrollForm({ onSuccess, onCancel }: GeneratePay
             <input
               type="number"
               title='performance'
-              value={formData.bonuses.performance}
+              value={formData.bonuses.performance || ''}
               onChange={(e) => handleBonusChange('performance', e.target.value)}
+              placeholder="0"
               min="0"
               step="0.01"
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
@@ -228,8 +330,9 @@ export default function GeneratePayrollForm({ onSuccess, onCancel }: GeneratePay
             <input
               type="number"
               title='project'
-              value={formData.bonuses.project}
+              value={formData.bonuses.project || ''}
               onChange={(e) => handleBonusChange('project', e.target.value)}
+              placeholder="0"
               min="0"
               step="0.01"
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
@@ -243,8 +346,9 @@ export default function GeneratePayrollForm({ onSuccess, onCancel }: GeneratePay
             <input
               type="number"
               title='other'
-              value={formData.bonuses.other}
+              value={formData.bonuses.other || ''}
               onChange={(e) => handleBonusChange('other', e.target.value)}
+              placeholder="0"
               min="0"
               step="0.01"
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"

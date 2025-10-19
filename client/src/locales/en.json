@@ -1015,6 +1015,8 @@
     "employeeName": "Employee Name",
     "selectEmployee": "Select Employee",
     "selectAnEmployee": "Select an employee",
+    "searchEmployee": "Search employee...",
+    "noEmployeesFound": "No employees found",
     "month": "Month",
     "year": "Year",
     "selectYear": "Select Year",

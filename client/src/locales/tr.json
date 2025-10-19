@@ -989,6 +989,8 @@
     "employeeName": "Çalışan Adı",
     "selectEmployee": "Çalışan Seç",
     "selectAnEmployee": "Bir çalışan seçin",
+    "searchEmployee": "Çalışan ara...",
+    "noEmployeesFound": "Çalışan bulunamadı",
     "month": "Ay",
     "year": "Yıl",
     "selectYear": "Yıl Seç",
