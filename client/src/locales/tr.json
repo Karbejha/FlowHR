@@ -424,7 +424,16 @@
     "startDateBeforeEndDate": "Başlangıç tarihi bitiş tarihinden önce olmalı",
     "endDateAfterStartDate": "Bitiş tarihi başlangıç tarihinden sonra olmalı",
     "tenureRequirement": "İstihdam Süresi Gereksinimi Karşılanmadı",
-    "tenureRequirementMessage": "İzin talep edebilmek için şirkette en az 3 ay çalışmış olmanız gerekmektedir. Sorularınız varsa lütfen İK ile iletişime geçin."
+    "tenureRequirementMessage": "İzin talep edebilmek için şirkette en az 3 ay çalışmış olmanız gerekmektedir. Sorularınız varsa lütfen İK ile iletişime geçin.",
+    "hourlyLeave": "Saatlik İzin",
+    "hourlyLeaveDescription": "Tam gün yerine birkaç saatlik izin talep edin",
+    "startTime": "Başlangıç Saati",
+    "endTime": "Bitiş Saati",
+    "startTimeRequired": "Saatlik izin için başlangıç saati gereklidir",
+    "endTimeRequired": "Saatlik izin için bitiş saati gereklidir",
+    "timeRequired": "Saatlik izin için başlangıç ve bitiş saatleri gereklidir",
+    "minimumHourlyDuration": "Minimum saatlik izin süresi 1 saattir",
+    "totalHours": "Toplam Saat"
   },
   "attendance": {
     "attendanceTracker": "Devam Takipçisi",

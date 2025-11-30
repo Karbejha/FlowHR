@@ -442,7 +442,16 @@
     "startDateBeforeEndDate": "Start date must be before end date",
     "endDateAfterStartDate": "End date must be after start date",
     "tenureRequirement": "Employment Tenure Requirement Not Met",
-    "tenureRequirementMessage": "You must be employed with the company for at least 3 months before you can request leave. Please contact HR if you have any questions."
+    "tenureRequirementMessage": "You must be employed with the company for at least 3 months before you can request leave. Please contact HR if you have any questions.",
+    "hourlyLeave": "Hourly Leave",
+    "hourlyLeaveDescription": "Request leave for a few hours instead of full days",
+    "startTime": "Start Time",
+    "endTime": "End Time",
+    "startTimeRequired": "Start time is required for hourly leave",
+    "endTimeRequired": "End time is required for hourly leave",
+    "timeRequired": "Start and end times are required for hourly leave",
+    "minimumHourlyDuration": "Minimum hourly leave duration is 1 hour",
+    "totalHours": "Total Hours"
   },
   "attendance": {
     "attendanceTracker": "Attendance Tracker",

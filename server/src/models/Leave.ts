@@ -26,12 +26,20 @@ interface ILeave extends Document {
   reason: string;
   status: LeaveStatus;
   totalDays: number;
+  // Hourly leave fields
+  isHourlyLeave: boolean;
+  startTime?: string; // Format: "HH:mm"
+  endTime?: string; // Format: "HH:mm"
+  totalHours?: number;
   approvedBy?: mongoose.Types.ObjectId;
   approvalDate?: Date;
   approvalNotes?: string;
   calculateTotalDays(): number;
   validateLeaveBalance(): Promise<boolean>;
 }
+
+// Working hours per day constant (can be made configurable later)
+const WORKING_HOURS_PER_DAY = 8;
 
 const leaveSchema = new Schema({
   employee: {
@@ -65,6 +73,29 @@ const leaveSchema = new Schema({
     type: Number,
     required: true,
   },
+  // Hourly leave fields
+  isHourlyLeave: {
+    type: Boolean,
+    default: false,
+  },
+  startTime: {
+    type: String, // Format: "HH:mm"
+    required: function(this: ILeave) {
+      return this.isHourlyLeave;
+    },
+  },
+  endTime: {
+    type: String, // Format: "HH:mm"
+    required: function(this: ILeave) {
+      return this.isHourlyLeave;
+    },
+  },
+  totalHours: {
+    type: Number,
+    required: function(this: ILeave) {
+      return this.isHourlyLeave;
+    },
+  },
   approvedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -76,6 +107,24 @@ const leaveSchema = new Schema({
 });
 
 leaveSchema.methods.calculateTotalDays = function(): number {
+  // For hourly leave, calculate based on hours
+  if (this.isHourlyLeave && this.startTime && this.endTime) {
+    const [startHour, startMin] = this.startTime.split(':').map(Number);
+    const [endHour, endMin] = this.endTime.split(':').map(Number);
+    
+    const startMinutes = startHour * 60 + startMin;
+    const endMinutes = endHour * 60 + endMin;
+    
+    const totalMinutes = endMinutes - startMinutes;
+    const totalHours = totalMinutes / 60;
+    
+    this.totalHours = Math.round(totalHours * 100) / 100; // Round to 2 decimal places
+    // Convert hours to days (8 hours = 1 day)
+    this.totalDays = Math.round((totalHours / WORKING_HOURS_PER_DAY) * 100) / 100;
+    return this.totalDays;
+  }
+  
+  // For full-day leave, calculate based on dates
   const start = new Date(this.startDate);
   const end = new Date(this.endDate);
   const diffTime = Math.abs(end.getTime() - start.getTime());

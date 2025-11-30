@@ -13,7 +13,7 @@ import { logError, logWarn } from '../utils/logger';
 
 export const submitLeaveRequest = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { leaveType, startDate, endDate, reason } = req.body;
+    const { leaveType, startDate, endDate, reason, isHourlyLeave, startTime, endTime } = req.body;
     
     // Check if employee has been with company for at least 3 months
     const currentUser = await User.findById(req.user._id);
@@ -28,6 +28,39 @@ export const submitLeaveRequest = async (req: Request, res: Response): Promise<v
       }
     }
     
+    // Validate hourly leave fields
+    if (isHourlyLeave) {
+      if (!startTime || !endTime) {
+        res.status(400).json({ error: 'Start time and end time are required for hourly leave' });
+        return;
+      }
+      
+      // Validate time format (HH:mm)
+      const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+      if (!timeRegex.test(startTime) || !timeRegex.test(endTime)) {
+        res.status(400).json({ error: 'Invalid time format. Use HH:mm format' });
+        return;
+      }
+      
+      // Validate that end time is after start time
+      const [startHour, startMin] = startTime.split(':').map(Number);
+      const [endHour, endMin] = endTime.split(':').map(Number);
+      const startMinutes = startHour * 60 + startMin;
+      const endMinutes = endHour * 60 + endMin;
+      
+      if (endMinutes <= startMinutes) {
+        res.status(400).json({ error: 'End time must be after start time' });
+        return;
+      }
+      
+      // Minimum 1 hour of hourly leave
+      const totalMinutes = endMinutes - startMinutes;
+      if (totalMinutes < 60) {
+        res.status(400).json({ error: 'Minimum hourly leave duration is 1 hour' });
+        return;
+      }
+    }
+    
     // Convert leaveType to enum value
     const leave = new Leave({
       employee: req.user._id,
@@ -35,7 +68,9 @@ export const submitLeaveRequest = async (req: Request, res: Response): Promise<v
       startDate: new Date(startDate),
       endDate: new Date(endDate),
       reason,
-      status: LeaveStatus.PENDING
+      status: LeaveStatus.PENDING,
+      isHourlyLeave: isHourlyLeave || false,
+      ...(isHourlyLeave && { startTime, endTime })
     });
 
     // Calculate total days
@@ -49,6 +84,11 @@ export const submitLeaveRequest = async (req: Request, res: Response): Promise<v
     
     // Send email notification to employee
     const employee = leave.employee as any;
+    const isHourly = leave.isHourlyLeave;
+    const durationInfo = isHourly 
+      ? `${leave.totalHours} hours (${leave.startTime} - ${leave.endTime})` 
+      : `${totalDays} days`;
+    
     try {
       await sendLeaveRequestNotification(
         employee.email,
@@ -431,7 +471,7 @@ export const getMonthlyLeaveRequests = async (req: Request, res: Response): Prom
 export const updateLeavePeriod = async (req: Request, res: Response): Promise<void> => {
   try {
     const { leaveId } = req.params;
-    const { startDate, endDate } = req.body;
+    const { startDate, endDate, startTime, endTime, isHourlyLeave } = req.body;
 
     // Validate input
     if (!startDate || !endDate) {
@@ -442,9 +482,44 @@ export const updateLeavePeriod = async (req: Request, res: Response): Promise<vo
     const newStartDate = new Date(startDate);
     const newEndDate = new Date(endDate);
 
-    if (newStartDate >= newEndDate) {
-      res.status(400).json({ error: 'End date must be after start date' });
+    // For non-hourly leave, end date must be after or equal to start date
+    // For hourly leave on the same day, dates will be equal
+    if (!isHourlyLeave && newStartDate > newEndDate) {
+      res.status(400).json({ error: 'End date must be after or equal to start date' });
       return;
+    }
+    
+    // Validate hourly leave fields
+    if (isHourlyLeave) {
+      if (!startTime || !endTime) {
+        res.status(400).json({ error: 'Start time and end time are required for hourly leave' });
+        return;
+      }
+      
+      // Validate time format (HH:mm)
+      const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+      if (!timeRegex.test(startTime) || !timeRegex.test(endTime)) {
+        res.status(400).json({ error: 'Invalid time format. Use HH:mm format' });
+        return;
+      }
+      
+      // Validate that end time is after start time
+      const [startHour, startMin] = startTime.split(':').map(Number);
+      const [endHour, endMin] = endTime.split(':').map(Number);
+      const startMinutes = startHour * 60 + startMin;
+      const endMinutes = endHour * 60 + endMin;
+      
+      if (endMinutes <= startMinutes) {
+        res.status(400).json({ error: 'End time must be after start time' });
+        return;
+      }
+      
+      // Minimum 1 hour of hourly leave
+      const totalMinutes = endMinutes - startMinutes;
+      if (totalMinutes < 60) {
+        res.status(400).json({ error: 'Minimum hourly leave duration is 1 hour' });
+        return;
+      }
     }
 
     const leave = await Leave.findById(leaveId)
@@ -480,6 +555,20 @@ export const updateLeavePeriod = async (req: Request, res: Response): Promise<vo
     // Update dates and recalculate total days
     leave.startDate = newStartDate;
     leave.endDate = newEndDate;
+    
+    // Update hourly leave fields if applicable
+    if (isHourlyLeave !== undefined) {
+      leave.isHourlyLeave = isHourlyLeave;
+    }
+    if (isHourlyLeave && startTime && endTime) {
+      leave.startTime = startTime;
+      leave.endTime = endTime;
+    } else if (!isHourlyLeave) {
+      leave.startTime = undefined;
+      leave.endTime = undefined;
+      leave.totalHours = undefined;
+    }
+    
     const newTotalDays = leave.calculateTotalDays();
 
     // Validate new leave balance if status is approved or pending
