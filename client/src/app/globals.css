@@ -128,3 +128,58 @@
 .language-code {
   @apply text-xs text-gray-500 dark:text-gray-400 capitalize mt-1;
 }
+
+/* Print tweaks */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 10mm;
+  }
+
+  html, body {
+    width: 210mm;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Hide navigation, buttons, and interactive elements */
+  nav, header, footer, button, .no-print {
+    display: none !important;
+  }
+  
+  /* Show only main content */
+  main {
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Optimize tables for print */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  
+  /* Prevent page breaks inside elements */
+  .print-avoid-break {
+    page-break-inside: avoid;
+  }
+  
+  /* Force page break */
+  .print-page-break {
+    page-break-after: always;
+  }
+
+  /* Optional helper for components that want explicit scaling */
+  .print-scale-90 {
+    transform: scale(0.9);
+    transform-origin: top left;
+  }
+  
+  /* Optimize charts for print */
+  svg {
+    max-width: 100%;
+  }
+}

@@ -29,6 +29,20 @@ interface IUser extends mongoose.Document {
     paternity?: number;
     other?: number;
   };
+  salaryInfo?: {
+    basicSalary: number;
+    allowances: {
+      transportation: number;
+      housing: number;
+      food: number;
+      mobile: number;
+      other: number;
+    };
+    taxRate: number; // percentage
+    socialInsuranceRate: number; // percentage
+    healthInsuranceRate: number; // percentage
+    overtimeRate: number; // multiplier (e.g., 1.5)
+  };
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -118,6 +132,63 @@ const userSchema = new mongoose.Schema({
       default: 0,
     }
   },
+  salaryInfo: {
+    basicSalary: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+    allowances: {
+      transportation: {
+        type: Number,
+        default: 0,
+        min: 0
+      },
+      housing: {
+        type: Number,
+        default: 0,
+        min: 0
+      },
+      food: {
+        type: Number,
+        default: 0,
+        min: 0
+      },
+      mobile: {
+        type: Number,
+        default: 0,
+        min: 0
+      },
+      other: {
+        type: Number,
+        default: 0,
+        min: 0
+      }
+    },
+    taxRate: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 100
+    },
+    socialInsuranceRate: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 100
+    },
+    healthInsuranceRate: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 100
+    },
+    overtimeRate: {
+      type: Number,
+      default: 1.5,
+      min: 1
+    }
+  }
 }, {
   timestamps: true,
 });

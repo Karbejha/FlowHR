@@ -29,6 +29,11 @@ export interface Leave {
   approvalDate?: string;
   approvalNotes?: string;
   totalDays: number;
+  // Hourly leave fields
+  isHourlyLeave?: boolean;
+  startTime?: string; // Format: "HH:mm"
+  endTime?: string; // Format: "HH:mm"
+  totalHours?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -38,6 +43,10 @@ export interface LeaveRequest {
   startDate: string;
   endDate: string;
   reason: string;
+  // Hourly leave fields
+  isHourlyLeave?: boolean;
+  startTime?: string; // Format: "HH:mm"
+  endTime?: string; // Format: "HH:mm"
 }
 
 export interface LeaveStatusUpdate {

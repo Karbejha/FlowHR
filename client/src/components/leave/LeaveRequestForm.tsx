@@ -9,6 +9,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const WORKING_HOURS_PER_DAY = 8;
 
 interface LeaveBalanceData {
   annual: number;
@@ -32,9 +33,16 @@ export default function LeaveRequestForm({ onSubmitSuccess }: { onSubmitSuccess?
   } | null>(null);
   const [showTenureModal, setShowTenureModal] = useState(false);
   const [userHireDate, setUserHireDate] = useState<Date | null>(null);
+  const [isHourlyLeave, setIsHourlyLeave] = useState(false);
   
   const { token, user } = useAuth();
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<LeaveRequest>();
+  const { register, handleSubmit, reset, watch, formState: { errors } } = useForm<LeaveRequest>();
+  
+  // Watch form values for dynamic calculations
+  const watchStartDate = watch('startDate');
+  const watchEndDate = watch('endDate');
+  const watchStartTime = watch('startTime');
+  const watchEndTime = watch('endTime');
 
   // Fetch leave balance
   const fetchLeaveBalance = useCallback(async () => {
@@ -67,6 +75,37 @@ export default function LeaveRequestForm({ onSubmitSuccess }: { onSubmitSuccess?
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
   };
 
+  // Calculate hours for hourly leave
+  const calculateHours = (startTime: string, endTime: string): number => {
+    if (!startTime || !endTime) return 0;
+    const [startHour, startMin] = startTime.split(':').map(Number);
+    const [endHour, endMin] = endTime.split(':').map(Number);
+    const startMinutes = startHour * 60 + startMin;
+    const endMinutes = endHour * 60 + endMin;
+    if (endMinutes <= startMinutes) return 0;
+    return Math.round(((endMinutes - startMinutes) / 60) * 100) / 100;
+  };
+
+  // Calculate days from hours
+  const calculateDaysFromHours = (hours: number): number => {
+    return Math.round((hours / WORKING_HOURS_PER_DAY) * 100) / 100;
+  };
+
+  // Get current duration display
+  const getDurationDisplay = (): string => {
+    if (isHourlyLeave) {
+      const hours = calculateHours(watchStartTime || '', watchEndTime || '');
+      if (hours > 0) {
+        const days = calculateDaysFromHours(hours);
+        return `${hours} ${t('common.hours')} (${days} ${t('common.days')})`;
+      }
+      return '0 ' + t('common.hours');
+    } else {
+      const days = calculateDays(watchStartDate || '', watchEndDate || '');
+      return `${days} ${t('common.days')}`;
+    }
+  };
+
   // Check if user has been employed for at least 3 months
   const checkEmploymentTenure = (): boolean => {
     if (!userHireDate) return true; // If no hire date, allow request (backward compatibility)
@@ -83,10 +122,17 @@ export default function LeaveRequestForm({ onSubmitSuccess }: { onSubmitSuccess?
   };
 
   // Check leave balance
-  const checkLeaveBalance = (leaveType: LeaveType, startDate: string, endDate: string): boolean => {
+  const checkLeaveBalance = (leaveType: LeaveType, startDate: string, endDate: string, startTime?: string, endTime?: string): boolean => {
     if (!balance || !startDate || !endDate) return true;
     
-    const requestedDays = calculateDays(startDate, endDate);
+    let requestedDays: number;
+    if (isHourlyLeave && startTime && endTime) {
+      const hours = calculateHours(startTime, endTime);
+      requestedDays = calculateDaysFromHours(hours);
+    } else {
+      requestedDays = calculateDays(startDate, endDate);
+    }
+    
     const balanceType = leaveType.toLowerCase() as keyof LeaveBalanceData;
     const availableDays = balance[balanceType] || 0;
     
@@ -112,18 +158,38 @@ export default function LeaveRequestForm({ onSubmitSuccess }: { onSubmitSuccess?
     }
 
     // Check leave balance before submitting
-    if (!checkLeaveBalance(data.leaveType, data.startDate, data.endDate)) {
+    if (!checkLeaveBalance(data.leaveType, data.startDate, data.endDate, data.startTime, data.endTime)) {
       return; // Modal will be shown by checkLeaveBalance
+    }
+    
+    // Validate hourly leave times
+    if (isHourlyLeave) {
+      if (!data.startTime || !data.endTime) {
+        toast.error(t('leave.timeRequired'));
+        return;
+      }
+      const hours = calculateHours(data.startTime, data.endTime);
+      if (hours < 1) {
+        toast.error(t('leave.minimumHourlyDuration'));
+        return;
+      }
     }
       try {
       setIsSubmitting(true);
-        const response = await axios.post(`${API_URL}/leave/request`, data, {
+        const requestData = {
+        ...data,
+        isHourlyLeave,
+        ...(isHourlyLeave ? { startTime: data.startTime, endTime: data.endTime } : {})
+      };
+      
+        const response = await axios.post(`${API_URL}/leave/request`, requestData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
       if (response.data) {
         toast.success(t('leave.requestSubmitted'));
         reset();
+        setIsHourlyLeave(false); // Reset hourly leave toggle
         fetchLeaveBalance(); // Refresh balance after successful submission
         onSubmitSuccess?.();
       }
@@ -187,6 +253,38 @@ export default function LeaveRequestForm({ onSubmitSuccess }: { onSubmitSuccess?
           )}
         </div>
 
+        {/* Hourly Leave Toggle */}
+        <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
+          <div className="flex items-center">
+            <svg className="w-5 h-5 text-blue-500 dark:text-blue-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <label htmlFor="isHourlyLeave" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                {t('leave.hourlyLeave')}
+              </label>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{t('leave.hourlyLeaveDescription')}</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            id="isHourlyLeave"
+            aria-label={`${t('leave.hourlyLeave')}: ${isHourlyLeave ? 'enabled' : 'disabled'}`}
+            title={t('leave.hourlyLeave')}
+            onClick={() => setIsHourlyLeave(!isHourlyLeave)}
+            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+              isHourlyLeave ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-600'
+            }`}
+          >
+            <span className="sr-only">{t('leave.hourlyLeave')}</span>
+            <span
+              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                isHourlyLeave ? 'translate-x-5' : 'translate-x-0'
+              }`}
+            />
+          </button>
+        </div>
+
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div>            <label htmlFor="startDate" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
               {t('leave.startDate')}
@@ -226,6 +324,65 @@ export default function LeaveRequestForm({ onSubmitSuccess }: { onSubmitSuccess?
                 {errors.endDate.message}
               </p>
             )}
+          </div>
+        </div>
+
+        {/* Time Pickers for Hourly Leave */}
+        {isHourlyLeave && (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <div>
+              <label htmlFor="startTime" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                {t('leave.startTime')}
+              </label>
+              <div className="relative">
+                <input
+                  type="time"
+                  {...register('startTime', { required: isHourlyLeave ? t('leave.startTimeRequired') : false })}
+                  className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-3 px-4 text-gray-900 dark:text-gray-100 shadow-sm focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all duration-200"
+                />
+              </div>
+              {errors.startTime && (
+                <p className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center">
+                  <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                  {errors.startTime.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label htmlFor="endTime" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                {t('leave.endTime')}
+              </label>
+              <div className="relative">
+                <input
+                  type="time"
+                  {...register('endTime', { required: isHourlyLeave ? t('leave.endTimeRequired') : false })}
+                  className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-3 px-4 text-gray-900 dark:text-gray-100 shadow-sm focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all duration-200"
+                />
+              </div>
+              {errors.endTime && (
+                <p className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center">
+                  <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                  {errors.endTime.message}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Duration Display */}
+        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+              {t('leave.duration')}:
+            </span>
+            <span className="text-sm font-bold text-blue-800 dark:text-blue-200">
+              {getDurationDisplay()}
+            </span>
           </div>
         </div>        <div>
           <label htmlFor="reason" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">

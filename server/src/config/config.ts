@@ -10,6 +10,7 @@ export const config = {
         return 'your-default-secret-key-change-this-in-production';
     })(),
     jwtExpiresIn: process.env.JWT_EXPIRES_IN || '1d',
+    clientUrl: process.env.CLIENT_URL || 'http://localhost:3000',
     
     // Cloudinary Configuration
     cloudinary: {

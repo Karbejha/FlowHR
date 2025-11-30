@@ -30,6 +30,20 @@ const AddUserForm: React.FC<AddUserFormProps> = ({ onSuccess, onCancel }) => {
     managerId: '',
     dateOfBirth: '',
     hireDate: '',
+    salaryInfo: {
+      basicSalary: 0,
+      allowances: {
+        transportation: 0,
+        housing: 0,
+        food: 0,
+        mobile: 0,
+        other: 0,
+      },
+      taxRate: 0,
+      socialInsuranceRate: 0,
+      healthInsuranceRate: 0,
+      overtimeRate: 1.5,
+    }
   });
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [managers, setManagers] = useState<Manager[]>([]);
@@ -111,10 +125,38 @@ const AddUserForm: React.FC<AddUserFormProps> = ({ onSuccess, onCancel }) => {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
+    const { name, value } = e.target;
+    
+    // Handle nested salaryInfo fields
+    if (name.startsWith('salaryInfo.')) {
+      const field = name.split('.')[1];
+      if (field === 'allowances' || name.includes('allowances.')) {
+        const allowanceField = name.split('.')[2];
+        setFormData(prev => ({
+          ...prev,
+          salaryInfo: {
+            ...prev.salaryInfo,
+            allowances: {
+              ...prev.salaryInfo.allowances,
+              [allowanceField]: parseFloat(value) || 0
+            }
+          }
+        }));
+      } else {
+        setFormData(prev => ({
+          ...prev,
+          salaryInfo: {
+            ...prev.salaryInfo,
+            [field]: parseFloat(value) || 0
+          }
+        }));
+      }
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   // Only admins can create managers or admins
@@ -416,6 +458,256 @@ const AddUserForm: React.FC<AddUserFormProps> = ({ onSuccess, onCancel }) => {
               </div>
             </div>
           </div>
+
+          {/* Salary Information Section - Only for Admins */}
+          {user?.role === UserRole.ADMIN && (
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2 mb-4">
+                <div className="w-6 h-6 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                  <svg className="w-3 h-3 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{t('payroll.title')}</h3>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Basic Salary */}
+                <div className="space-y-2">
+                  <label htmlFor="salaryInfo.basicSalary" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    {t('payroll.basicSalary')} *
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <span className="text-gray-500 dark:text-gray-400">$</span>
+                    </div>
+                    <input
+                      id="salaryInfo.basicSalary"
+                      type="number"
+                      name="salaryInfo.basicSalary"
+                      value={formData.salaryInfo.basicSalary}
+                      onChange={handleChange}
+                      min="0"
+                      step="0.01"
+                      className="block w-full pl-8 pr-4 py-3 text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent transition-all duration-200"
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+
+                {/* Transportation Allowance */}
+                <div className="space-y-2">
+                  <label htmlFor="salaryInfo.allowances.transportation" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    {t('payroll.transportation')}
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <span className="text-gray-500 dark:text-gray-400">$</span>
+                    </div>
+                    <input
+                      id="salaryInfo.allowances.transportation"
+                      type="number"
+                      name="salaryInfo.allowances.transportation"
+                      value={formData.salaryInfo.allowances.transportation}
+                      onChange={handleChange}
+                      min="0"
+                      step="0.01"
+                      className="block w-full pl-8 pr-4 py-3 text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent transition-all duration-200"
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+
+                {/* Housing Allowance */}
+                <div className="space-y-2">
+                  <label htmlFor="salaryInfo.allowances.housing" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    {t('payroll.housing')}
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <span className="text-gray-500 dark:text-gray-400">$</span>
+                    </div>
+                    <input
+                      id="salaryInfo.allowances.housing"
+                      type="number"
+                      name="salaryInfo.allowances.housing"
+                      value={formData.salaryInfo.allowances.housing}
+                      onChange={handleChange}
+                      min="0"
+                      step="0.01"
+                      className="block w-full pl-8 pr-4 py-3 text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent transition-all duration-200"
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+
+                {/* Food Allowance */}
+                <div className="space-y-2">
+                  <label htmlFor="salaryInfo.allowances.food" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    {t('payroll.food')}
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <span className="text-gray-500 dark:text-gray-400">$</span>
+                    </div>
+                    <input
+                      id="salaryInfo.allowances.food"
+                      type="number"
+                      name="salaryInfo.allowances.food"
+                      value={formData.salaryInfo.allowances.food}
+                      onChange={handleChange}
+                      min="0"
+                      step="0.01"
+                      className="block w-full pl-8 pr-4 py-3 text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent transition-all duration-200"
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+
+                {/* Mobile Allowance */}
+                <div className="space-y-2">
+                  <label htmlFor="salaryInfo.allowances.mobile" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    {t('payroll.mobile')}
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <span className="text-gray-500 dark:text-gray-400">$</span>
+                    </div>
+                    <input
+                      id="salaryInfo.allowances.mobile"
+                      type="number"
+                      name="salaryInfo.allowances.mobile"
+                      value={formData.salaryInfo.allowances.mobile}
+                      onChange={handleChange}
+                      min="0"
+                      step="0.01"
+                      className="block w-full pl-8 pr-4 py-3 text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent transition-all duration-200"
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+
+                {/* Other Allowances */}
+                <div className="space-y-2">
+                  <label htmlFor="salaryInfo.allowances.other" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    {t('payroll.other')}
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <span className="text-gray-500 dark:text-gray-400">$</span>
+                    </div>
+                    <input
+                      id="salaryInfo.allowances.other"
+                      type="number"
+                      name="salaryInfo.allowances.other"
+                      value={formData.salaryInfo.allowances.other}
+                      onChange={handleChange}
+                      min="0"
+                      step="0.01"
+                      className="block w-full pl-8 pr-4 py-3 text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent transition-all duration-200"
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+
+                {/* Tax Rate */}
+                <div className="space-y-2">
+                  <label htmlFor="salaryInfo.taxRate" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    {t('payroll.tax')} (%)
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="salaryInfo.taxRate"
+                      type="number"
+                      name="salaryInfo.taxRate"
+                      value={formData.salaryInfo.taxRate}
+                      onChange={handleChange}
+                      min="0"
+                      max="100"
+                      step="0.1"
+                      className="block w-full px-4 py-3 text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent transition-all duration-200"
+                      placeholder="0"
+                    />
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                      <span className="text-gray-500 dark:text-gray-400">%</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Social Insurance Rate */}
+                <div className="space-y-2">
+                  <label htmlFor="salaryInfo.socialInsuranceRate" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    {t('payroll.socialInsurance')} (%)
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="salaryInfo.socialInsuranceRate"
+                      type="number"
+                      name="salaryInfo.socialInsuranceRate"
+                      value={formData.salaryInfo.socialInsuranceRate}
+                      onChange={handleChange}
+                      min="0"
+                      max="100"
+                      step="0.1"
+                      className="block w-full px-4 py-3 text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent transition-all duration-200"
+                      placeholder="0"
+                    />
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                      <span className="text-gray-500 dark:text-gray-400">%</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Health Insurance Rate */}
+                <div className="space-y-2">
+                  <label htmlFor="salaryInfo.healthInsuranceRate" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    {t('payroll.healthInsurance')} (%)
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="salaryInfo.healthInsuranceRate"
+                      type="number"
+                      name="salaryInfo.healthInsuranceRate"
+                      value={formData.salaryInfo.healthInsuranceRate}
+                      onChange={handleChange}
+                      min="0"
+                      max="100"
+                      step="0.1"
+                      className="block w-full px-4 py-3 text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent transition-all duration-200"
+                      placeholder="0"
+                    />
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                      <span className="text-gray-500 dark:text-gray-400">%</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Overtime Rate */}
+                <div className="space-y-2">
+                  <label htmlFor="salaryInfo.overtimeRate" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    {t('payroll.overtime')} (x)
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="salaryInfo.overtimeRate"
+                      type="number"
+                      name="salaryInfo.overtimeRate"
+                      value={formData.salaryInfo.overtimeRate}
+                      onChange={handleChange}
+                      min="1"
+                      step="0.1"
+                      className="block w-full px-4 py-3 text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent transition-all duration-200"
+                      placeholder="1.5"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Multiplier for overtime pay (e.g., 1.5 = 150% of hourly rate)
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200 dark:border-gray-700">            <button

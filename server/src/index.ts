@@ -9,6 +9,8 @@ import attendanceRoutes from './routes/attendance';
 import userRoutes from './routes/users';
 import notificationRoutes from './routes/notifications';
 import reportsRoutes from './routes/reports';
+import payrollRoutes from './routes/payroll';
+import schedulesRoutes from './routes/schedules';
 import logger, { setupLogCleanup, logInfo, logError, logUserAction, testMongoDBLogging } from './utils/logger';
 import { morganMiddleware, morganErrorMiddleware } from './middleware/morganLogger';
 import { requestIdMiddleware, responseTimeMiddleware } from './middleware/requestTracking';
@@ -17,6 +19,7 @@ import { captureAuthAttempt } from './middleware/captureAuthAttempt';
 import { userActivityTracker } from './middleware/userActivityTracker';
 import { addSecurityHeaders, sanitizeRequest, sanitizeErrorResponse } from './middleware/security';
 import { seedTestUser } from './utils/seedTestUser';
+import { initializeReportScheduler } from './utils/reportScheduler';
 
 const app = express();
 
@@ -69,6 +72,8 @@ app.use('/api/attendance', userActivityTracker, attendanceRoutes);
 app.use('/api/users', userActivityTracker, userRoutes);
 app.use('/api/notifications', userActivityTracker, notificationRoutes);
 app.use('/api/reports', userActivityTracker, reportsRoutes);
+app.use('/api/payroll', userActivityTracker, payrollRoutes);
+app.use('/api/schedules', userActivityTracker, schedulesRoutes);
 
 // Error handling middleware (must be after routes)
 app.use(sanitizeErrorResponse);
@@ -82,6 +87,9 @@ mongoose.connect(config.mongoUri)
     
     // Seed test user with June birthday
     await seedTestUser();
+    
+    // Initialize report scheduler
+    initializeReportScheduler();
     
     // Test MongoDB logging after connection
     const mongoLogTest = await testMongoDBLogging();
