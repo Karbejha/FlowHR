@@ -11,6 +11,9 @@ import notificationRoutes from './routes/notifications';
 import reportsRoutes from './routes/reports';
 import payrollRoutes from './routes/payroll';
 import schedulesRoutes from './routes/schedules';
+import performanceRoutes from './routes/performance';
+import documentsRoutes from './routes/documents';
+import onboardingRoutes from './routes/onboarding';
 import logger, { setupLogCleanup, logInfo, logError, logUserAction, testMongoDBLogging } from './utils/logger';
 import { morganMiddleware, morganErrorMiddleware } from './middleware/morganLogger';
 import { requestIdMiddleware, responseTimeMiddleware } from './middleware/requestTracking';
@@ -74,6 +77,9 @@ app.use('/api/notifications', userActivityTracker, notificationRoutes);
 app.use('/api/reports', userActivityTracker, reportsRoutes);
 app.use('/api/payroll', userActivityTracker, payrollRoutes);
 app.use('/api/schedules', userActivityTracker, schedulesRoutes);
+app.use('/api/performance', userActivityTracker, performanceRoutes);
+app.use('/api/documents', userActivityTracker, documentsRoutes);
+app.use('/api/onboarding', userActivityTracker, onboardingRoutes);
 
 // Error handling middleware (must be after routes)
 app.use(sanitizeErrorResponse);

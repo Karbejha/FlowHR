@@ -133,10 +133,12 @@ export default function PayrollPage() {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="year-filter" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 {t('payroll.year')}
               </label>
               <select
+                id="year-filter"
+                aria-label={t('payroll.year')}
                 value={filters.year}
                 onChange={(e) => setFilters({ ...filters, year: parseInt(e.target.value) })}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-100"
@@ -148,10 +150,12 @@ export default function PayrollPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="month-filter" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 {t('payroll.month')}
               </label>
               <select
+                id="month-filter"
+                aria-label={t('payroll.month')}
                 value={filters.month}
                 onChange={(e) => setFilters({ ...filters, month: parseInt(e.target.value) })}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-100"
@@ -163,10 +167,12 @@ export default function PayrollPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="status-filter" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 {t('payroll.status')}
               </label>
               <select
+                id="status-filter"
+                aria-label={t('payroll.status')}
                 value={filters.status}
                 onChange={(e) => setFilters({ ...filters, status: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-100"
@@ -180,10 +186,12 @@ export default function PayrollPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="department-filter" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 {t('payroll.department')}
               </label>
               <select
+                id="department-filter"
+                aria-label={t('payroll.department')}
                 value={filters.department}
                 onChange={(e) => setFilters({ ...filters, department: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-gray-100"

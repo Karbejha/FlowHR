@@ -10,7 +10,7 @@ interface AuthenticatedRequest extends Request {
 // Get notifications for the authenticated user
 export const getNotifications = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const userId = req.user?.id;
+    const userId = req.user?._id;
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
     const skip = (page - 1) * limit;
@@ -40,7 +40,7 @@ export const getNotifications = async (req: AuthenticatedRequest, res: Response)
       totalPages: Math.ceil(totalCount / limit)
     });  } catch (error) {
     logError('Error fetching notifications', {
-      userId: req.user?.id,
+      userId: req.user?._id,
       error: error instanceof Error ? error.message : error
     });
     res.status(500).json({ message: 'Failed to fetch notifications' });
@@ -51,7 +51,7 @@ export const getNotifications = async (req: AuthenticatedRequest, res: Response)
 export const markAsRead = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const userId = req.user?.id;
+    const userId = req.user?._id;
 
     const notification = await Notification.findOneAndUpdate(
       { _id: id, userId },
@@ -64,7 +64,7 @@ export const markAsRead = async (req: AuthenticatedRequest, res: Response) => {
     }    res.json({ message: 'Notification marked as read', notification });
   } catch (error) {
     logError('Error marking notification as read', {
-      userId: req.user?.id,
+      userId: req.user?._id,
       notificationId: req.params.id,
       error: error instanceof Error ? error.message : error
     });
@@ -75,7 +75,7 @@ export const markAsRead = async (req: AuthenticatedRequest, res: Response) => {
 // Mark all notifications as read
 export const markAllAsRead = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const userId = req.user?.id;
+    const userId = req.user?._id;
 
     await Notification.updateMany(
       { userId, isRead: false },
@@ -83,7 +83,7 @@ export const markAllAsRead = async (req: AuthenticatedRequest, res: Response) =>
     );    res.json({ message: 'All notifications marked as read' });
   } catch (error) {
     logError('Error marking all notifications as read', {
-      userId: req.user?.id,
+      userId: req.user?._id,
       error: error instanceof Error ? error.message : error
     });
     res.status(500).json({ message: 'Failed to mark all notifications as read' });
@@ -94,7 +94,7 @@ export const markAllAsRead = async (req: AuthenticatedRequest, res: Response) =>
 export const deleteNotification = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const userId = req.user?.id;
+    const userId = req.user?._id;
 
     const notification = await Notification.findOneAndDelete({ _id: id, userId });
 
@@ -103,7 +103,7 @@ export const deleteNotification = async (req: AuthenticatedRequest, res: Respons
     }    res.json({ message: 'Notification deleted successfully' });
   } catch (error) {
     logError('Error deleting notification', {
-      userId: req.user?.id,
+      userId: req.user?._id,
       notificationId: req.params.id,
       error: error instanceof Error ? error.message : error
     });

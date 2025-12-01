@@ -97,7 +97,7 @@ export const userActionLogger = (action: string) => {
       if (res.statusCode < 400 && req.user) {        import('../utils/logger').then(({ logUserAction }) => {
           logUserAction(
             `User action: ${action}`,
-            req.user.id,
+            req.user._id,
             req.user.email,
             req.user.role,
             {

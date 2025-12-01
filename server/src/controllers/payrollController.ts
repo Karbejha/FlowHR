@@ -18,6 +18,12 @@ interface UserDocument extends mongoose.Document {
  */
 export const generatePayroll = async (req: Request, res: Response): Promise<void> => {
   try {
+    // Only Admin can generate payroll
+    if (req.user.role !== UserRole.ADMIN) {
+      res.status(403).json({ error: 'FORBIDDEN', message: 'Only administrators can generate payroll' });
+      return;
+    }
+
     const { employeeId, month, year, bonuses, notes } = req.body;
     
     // Validate inputs
@@ -101,6 +107,12 @@ export const generatePayroll = async (req: Request, res: Response): Promise<void
  */
 export const generateBulkPayroll = async (req: Request, res: Response): Promise<void> => {
   try {
+    // Only Admin can generate bulk payroll
+    if (req.user.role !== UserRole.ADMIN) {
+      res.status(403).json({ error: 'FORBIDDEN', message: 'Only administrators can generate bulk payroll' });
+      return;
+    }
+
     const { month, year } = req.body;
     
     if (!month || !year) {
@@ -311,14 +323,30 @@ export const getPayrollById = async (req: Request, res: Response): Promise<void>
  */
 export const updatePayroll = async (req: Request, res: Response): Promise<void> => {
   try {
+    // Only Admin and Manager can update payroll
+    if (req.user.role === UserRole.EMPLOYEE) {
+      res.status(403).json({ error: 'FORBIDDEN', message: 'Not authorized to update payroll' });
+      return;
+    }
+
     const { payrollId } = req.params;
     const updates = req.body;
     
-    const payroll = await Payroll.findById(payrollId);
+    const payroll = await Payroll.findById(payrollId)
+      .populate('employee', 'managerId');
     
     if (!payroll) {
       res.status(404).json({ error: 'PAYROLL_NOT_FOUND', message: 'Payroll not found' });
       return;
+    }
+
+    // Manager can only update payroll for their team
+    if (req.user.role === UserRole.MANAGER) {
+      const employee = payroll.employee as any;
+      if (employee.managerId?.toString() !== req.user._id.toString()) {
+        res.status(403).json({ error: 'FORBIDDEN', message: 'Not authorized to update payroll for this employee' });
+        return;
+      }
     }
     
     // Only allow updates if status is draft or pending
@@ -359,6 +387,12 @@ export const updatePayroll = async (req: Request, res: Response): Promise<void> 
  */
 export const approvePayroll = async (req: Request, res: Response): Promise<void> => {
   try {
+    // Only Admin can approve payroll
+    if (req.user.role !== UserRole.ADMIN) {
+      res.status(403).json({ error: 'FORBIDDEN', message: 'Only administrators can approve payroll' });
+      return;
+    }
+
     const { payrollId } = req.params;
     const { notes } = req.body;
     
@@ -399,6 +433,12 @@ export const approvePayroll = async (req: Request, res: Response): Promise<void>
  */
 export const markAsPaid = async (req: Request, res: Response): Promise<void> => {
   try {
+    // Only Admin can mark payroll as paid
+    if (req.user.role !== UserRole.ADMIN) {
+      res.status(403).json({ error: 'FORBIDDEN', message: 'Only administrators can mark payroll as paid' });
+      return;
+    }
+
     const { payrollId } = req.params;
     const { paymentDate } = req.body;
     
@@ -435,6 +475,12 @@ export const markAsPaid = async (req: Request, res: Response): Promise<void> => 
  */
 export const deletePayroll = async (req: Request, res: Response): Promise<void> => {
   try {
+    // Only Admin can delete payroll
+    if (req.user.role !== UserRole.ADMIN) {
+      res.status(403).json({ error: 'FORBIDDEN', message: 'Only administrators can delete payroll' });
+      return;
+    }
+
     const { payrollId } = req.params;
     
     const payroll = await Payroll.findById(payrollId);
@@ -463,13 +509,27 @@ export const deletePayroll = async (req: Request, res: Response): Promise<void> 
  */
 export const generatePayrollReport = async (req: Request, res: Response): Promise<void> => {
   try {
+    // Only Admin and Manager can generate payroll reports
+    if (req.user.role === UserRole.EMPLOYEE) {
+      res.status(403).json({ error: 'FORBIDDEN', message: 'Not authorized to generate payroll reports' });
+      return;
+    }
+
     const { month, year } = req.params;
     
     const monthNum = parseInt(month);
     const yearNum = parseInt(year);
     
-    const payrolls = await Payroll.find({ month: monthNum, year: yearNum })
-      .populate('employee', 'firstName lastName email department jobTitle role');
+    let payrolls = await Payroll.find({ month: monthNum, year: yearNum })
+      .populate('employee', 'firstName lastName email department jobTitle role managerId');
+
+    // Manager can only see their team's payroll report
+    if (req.user.role === UserRole.MANAGER) {
+      payrolls = payrolls.filter(payroll => {
+        const employee = payroll.employee as any;
+        return employee.managerId?.toString() === req.user._id.toString();
+      });
+    }
     
     // Calculate summary statistics
     const summary = {

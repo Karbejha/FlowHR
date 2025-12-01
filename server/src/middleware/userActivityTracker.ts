@@ -25,7 +25,7 @@ export const userActivityTracker = (req: Request, res: Response, next: NextFunct
       const action = getActionDescription(req.method, req.originalUrl);
         logUserAction(
         `User activity: ${action}`,
-        req.user.id,
+        req.user._id,
         req.user.email,
         req.user.role,
         {
